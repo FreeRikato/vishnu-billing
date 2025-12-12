@@ -12,12 +12,12 @@ import {
   View,
 } from 'react-native'
 import { ZodError } from 'zod'
-import { Colors } from '../constants/colors'
+import { Colors } from '@/constants/colors'
 // Import the Mutation Hook
-import { useAddCustomer } from '../hooks/useContacts'
-import { contactModalStyles } from '../styles/contact-modal'
-import type { ContactForm } from '../types'
-import { contactFormSchema } from '../utils/validation'
+import { useAddCustomer } from '@/hooks/useContacts'
+import { contactModalStyles } from '@/styles/contact-modal'
+import type { ContactForm } from '@/types'
+import { contactFormSchema } from '@/utils/validation'
 
 export default function ContactModal() {
   const router = useRouter()

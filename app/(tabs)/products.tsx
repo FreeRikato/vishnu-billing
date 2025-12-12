@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native'
-import { productsStyles } from '../../styles/products'
+import { productsStyles } from '@/styles/products'
 
 export default function ProductsScreen() {
   return (

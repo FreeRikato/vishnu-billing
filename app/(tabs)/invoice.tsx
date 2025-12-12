@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native'
-import { invoiceStyles } from '../../styles/invoice'
+import { invoiceStyles } from '@/styles/invoice'
 
 export default function InvoiceScreen() {
   return (

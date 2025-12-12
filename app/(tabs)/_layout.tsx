@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons' // using specific ic
 import { BlurView } from 'expo-blur'
 import { Tabs } from 'expo-router'
 import { Platform } from 'react-native'
-import { Colors } from '../../constants/colors'
+import { Colors } from '@/constants/colors'
 
 export default function TabLayout() {
   return (

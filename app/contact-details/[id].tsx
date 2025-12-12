@@ -13,11 +13,11 @@ import {
   View,
 } from 'react-native'
 import { ZodError } from 'zod'
-import { Colors } from '../../constants/colors'
-import { useContact, useDeleteCustomerSoft, useUpdateCustomer } from '../../hooks/useContacts'
-import { contactDetailsStyles } from '../../styles/contact-details'
-import type { ContactForm } from '../../types'
-import { contactFormSchema } from '../../utils/validation'
+import { Colors } from '@/constants/colors'
+import { useContact, useDeleteCustomerSoft, useUpdateCustomer } from '@/hooks/useContacts'
+import { contactDetailsStyles } from '@/styles/contact-details'
+import type { ContactForm } from '@/types'
+import { contactFormSchema } from '@/utils/validation'
 
 export default function ContactDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()

@@ -11,14 +11,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { Colors } from '../../constants/colors'
+import { Colors } from '@/constants/colors'
 // Imports for our new Architecture
-import { useContacts } from '../../hooks/useContacts' // Removed delete hook from here
-import { useDebounce } from '../../hooks/useDebounce' // Import our new hook
-import { useContactStore } from '../../store/contactStore'
-import { contactsStyles } from '../../styles/contacts'
-import type { Contact } from '../../types' // Import Contact type
-import { isMigrationNeeded, migrateExistingCustomers } from '../../utils/migration'
+import { useContacts } from '@/hooks/useContacts' // Removed delete hook from here
+import { useDebounce } from '@/hooks/useDebounce' // Import our new hook
+import { useContactStore } from '@/store/contactStore'
+import { contactsStyles } from '@/styles/contacts'
+import type { Contact } from '@/types' // Import Contact type
+import { isMigrationNeeded, migrateExistingCustomers } from '@/utils/migration'
 
 export default function ContactsScreen() {
   const router = useRouter()

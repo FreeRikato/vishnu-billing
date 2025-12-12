@@ -1,6 +1,6 @@
+import { ContactForm } from '@/types'; // Import Contact
+import { storage } from '@/utils/storage';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'; // Added useQuery
-import { storage } from '../utils/storage';
-import { Contact, ContactForm } from '../types'; // Import Contact
 
 // Keys for caching
 export const CONTACTS_KEYS = {

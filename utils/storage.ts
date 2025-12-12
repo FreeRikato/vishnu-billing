@@ -1,27 +1,25 @@
+import { db } from "@/config/firebaseConfig";
+import { BaseContact, Contact, ContactForm } from "@/types"; // Import new types
 import {
   addDoc,
   collection,
-  CollectionReference,
   deleteDoc,
   doc,
   DocumentData,
   DocumentSnapshot,
-  getDocs,
+  endAt,
   getDoc,
-  query,
-  SnapshotOptions,
-  updateDoc,
-  WithFieldValue,
-  runTransaction,
-  orderBy,
+  getDocs,
   limit,
+  orderBy,
+  query,
+  runTransaction,
+  SnapshotOptions,
   startAfter,
   startAt,
-  endAt,
-  where
+  updateDoc,
+  WithFieldValue
 } from "firebase/firestore";
-import { db } from "../config/firebaseConfig";
-import { BaseContact, Contact, ContactForm } from "../types"; // Import new types
 
 const COLLECTION_NAME = "customers";
 
@@ -310,7 +308,7 @@ export const storage = {
 
       if (docSnap.exists()) {
         // The converter handles the ID mapping
-        return docSnap.data();
+        return docSnap.data() as Contact;
       } else {
         console.log("No such document!");
         return null;

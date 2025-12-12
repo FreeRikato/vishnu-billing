@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import type { Contact } from "@/types";
 import { contactsStyles } from "../styles/contacts";
 import ContactItem from "./ContactItem";
@@ -7,13 +7,25 @@ interface ContactListProps {
 	contacts: Contact[];
 	onEditContact?: (contact: Contact) => void;
 	onPressContact?: (contact: Contact) => void;
+	loading?: boolean;
 }
 
 export default function ContactList({
 	contacts,
 	onEditContact,
 	onPressContact,
+	loading = false,
 }: ContactListProps) {
+	if (loading) {
+		return (
+			<View
+				style={[contactsStyles.contactList, contactsStyles.loadingContainer]}
+			>
+				<ActivityIndicator size="large" color="#3B82F6" />
+			</View>
+		);
+	}
+
 	return (
 		<ScrollView
 			style={contactsStyles.contactList}

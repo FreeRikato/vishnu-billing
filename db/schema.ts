@@ -11,3 +11,11 @@ export const Product = sqliteTable("product", {
 	price: real().notNull(),
 	unit: text().notNull(),
 });
+
+export const Contact = sqliteTable("contact", {
+	id: int().primaryKey({ autoIncrement: true }),
+	name: text().notNull(),
+	phone: text().notNull(),
+	initials: text().notNull(),
+	color: text().notNull(),
+});

@@ -1,15 +1,66 @@
-import { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, View } from "react-native";
-import { mockContacts } from "@/assets";
 import ContactHeader from "@/components/ContactHeader";
 import ContactList from "@/components/ContactList";
 import FloatingAddActionButton from "@/components/FloatingAddActionButton";
 import SearchBar from "@/components/SearchBar";
+import { getAllContacts, searchContacts } from "@/services/contactService";
 import type { Contact } from "@/types";
 import { contactsStyles } from "../../styles/contacts";
 
 export default function ContactScreen() {
 	const [searchText, setSearchText] = useState("");
+	const [contacts, setContacts] = useState<Contact[]>([]);
+	const [loading, setLoading] = useState(true);
+
+	const loadContacts = useCallback(async () => {
+		try {
+			setLoading(true);
+			const allContacts = await getAllContacts();
+			setContacts(allContacts);
+		} catch (error) {
+			console.error("Error loading contacts:", error);
+			Alert.alert("Error", "Failed to load contacts");
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	const handleSearchContacts = useCallback(async (query: string) => {
+		try {
+			setLoading(true);
+			const searchResults = await searchContacts(query);
+			setContacts(searchResults);
+		} catch (error) {
+			console.error("Error searching contacts:", error);
+			Alert.alert("Error", "Failed to search contacts");
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		loadContacts();
+	}, [loadContacts]);
+
+	useFocusEffect(
+		useCallback(() => {
+			loadContacts();
+		}, [loadContacts]),
+	);
+
+	useEffect(() => {
+		const debounceTimer = setTimeout(() => {
+			if (searchText.trim()) {
+				handleSearchContacts(searchText);
+			} else {
+				loadContacts();
+			}
+		}, 300);
+
+		return () => clearTimeout(debounceTimer);
+	}, [searchText, loadContacts, handleSearchContacts]);
 
 	const handleSettingsPress = () => {
 		Alert.alert("Settings", "Settings functionality coming soon!");
@@ -30,21 +81,15 @@ export default function ContactScreen() {
 		Alert.alert("Add Contact", "Add contact functionality coming soon!");
 	};
 
-	// Filter contacts based on search text
-	const filteredContacts = mockContacts.filter(
-		(contact) =>
-			contact.name.toLowerCase().includes(searchText.toLowerCase()) ||
-			contact.phone.includes(searchText),
-	);
-
 	return (
 		<View style={contactsStyles.container}>
 			<ContactHeader onSettingsPress={handleSettingsPress} />
 			<SearchBar value={searchText} onChangeText={setSearchText} />
 			<ContactList
-				contacts={filteredContacts}
+				contacts={contacts}
 				onEditContact={handleEditContact}
 				onPressContact={handlePressContact}
+				loading={loading}
 			/>
 			<FloatingAddActionButton onPress={handleAddContact} small />
 		</View>

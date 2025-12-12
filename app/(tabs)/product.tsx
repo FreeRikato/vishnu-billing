@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Alert, StatusBar, View } from "react-native";
 import {
 	FloatingAddActionButton,
@@ -11,21 +12,18 @@ import { contactsStyles } from "../../styles/contacts";
 
 export default function ProductScreen() {
 	const { searchText, setSearchText, products, loading } = useProducts();
+	const router = useRouter();
 
 	const handleSettingsPress = () => {
 		Alert.alert("Settings", "Settings functionality coming soon!");
 	};
 
-	const handleProductPress = (product: Product) => {
-		Alert.alert(
-			product.name,
-			`Price: $${product.price.toFixed(2)}\nUnit: ${product.unit}`,
-			[{ text: "OK", style: "default" }],
-		);
+	const handleEditProduct = (product: Product) => {
+		router.push(`/product/${product.id}`);
 	};
 
 	const handleAddProduct = () => {
-		Alert.alert("Add Product", "Add product functionality coming soon!");
+		router.push("/product/create");
 	};
 
 	return (
@@ -42,7 +40,7 @@ export default function ProductScreen() {
 
 			<ProductList
 				products={products}
-				onPressProduct={handleProductPress}
+				onEditProduct={handleEditProduct}
 				loading={loading}
 			/>
 

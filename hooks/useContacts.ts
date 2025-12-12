@@ -1,67 +1,45 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
-import { useFocusEffect } from "expo-router";
-import { getAllContacts, searchContacts } from "@/services/contactService";
-import type { Contact } from "@/types";
+import { useEffect, useMemo, useState } from "react";
+import { useContactStore } from "@/store/contactStore";
 
+/**
+ * Hook for managing contact list UI state and search functionality.
+ * Reads data from Zustand store instead of fetching on every navigation.
+ * Provides debounced local search filtering for optimal UX.
+ */
 export function useContacts() {
 	const [searchText, setSearchText] = useState("");
-	const [contacts, setContacts] = useState<Contact[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-	const loadContacts = useCallback(async () => {
-		try {
-			setLoading(true);
-			const allContacts = await getAllContacts();
-			setContacts(allContacts);
-		} catch (error) {
-			console.error("Error loading contacts:", error);
-			Alert.alert("Error", "Failed to load contacts");
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+	// Subscribe to store state for contacts and loading
+	const contacts = useContactStore((state) => state.contacts);
+	const loading = useContactStore((state) => state.loading);
 
-	const handleSearchContacts = useCallback(async (query: string) => {
-		try {
-			setLoading(true);
-			const searchResults = await searchContacts(query);
-			setContacts(searchResults);
-		} catch (error) {
-			console.error("Error searching contacts:", error);
-			Alert.alert("Error", "Failed to search contacts");
-		} finally {
-			setLoading(false);
-		}
-	}, []);
-
+	// Debounce search text
 	useEffect(() => {
-		loadContacts();
-	}, [loadContacts]);
-
-	useFocusEffect(
-		useCallback(() => {
-			loadContacts();
-		}, [loadContacts]),
-	);
-
-	useEffect(() => {
-		const debounceTimer = setTimeout(() => {
-			if (searchText.trim()) {
-				handleSearchContacts(searchText);
-			} else {
-				loadContacts();
-			}
+		const timer = setTimeout(() => {
+			setDebouncedSearchText(searchText);
 		}, 300);
+		return () => clearTimeout(timer);
+	}, [searchText]);
 
-		return () => clearTimeout(debounceTimer);
-	}, [searchText, loadContacts, handleSearchContacts]);
+	// Compute filtered contacts using useMemo
+	// Filter locally to avoid dependency issues with store search function
+	const filteredContacts = useMemo(() => {
+		if (!debouncedSearchText.trim()) {
+			return contacts;
+		}
+		const lowerQuery = debouncedSearchText.toLowerCase();
+		return contacts.filter(
+			(contact) =>
+				contact.name.toLowerCase().includes(lowerQuery) ||
+				contact.phone.includes(debouncedSearchText),
+		);
+	}, [debouncedSearchText, contacts]);
 
 	return {
 		searchText,
 		setSearchText,
-		contacts,
+		contacts: filteredContacts,
 		loading,
-		loadContacts,
 	};
 }

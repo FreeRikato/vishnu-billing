@@ -5,17 +5,19 @@ import ProductItem from "./ProductItem";
 
 interface ProductListProps {
 	products: Product[];
-	onPressProduct: (product: Product) => void;
+	onPressProduct?: (product: Product) => void;
+	onEditProduct?: (product: Product) => void;
 	loading?: boolean;
 }
 
 export default function ProductList({
 	products,
 	onPressProduct,
+	onEditProduct,
 	loading = false,
 }: ProductListProps) {
 	const handleProductPress = (product: Product) => {
-		onPressProduct(product);
+		onPressProduct?.(product);
 	};
 
 	if (loading) {
@@ -50,6 +52,7 @@ export default function ProductList({
 					key={product.id}
 					product={product}
 					onPress={handleProductPress}
+					onEdit={onEditProduct}
 				/>
 			))}
 

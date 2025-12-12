@@ -1,67 +1,43 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
-import { useFocusEffect } from "expo-router";
-import { getAllProducts, searchProducts } from "@/services/productService";
-import type { Product } from "@/types";
+import { useEffect, useMemo, useState } from "react";
+import { useProductStore } from "@/store/productStore";
 
+/**
+ * Hook for managing product list UI state and search functionality.
+ * Reads data from Zustand store instead of fetching on every navigation.
+ * Provides debounced local search filtering for optimal UX.
+ */
 export function useProducts() {
 	const [searchText, setSearchText] = useState("");
-	const [products, setProducts] = useState<Product[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-	const loadProducts = useCallback(async () => {
-		try {
-			setLoading(true);
-			const allProducts = await getAllProducts();
-			setProducts(allProducts);
-		} catch (error) {
-			console.error("Error loading products:", error);
-			Alert.alert("Error", "Failed to load products");
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+	// Subscribe to store state for products and loading
+	const products = useProductStore((state) => state.products);
+	const loading = useProductStore((state) => state.loading);
 
-	const handleSearchProducts = useCallback(async (query: string) => {
-		try {
-			setLoading(true);
-			const searchResults = await searchProducts(query);
-			setProducts(searchResults);
-		} catch (error) {
-			console.error("Error searching products:", error);
-			Alert.alert("Error", "Failed to search products");
-		} finally {
-			setLoading(false);
-		}
-	}, []);
-
+	// Debounce search text
 	useEffect(() => {
-		loadProducts();
-	}, [loadProducts]);
-
-	useFocusEffect(
-		useCallback(() => {
-			loadProducts();
-		}, [loadProducts]),
-	);
-
-	useEffect(() => {
-		const debounceTimer = setTimeout(() => {
-			if (searchText.trim()) {
-				handleSearchProducts(searchText);
-			} else {
-				loadProducts();
-			}
+		const timer = setTimeout(() => {
+			setDebouncedSearchText(searchText);
 		}, 300);
+		return () => clearTimeout(timer);
+	}, [searchText]);
 
-		return () => clearTimeout(debounceTimer);
-	}, [searchText, loadProducts, handleSearchProducts]);
+	// Compute filtered products using useMemo
+	// Filter locally to avoid dependency issues with store search function
+	const filteredProducts = useMemo(() => {
+		if (!debouncedSearchText.trim()) {
+			return products;
+		}
+		const lowerQuery = debouncedSearchText.toLowerCase();
+		return products.filter((product) =>
+			product.name.toLowerCase().includes(lowerQuery),
+		);
+	}, [debouncedSearchText, products]);
 
 	return {
 		searchText,
 		setSearchText,
-		products,
+		products: filteredProducts,
 		loading,
-		loadProducts,
 	};
 }

@@ -44,4 +44,8 @@ export const productsStyles = StyleSheet.create({
 		color: "#13EC6A",
 		marginRight: 12,
 	},
+	editButton: {
+		marginRight: 8,
+		padding: 4,
+	},
 });

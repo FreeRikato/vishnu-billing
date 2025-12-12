@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Alert, View } from "react-native";
 import ContactHeader from "@/components/ContactHeader";
 import ContactList from "@/components/ContactList";
@@ -9,13 +10,14 @@ import { contactsStyles } from "../../styles/contacts";
 
 export default function ContactScreen() {
 	const { searchText, setSearchText, contacts, loading } = useContacts();
+	const router = useRouter();
 
 	const handleSettingsPress = () => {
 		Alert.alert("Settings", "Settings functionality coming soon!");
 	};
 
 	const handleEditContact = (contact: Contact) => {
-		Alert.alert("Edit Contact", `Editing ${contact.name}`);
+		router.push(`/contact/${contact.id}`);
 	};
 
 	const handlePressContact = (contact: Contact) => {
@@ -26,7 +28,7 @@ export default function ContactScreen() {
 	};
 
 	const handleAddContact = () => {
-		Alert.alert("Add Contact", "Add contact functionality coming soon!");
+		router.push("/contact/create");
 	};
 
 	return (

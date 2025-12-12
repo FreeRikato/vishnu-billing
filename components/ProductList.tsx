@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import type { Product } from "@/types";
 import { contactsStyles } from "../styles/contacts";
 import ProductItem from "./ProductItem";
@@ -6,15 +6,38 @@ import ProductItem from "./ProductItem";
 interface ProductListProps {
 	products: Product[];
 	onPressProduct: (product: Product) => void;
+	loading?: boolean;
 }
 
 export default function ProductList({
 	products,
 	onPressProduct,
+	loading = false,
 }: ProductListProps) {
 	const handleProductPress = (product: Product) => {
 		onPressProduct(product);
 	};
+
+	if (loading) {
+		return (
+			<View style={contactsStyles.contactList}>
+				<View style={contactsStyles.loadingContainer}>
+					<ActivityIndicator size="large" color="#007AFF" />
+					<Text style={contactsStyles.loadingText}>Loading products...</Text>
+				</View>
+			</View>
+		);
+	}
+
+	if (products.length === 0) {
+		return (
+			<View style={contactsStyles.contactList}>
+				<View style={contactsStyles.emptyContainer}>
+					<Text style={contactsStyles.emptyText}>No products found</Text>
+				</View>
+			</View>
+		);
+	}
 
 	return (
 		<ScrollView

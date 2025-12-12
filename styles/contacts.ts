@@ -55,7 +55,7 @@ export const contactsStyles = StyleSheet.create({
 	contactList: {
 		flex: 1,
 		paddingHorizontal: 16,
-		paddingTop: 16,
+		paddingTop: 5,
 	},
 	contactListContent: {
 		paddingTop: 8,
@@ -120,6 +120,29 @@ export const contactsStyles = StyleSheet.create({
 	},
 	bottomSpacer: {
 		height: 32,
+	},
+	loadingContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingVertical: 40,
+	},
+	loadingText: {
+		color: "#FFFFFF",
+		fontSize: 16,
+		marginTop: 16,
+		fontWeight: "500",
+	},
+	emptyContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingVertical: 40,
+	},
+	emptyText: {
+		color: "#9CA3AF",
+		fontSize: 16,
+		fontWeight: "500",
 	},
 	fab: {
 		position: "absolute",

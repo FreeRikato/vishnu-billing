@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
-import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
+import { contactsStyles } from "../styles/contacts";
 
 interface ContactItemProps {
 	contact: Contact;

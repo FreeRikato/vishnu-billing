@@ -5,8 +5,8 @@ import ContactHeader from "@/components/ContactHeader";
 import ContactList from "@/components/ContactList";
 import FloatingAddActionButton from "@/components/FloatingAddActionButton";
 import SearchBar from "@/components/SearchBar";
-import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
+import { contactsStyles } from "../../styles/contacts";
 
 export default function ContactScreen() {
 	const [searchText, setSearchText] = useState("");
@@ -46,7 +46,7 @@ export default function ContactScreen() {
 				onEditContact={handleEditContact}
 				onPressContact={handlePressContact}
 			/>
-			<FloatingAddActionButton onPress={handleAddContact} />
+			<FloatingAddActionButton onPress={handleAddContact} small />
 		</View>
 	);
 }

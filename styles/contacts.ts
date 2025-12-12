@@ -7,16 +7,15 @@ export const contactsStyles = StyleSheet.create({
 	},
 	header: {
 		paddingHorizontal: 20,
-		paddingTop: 20,
-		paddingBottom: 16,
 		zIndex: 10,
 		backgroundColor: "#000000",
+		paddingTop: 10,
+		paddingBottom: 10,
 	},
 	headerTop: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 16,
 	},
 	headerTitle: {
 		fontSize: 32,
@@ -34,6 +33,7 @@ export const contactsStyles = StyleSheet.create({
 	searchContainer: {
 		position: "relative",
 		width: "100%",
+		marginBottom: 10,
 	},
 	searchIcon: {
 		position: "absolute",
@@ -136,6 +136,23 @@ export const contactsStyles = StyleSheet.create({
 		shadowOpacity: 0.3,
 		shadowRadius: 8,
 		elevation: 8,
+		zIndex: 20,
+	},
+	fabSmall: {
+		position: "absolute",
+		bottom: 30,
+		right: 20,
+		width: 56,
+		height: 56,
+		borderRadius: 28,
+		backgroundColor: "#13EC6A",
+		justifyContent: "center",
+		alignItems: "center",
+		shadowColor: "#13EC6A",
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.25,
+		shadowRadius: 6,
+		elevation: 6,
 		zIndex: 20,
 	},
 	bottomNav: {

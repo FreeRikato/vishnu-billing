@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Alert, StatusBar, View } from "react-native";
 import { mockProducts } from "@/assets";
-import { ProductHeader, ProductList, SearchBar } from "@/components";
-import { contactsStyles } from "@/styles";
+import {
+	FloatingAddActionButton,
+	ProductHeader,
+	ProductList,
+	SearchBar,
+} from "@/components";
 import type { Product } from "@/types";
+import { contactsStyles } from "../../styles/contacts";
 
 export default function ProductScreen() {
 	const [searchText, setSearchText] = useState("");
@@ -18,6 +23,10 @@ export default function ProductScreen() {
 			`Price: $${product.price.toFixed(2)}\nUnit: ${product.unit}`,
 			[{ text: "OK", style: "default" }],
 		);
+	};
+
+	const handleAddProduct = () => {
+		Alert.alert("Add Product", "Add product functionality coming soon!");
 	};
 
 	// Filter products based on search text
@@ -41,6 +50,8 @@ export default function ProductScreen() {
 				products={filteredProducts}
 				onPressProduct={handleProductPress}
 			/>
+
+			<FloatingAddActionButton onPress={handleAddProduct} small />
 		</View>
 	);
 }

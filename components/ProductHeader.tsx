@@ -5,5 +5,5 @@ interface ProductHeaderProps {
 }
 
 export default function ProductHeader({ onSettingsPress }: ProductHeaderProps) {
-	return <ContactHeader onSettingsPress={onSettingsPress} />;
+	return <ContactHeader onSettingsPress={onSettingsPress} title="Products" />;
 }

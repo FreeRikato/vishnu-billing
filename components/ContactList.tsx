@@ -1,6 +1,6 @@
 import { ScrollView, View } from "react-native";
-import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
+import { contactsStyles } from "../styles/contacts";
 import ContactItem from "./ContactItem";
 
 interface ContactListProps {

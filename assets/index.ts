@@ -1,2 +1,3 @@
-export * from "./data/contactsData";
-export * from "./data/productsData";
+export * from "./data/contacts";
+export * from "./data/invoices";
+export * from "./data/products";

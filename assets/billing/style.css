@@ -1,0 +1,182 @@
+:root {
+  --theme-green: #006837; /* The dark green from the bill */
+  --border-width: 1.5px;
+  --font-main: Arial, Helvetica, sans-serif;
+  --font-serif: "Times New Roman", Times, serif;
+}
+
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+body {
+  font-family: var(--font-main); /* Use the main font everywhere by default */
+  background-color: #ffffff; /* Match clean white paper background */
+  padding: 10px; /* Small visual margin while viewing; will be ignored on print margins */
+}
+
+.bill-container {
+  /* Use a slightly wider canvas to better approximate the physical bill aspect ratio */
+  width: 1000px;
+  background-color: #fff;
+  margin: 0 auto;
+  border: 2px solid var(--theme-green); /* Strong outer border like printed bill */
+  color: var(--theme-green);
+  /* Remove any obvious "card" feel; printed bills are flat on paper */
+  box-shadow: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 5px;
+  vertical-align: top;
+}
+
+/* --- Left Section (Company Info) --- */
+.left-panel {
+  /* Make the company-info side slightly wider as in the physical bill */
+  width: 60%;
+  border-right: 1px solid var(--theme-green);
+  position: relative;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  padding-bottom: 5px;
+}
+
+.text-details {
+  text-align: center;
+  flex-grow: 1;
+}
+
+h1 {
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 900;
+  font-size: 26px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0.5px 0.5px 0px currentColor;
+}
+
+.subtitle {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 5px 0;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20px;
+}
+
+.address-with-logo {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.logo-box {
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
+  border: 1px dashed #ccc; /* Remove this if using real image */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 50%;
+}
+
+.address {
+  font-size: 12px;
+  line-height: 1.4;
+  /* Use the same green as the rest of the header for a closer match to the real bill */
+  color: var(--theme-green);
+  font-weight: 600;
+  text-align: left;
+}
+
+.mobile {
+  font-weight: bold;
+  font-size: 13px;
+  margin-top: 4px;
+  color: var(--theme-green);
+}
+
+/* --- Right Section (Inputs) --- */
+.right-panel {
+  width: 40%;
+  padding: 10px 14px; /* Slightly tighter padding to better mimic printed spacing */
+  font-size: 13px;
+  font-weight: bold; /* Match the strong printed labels */
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px; /* Reduce gap between Bill/Date and the M/s lines */
+}
+
+.stamped-number {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 22px;
+  color: #444;
+  letter-spacing: 2px;
+  font-weight: bold;
+  transform: rotate(-1deg); /* Slight rotation for stamp effect */
+}
+
+.input-lines {
+  margin-top: 10px;
+}
+
+.line-row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 14px; /* Slightly tighter vertical rhythm between dotted lines */
+}
+
+.dotted-line {
+  flex-grow: 1;
+  /* Use a finer dotted rule that is closer to the pre‑printed stationery */
+  border-bottom: 1px dotted var(--theme-green);
+  margin-left: 5px;
+}
+
+/* --- Footer Rows (DL, GSTIN) --- */
+.footer-row {
+  border-top: 1px solid var(--theme-green);
+  font-size: 11px; /* Slightly smaller footer text like on the physical bill */
+  font-weight: bold; /* Keep strong emphasis for statutory info */
+}
+
+.footer-cell {
+  /* Make footer more compact to match the real bill’s tight layout */
+  padding: 3px 8px;
+}
+
+.center-text {
+  text-align: center;
+}
+
+.bold-label {
+  font-weight: bold;
+}
+
+/* Helper for the double border effect at the very bottom of left side */
+.split-row {
+  border-top: 1px solid var(--theme-green);
+}

@@ -48,7 +48,7 @@ export default function FloatingShareButton({
 		},
 		selectedCountText: {
 			fontSize: 12,
-			fontWeight: "bold",
+			fontWeight: "700" as const,
 			color: "#ffffff",
 		},
 	};

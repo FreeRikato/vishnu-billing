@@ -71,13 +71,13 @@ export default function InvoiceItem({
 		},
 		customerName: {
 			fontSize: 20,
-			fontWeight: "bold",
+			fontWeight: "700" as const,
 			color: isDark ? "#ffffff" : "#1f2937",
 			flex: 1,
 		},
 		amount: {
 			fontSize: 20,
-			fontWeight: "bold",
+			fontWeight: "700" as const,
 		},
 		amountPaid: {
 			color: isDark ? "#13ec6a" : "#059669",
@@ -94,7 +94,7 @@ export default function InvoiceItem({
 		detailText: {
 			fontSize: 14,
 			color: isDark ? "#9ca3af" : "#6b7280",
-			fontWeight: "500",
+			fontWeight: "500" as const,
 		},
 		statusBadge: {
 			alignSelf: "flex-start" as const,
@@ -117,7 +117,7 @@ export default function InvoiceItem({
 		},
 		statusText: {
 			fontSize: 12,
-			fontWeight: "bold",
+			fontWeight: "700" as const,
 			textTransform: "uppercase" as const,
 			letterSpacing: 0.5,
 		},

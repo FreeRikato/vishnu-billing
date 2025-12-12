@@ -1,14 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
-
-export interface Contact {
-	id: number;
-	name: string;
-	phone: string;
-	initials: string;
-	color: string;
-}
+import type { Contact } from "@/types";
 
 interface ContactItemProps {
 	contact: Contact;

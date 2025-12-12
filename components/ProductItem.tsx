@@ -1,0 +1,32 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { Text, TouchableOpacity, View } from "react-native";
+import { productsStyles } from "@/styles/products";
+import type { Product } from "@/types";
+
+interface ProductItemProps {
+	product: Product;
+	onPress: (product: Product) => void;
+}
+
+export default function ProductItem({ product, onPress }: ProductItemProps) {
+	return (
+		<TouchableOpacity
+			style={productsStyles.productItem}
+			activeOpacity={0.7}
+			onPress={() => onPress(product)}
+		>
+			<View style={productsStyles.productInfo}>
+				<View style={productsStyles.productNameContainer}>
+					<Text style={productsStyles.productName}>{product.name}</Text>
+				</View>
+				<Text style={productsStyles.productUnit}>{product.unit}</Text>
+			</View>
+			<View style={productsStyles.productRight}>
+				<Text style={productsStyles.productPrice}>
+					${product.price.toFixed(2)}
+				</Text>
+				<MaterialIcons name="chevron-right" size={24} color="#666" />
+			</View>
+		</TouchableOpacity>
+	);
+}

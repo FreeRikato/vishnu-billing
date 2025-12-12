@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 
-export default function HomeScreen() {
+export default function TabFourScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home</Text>
+      <Text style={styles.title}>Product</Text>
     </View>
   );
 }

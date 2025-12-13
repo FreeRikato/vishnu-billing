@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { Alert, StatusBar, View } from "react-native";
+import { Alert, StatusBar } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	FloatingAddActionButton,
 	ProductHeader,
@@ -22,12 +23,20 @@ export default function ProductScreen() {
 		router.push(`/product/${product.id}`);
 	};
 
+	const handleProductPress = (product: Product) => {
+		Alert.alert(
+			"Product Details",
+			`Name: ${product.name}\nPrice: $${product.price.toFixed(2)}\nUnit: ${product.unit}`,
+			[{ text: "OK", style: "default" }]
+		);
+	};
+
 	const handleAddProduct = () => {
 		router.push("/product/create");
 	};
 
 	return (
-		<View style={contactsStyles.container}>
+		<SafeAreaView style={contactsStyles.container} edges={["top", "left", "right"]}>
 			<StatusBar barStyle="light-content" backgroundColor="#000000" />
 
 			<ProductHeader onSettingsPress={handleSettingsPress} />
@@ -40,11 +49,12 @@ export default function ProductScreen() {
 
 			<ProductList
 				products={products}
+				onPressProduct={handleProductPress}
 				onEditProduct={handleEditProduct}
 				loading={loading}
 			/>
 
 			<FloatingAddActionButton onPress={handleAddProduct} small />
-		</View>
+		</SafeAreaView>
 	);
 }

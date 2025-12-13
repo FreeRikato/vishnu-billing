@@ -32,16 +32,17 @@ export default function ProductItem({
 				</Text>
 				{onEdit && (
 					<TouchableOpacity
-						style={productsStyles.editButton}
 						onPress={(e) => {
 							e.stopPropagation();
 							onEdit(product);
 						}}
 					>
-						<MaterialIcons name="edit" size={28} color="#13EC6A" />
+						<MaterialIcons name="chevron-right" size={24} color="#666" />
 					</TouchableOpacity>
 				)}
-				<MaterialIcons name="chevron-right" size={24} color="#666" />
+				{!onEdit && (
+					<MaterialIcons name="chevron-right" size={24} color="#666" />
+				)}
 			</View>
 		</TouchableOpacity>
 	);

@@ -10,6 +10,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { createProduct } from "@/services/productService";
 import { useProductStore } from "@/store/productStore";
 
@@ -71,7 +72,7 @@ export default function CreateProductScreen() {
 	};
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
 			<Stack.Screen
 				options={{
 					headerShown: false, // We'll use custom header
@@ -114,7 +115,6 @@ export default function CreateProductScreen() {
 								onChangeText={(text) =>
 									setFormData((prev) => ({ ...prev, name: text }))
 								}
-								autoFocus
 							/>
 							<MaterialIcons
 								name="edit"
@@ -165,7 +165,7 @@ export default function CreateProductScreen() {
 					</View>
 				</View>
 			</ScrollView>
-		</View>
+		</SafeAreaView>
 	);
 }
 
@@ -253,13 +253,13 @@ const styles = StyleSheet.create({
 	input: {
 		width: "100%",
 		height: 72,
-		backgroundColor: "#FFFFFF",
+		backgroundColor: "#1A1A1A",
 		borderWidth: 2,
-		borderColor: "#E5E7EB",
+		borderColor: "#333333",
 		borderRadius: 16,
 		paddingHorizontal: 24,
 		fontSize: 20,
-		color: "#000000",
+		color: "#FFFFFF",
 		fontWeight: "500",
 	},
 	inputIcon: {

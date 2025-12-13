@@ -5,6 +5,7 @@ import {
 	useColorScheme,
 	View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	ContactHeader,
 	FloatingShareButton,
@@ -76,7 +77,7 @@ export default function InvoiceScreen() {
 	});
 
 	return (
-		<View style={styles.safeArea}>
+		<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
 			<StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 			<View style={styles.container}>
 				{/* Header */}
@@ -105,6 +106,6 @@ export default function InvoiceScreen() {
 					onPress={handleSharePress}
 				/>
 			</View>
-		</View>
+		</SafeAreaView>
 	);
 }

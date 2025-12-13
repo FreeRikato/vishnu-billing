@@ -1,21 +1,17 @@
-import {
-	DarkTheme,
-	DefaultTheme,
-	ThemeProvider,
-} from "@react-navigation/native";
+import { db, expoDb } from "@/db/client"; // Import expoDb
+import migrations from "@/drizzle/migrations";
+import { useColorScheme } from "@/hooks";
+import { useContactStore } from "@/store/contactStore";
+import { useProductStore } from "@/store/productStore";
+import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
-import { db, expoDb } from "@/db/client"; // Import expoDb
-import migrations from "@/drizzle/migrations";
-import { useColorScheme } from "@/hooks";
-import { useContactStore } from "@/store/contactStore";
-import { useProductStore } from "@/store/productStore";
 import "react-native-reanimated";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export const unstable_settings = {
 	anchor: "(tabs)",
@@ -59,38 +55,37 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+		<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DarkTheme}>
+			<StatusBar style="light" animated />
 			<SafeAreaProvider>
-				<SafeAreaView style={{ flex: 1 }}>
-					<Stack>
-						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-						<Stack.Screen
-							name="contact/[id]"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="contact/create"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="product/[id]"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="product/create"
-							options={{
-								headerShown: false,
-							}}
-						/>
-					</Stack>
-					<StatusBar style="auto" />
-				</SafeAreaView>
+				<Stack>
+					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+					<Stack.Screen
+						name="contact/[id]"
+						options={{
+							headerShown: false,
+						}}
+					/>
+					<Stack.Screen
+						name="contact/create"
+						options={{
+							headerShown: false,
+						}}
+					/>
+					<Stack.Screen
+						name="product/[id]"
+						options={{
+							headerShown: false,
+						}}
+					/>
+					<Stack.Screen
+						name="product/create"
+						options={{
+							headerShown: false,
+						}}
+					/>
+				</Stack>
+				<StatusBar style="auto" />
 			</SafeAreaProvider>
 		</ThemeProvider>
 	);

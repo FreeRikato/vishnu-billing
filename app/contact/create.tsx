@@ -10,6 +10,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { createContact } from "@/services/contactService";
 import { useContactStore } from "@/store/contactStore";
 
@@ -100,7 +101,7 @@ export default function CreateContactScreen() {
 	};
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
 			<Stack.Screen
 				options={{
 					headerShown: false, // We'll use custom header
@@ -155,7 +156,6 @@ export default function CreateContactScreen() {
 								placeholder="e.g. John Smith"
 								value={formData.name}
 								onChangeText={handleNameChange}
-								autoFocus
 							/>
 							<MaterialIcons
 								name="edit"
@@ -232,7 +232,7 @@ export default function CreateContactScreen() {
 					</View>
 				</View>
 			</ScrollView>
-		</View>
+		</SafeAreaView>
 	);
 }
 
@@ -336,18 +336,19 @@ const styles = StyleSheet.create({
 	input: {
 		width: "100%",
 		height: 72,
-		backgroundColor: "#FFFFFF",
+		backgroundColor: "#1A1A1A",
 		borderWidth: 2,
-		borderColor: "#E5E7EB",
+		borderColor: "#333333",
 		borderRadius: 16,
 		paddingHorizontal: 24,
 		fontSize: 20,
-		color: "#000000",
+		color: "#FFFFFF",
 		fontWeight: "500",
 	},
 	disabledInput: {
-		backgroundColor: "#F3F4F6",
-		color: "#6B7280",
+		backgroundColor: "#2A2A2A",
+		color: "#9CA3AF",
+		borderColor: "#333333",
 	},
 	inputIcon: {
 		position: "absolute",

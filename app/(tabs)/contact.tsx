@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ContactHeader from "@/components/ContactHeader";
 import ContactList from "@/components/ContactList";
 import FloatingAddActionButton from "@/components/FloatingAddActionButton";
@@ -32,7 +33,7 @@ export default function ContactScreen() {
 	};
 
 	return (
-		<View style={contactsStyles.container}>
+		<SafeAreaView style={contactsStyles.container} edges={["top", "left", "right"]}>
 			<ContactHeader onSettingsPress={handleSettingsPress} />
 			<SearchBar value={searchText} onChangeText={setSearchText} />
 			<ContactList
@@ -42,6 +43,6 @@ export default function ContactScreen() {
 				loading={loading}
 			/>
 			<FloatingAddActionButton onPress={handleAddContact} small />
-		</View>
+		</SafeAreaView>
 	);
 }

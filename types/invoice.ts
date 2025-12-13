@@ -13,13 +13,20 @@ export interface Customer {
   name: string;
 }
 
+export type DiscountType = "percent" | "fixed";
+
+export interface Discount {
+  value: number;
+  type: DiscountType;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
   quantity: number;
-  discount?: number;
+  discount?: Discount;
 }
 
 export interface InvoiceSummary {

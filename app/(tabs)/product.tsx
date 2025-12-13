@@ -27,7 +27,7 @@ export default function ProductScreen() {
 		Alert.alert(
 			"Product Details",
 			`Name: ${product.name}\nPrice: $${product.price.toFixed(2)}\nUnit: ${product.unit}`,
-			[{ text: "OK", style: "default" }]
+			[{ text: "OK", style: "default" }],
 		);
 	};
 
@@ -36,7 +36,10 @@ export default function ProductScreen() {
 	};
 
 	return (
-		<SafeAreaView style={contactsStyles.container} edges={["top", "left", "right"]}>
+		<SafeAreaView
+			style={contactsStyles.container}
+			edges={["top", "left", "right"]}
+		>
 			<StatusBar barStyle="light-content" backgroundColor="#000000" />
 
 			<ProductHeader onSettingsPress={handleSettingsPress} />

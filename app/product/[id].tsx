@@ -155,7 +155,10 @@ export default function ProductDetailScreen() {
 
 	if (loading) {
 		return (
-			<SafeAreaView style={styles.loadingContainer} edges={["top", "left", "right"]}>
+			<SafeAreaView
+				style={styles.loadingContainer}
+				edges={["top", "left", "right"]}
+			>
 				<ActivityIndicator size="large" color="#13EC6A" />
 				<Text style={styles.loadingText}>Loading product...</Text>
 			</SafeAreaView>
@@ -164,7 +167,10 @@ export default function ProductDetailScreen() {
 
 	if (!product) {
 		return (
-			<SafeAreaView style={styles.errorContainer} edges={["top", "left", "right"]}>
+			<SafeAreaView
+				style={styles.errorContainer}
+				edges={["top", "left", "right"]}
+			>
 				<Text style={styles.errorText}>Product not found</Text>
 				<TouchableOpacity
 					style={styles.backButton}

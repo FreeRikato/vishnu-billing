@@ -183,7 +183,10 @@ export default function ContactDetailScreen() {
 
 	if (loading) {
 		return (
-			<SafeAreaView style={styles.loadingContainer} edges={["top", "left", "right"]}>
+			<SafeAreaView
+				style={styles.loadingContainer}
+				edges={["top", "left", "right"]}
+			>
 				<ActivityIndicator size="large" color="#13EC6A" />
 				<Text style={styles.loadingText}>Loading contact...</Text>
 			</SafeAreaView>
@@ -192,7 +195,10 @@ export default function ContactDetailScreen() {
 
 	if (!contact) {
 		return (
-			<SafeAreaView style={styles.errorContainer} edges={["top", "left", "right"]}>
+			<SafeAreaView
+				style={styles.errorContainer}
+				edges={["top", "left", "right"]}
+			>
 				<Text style={styles.errorText}>Contact not found</Text>
 				<TouchableOpacity
 					style={styles.backButton}

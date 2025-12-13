@@ -33,7 +33,10 @@ export default function ContactScreen() {
 	};
 
 	return (
-		<SafeAreaView style={contactsStyles.container} edges={["top", "left", "right"]}>
+		<SafeAreaView
+			style={contactsStyles.container}
+			edges={["top", "left", "right"]}
+		>
 			<ContactHeader onSettingsPress={handleSettingsPress} />
 			<SearchBar value={searchText} onChangeText={setSearchText} />
 			<ContactList

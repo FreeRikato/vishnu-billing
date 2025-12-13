@@ -84,6 +84,13 @@ export default function RootLayout() {
 							headerShown: false,
 						}}
 					/>
+					<Stack.Screen
+						name="invoice/create"
+						options={{
+							headerShown: false,
+							presentation: "modal",
+						}}
+					/>
 				</Stack>
 				<StatusBar style="auto" />
 			</SafeAreaProvider>

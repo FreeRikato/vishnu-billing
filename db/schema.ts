@@ -19,3 +19,34 @@ export const Contact = sqliteTable("contact", {
 	initials: text().notNull(),
 	color: text().notNull(),
 });
+
+export const Invoice = sqliteTable("invoice", {
+	id: int().primaryKey({ autoIncrement: true }),
+	invoiceNumber: text().notNull().unique(),
+	customerId: int()
+		.notNull()
+		.references(() => Contact.id),
+	customerName: text().notNull(),
+	customerPhone: text().notNull(),
+	subtotal: real().notNull(),
+	totalDiscount: real().notNull(),
+	tax: real().notNull(),
+	total: real().notNull(),
+	date: text().notNull(),
+	status: text().notNull().default("unpaid"),
+	pdfPath: text(),
+});
+
+export const InvoiceItem = sqliteTable("invoice_item", {
+	id: int().primaryKey({ autoIncrement: true }),
+	invoiceId: int()
+		.notNull()
+		.references(() => Invoice.id),
+	productId: int().references(() => Product.id),
+	name: text().notNull(),
+	description: text().notNull(),
+	price: real().notNull(),
+	quantity: int().notNull(),
+	discountValue: real(),
+	discountType: text(),
+});

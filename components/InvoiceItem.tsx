@@ -4,7 +4,7 @@ import type { Invoice } from "@/types";
 
 interface InvoiceItemProps {
 	item: Invoice;
-	onToggle?: (id: string) => void;
+	onToggle?: (id: number) => void;
 	onLongPress?: () => void;
 	onPress?: () => void;
 	selectionMode: boolean;

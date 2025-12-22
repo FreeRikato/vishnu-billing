@@ -5,9 +5,9 @@ import type { InvoiceProduct } from "@/types/invoice";
 
 interface ProductItemProps {
 	product: InvoiceProduct;
-	onQuantityChange: (productId: string, change: number) => void;
-	onRemoveProduct: (productId: string) => void;
-	onAddDiscount: (productId: string) => void;
+	onQuantityChange: (productId: number, change: number) => void;
+	onRemoveProduct: (productId: number) => void;
+	onAddDiscount: (productId: number) => void;
 }
 
 export function ProductItem({

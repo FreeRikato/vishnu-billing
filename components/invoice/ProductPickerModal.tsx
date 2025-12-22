@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	FlatList,
 	Pressable,
@@ -17,7 +17,7 @@ interface ProductPickerModalProps {
 	onClose: () => void;
 	onProductSelect: (product: InvoiceProduct) => void;
 	products: InvoiceProduct[];
-	selectedProductIds?: string[];
+	selectedProductIds?: number[];
 }
 
 export function ProductPickerModal({
@@ -27,9 +27,14 @@ export function ProductPickerModal({
 	products,
 	selectedProductIds = [],
 }: ProductPickerModalProps) {
-	const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(
+	const [localSelectedIds, setLocalSelectedIds] = useState<Set<number>>(
 		new Set(selectedProductIds),
 	);
+
+	// Sync local state when selectedProductIds prop changes
+	useEffect(() => {
+		setLocalSelectedIds(new Set(selectedProductIds));
+	}, [selectedProductIds]);
 
 	// Filter function for products
 	const filterProduct = useCallback(
@@ -106,7 +111,7 @@ export function ProductPickerModal({
 		>
 			<FlatList
 				data={filteredProducts}
-				keyExtractor={(item) => item.id}
+				keyExtractor={(item) => String(item.id)}
 				renderItem={renderProductItem}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={styles.productListContent}

@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		color: "#FFFFFF",
 		fontWeight: "500",
+		textAlignVertical: "top", // Align text to top on Android for multiline inputs
 	},
 	disabledInput: {
 		backgroundColor: "#2A2A2A",

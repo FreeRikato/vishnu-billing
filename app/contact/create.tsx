@@ -3,7 +3,6 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
-import { createContact } from "@/services/contactService";
 import { useContactStore } from "@/store/contactStore";
 
 const COLORS = [
@@ -69,14 +68,13 @@ export default function CreateContactScreen() {
 		}
 
 		try {
-			const newContact = await createContact({
+			// Use store method which wraps service and updates state
+			const newContact = await useContactStore.getState().createContact({
 				name: formData.name,
 				phone: formData.phone,
 			});
 
 			if (newContact) {
-				// Use efficient state update instead of refresh
-				useContactStore.getState().addContact(newContact);
 				Alert.alert("Success", "Contact created successfully");
 				router.back();
 			} else {

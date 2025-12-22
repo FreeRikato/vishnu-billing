@@ -3,17 +3,13 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
-import {
-	deleteProduct,
-	getProductById,
-	updateProduct,
-} from "@/services/productService";
+import { getProductById } from "@/services/productService";
 import { useProductStore } from "@/store/productStore";
 import type { Product } from "@/types";
 
 export default function ProductDetailScreen() {
 	const router = useRouter();
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id } = useLocalSearchParams();
 
 	// State for product data and loading
 	const [product, setProduct] = useState<Product | null>(null);
@@ -29,8 +25,11 @@ export default function ProductDetailScreen() {
 	// Load existing product data
 	const loadProduct = useCallback(async () => {
 		try {
-			const productId = Number(id);
-			if (productId > 0) {
+			// Safely parse ID
+			const idString = Array.isArray(id) ? id[0] : id;
+			const productId = Number(idString);
+
+			if (productId && !Number.isNaN(productId)) {
 				const productData = await getProductById(productId);
 				if (productData) {
 					setProduct(productData);
@@ -85,15 +84,16 @@ export default function ProductDetailScreen() {
 		}
 
 		try {
-			const updatedProduct = await updateProduct(product.id, {
-				name: formData.name,
-				price: priceValue,
-				unit: formData.unit,
-			});
+			// Use store method which wraps service and updates state
+			const updatedProduct = await useProductStore
+				.getState()
+				.updateProduct(product.id, {
+					name: formData.name,
+					price: priceValue,
+					unit: formData.unit,
+				});
 
 			if (updatedProduct) {
-				// Use efficient state update instead of refresh
-				useProductStore.getState().updateProduct(product.id, updatedProduct);
 				Alert.alert("Success", "Product updated successfully");
 				router.back();
 			} else {
@@ -125,10 +125,11 @@ export default function ProductDetailScreen() {
 					style: "destructive",
 					onPress: async () => {
 						try {
-							const success = await deleteProduct(product.id);
+							// Use store method which wraps service and updates state
+							const success = await useProductStore
+								.getState()
+								.deleteProduct(product.id);
 							if (success) {
-								// Use efficient state update instead of refresh
-								useProductStore.getState().deleteProduct(product.id);
 								Alert.alert("Success", "Product deleted successfully");
 								router.back();
 							} else {

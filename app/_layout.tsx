@@ -1,3 +1,4 @@
+import "react-native-reanimated";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
@@ -9,8 +10,9 @@ import { db, expoDb } from "@/db/client"; // Import expoDb
 import migrations from "@/drizzle/migrations";
 import { useColorScheme } from "@/hooks";
 import { useContactStore } from "@/store/contactStore";
+import { useInvoiceStore } from "@/store/invoiceStore";
 import { useProductStore } from "@/store/productStore";
-import "react-native-reanimated";
+import { useUserStore } from "@/store/userStore";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export const unstable_settings = {
@@ -26,16 +28,21 @@ export default function RootLayout() {
 
 	// Initialize Zustand stores after successful database migration
 	// This ensures data is loaded once on app start, not on every navigation
+	const ensureDefaultUser = useUserStore((state) => state.ensureDefault);
 	const fetchContacts = useContactStore((state) => state.fetchAll);
 	const fetchProducts = useProductStore((state) => state.fetchAll);
+	const fetchInvoices = useInvoiceStore((state) => state.fetchAll);
 
 	useEffect(() => {
 		if (success) {
-			// Fetch initial data for both contacts and products
+			// Ensure default user exists first
+			ensureDefaultUser();
+			// Fetch initial data for contacts, products, and invoices
 			fetchContacts();
 			fetchProducts();
+			fetchInvoices();
 		}
-	}, [success, fetchContacts, fetchProducts]);
+	}, [success, ensureDefaultUser, fetchContacts, fetchProducts, fetchInvoices]);
 
 	if (error) {
 		return (
@@ -89,6 +96,12 @@ export default function RootLayout() {
 						options={{
 							headerShown: false,
 							presentation: "modal",
+						}}
+					/>
+					<Stack.Screen
+						name="invoice/[id]"
+						options={{
+							headerShown: false,
 						}}
 					/>
 				</Stack>

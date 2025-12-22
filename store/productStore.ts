@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { getAllProducts } from "@/services/productService";
+import {
+	createProduct as createProductService,
+	deleteProduct as deleteProductService,
+	getAllProducts,
+	updateProduct as updateProductService,
+} from "@/services/productService";
 import type { Product } from "@/types";
 
 interface ProductStore {
@@ -8,9 +13,28 @@ interface ProductStore {
 	fetchAll: () => Promise<void>;
 	refresh: () => Promise<void>;
 	search: (query: string) => Product[];
-	addProduct: (product: Product) => void;
-	updateProduct: (id: number, product: Product) => void;
-	deleteProduct: (id: number) => void;
+	/**
+	 * Creates a new product by calling the service and updating the store.
+	 * @param product - Product data without id
+	 * @returns The created product or null if failed
+	 */
+	createProduct: (product: Omit<Product, "id">) => Promise<Product | null>;
+	/**
+	 * Updates a product by calling the service and updating the store.
+	 * @param id - Product ID
+	 * @param product - Partial product data to update
+	 * @returns The updated product or null if failed
+	 */
+	updateProduct: (
+		id: number,
+		product: Partial<Omit<Product, "id">>,
+	) => Promise<Product | null>;
+	/**
+	 * Deletes a product by calling the service and updating the store.
+	 * @param id - Product ID
+	 * @returns true if successful, false otherwise
+	 */
+	deleteProduct: (id: number) => Promise<boolean>;
 }
 
 /**
@@ -45,33 +69,57 @@ export const useProductStore = create<ProductStore>((set, get) => ({
 	},
 
 	/**
-	 * Adds a single product to the store efficiently without re-fetching from DB.
-	 * Use this after creating a product to avoid O(N) database reads.
+	 * Creates a new product by calling the service and updating the store.
 	 */
-	addProduct: (product: Product) => {
-		set((state) => ({ products: [...state.products, product] }));
+	createProduct: async (product: Omit<Product, "id">) => {
+		try {
+			const newProduct = await createProductService(product);
+			if (newProduct) {
+				set((state) => ({ products: [...state.products, newProduct] }));
+			}
+			return newProduct;
+		} catch (error) {
+			console.error("Error creating product:", error);
+			return null;
+		}
 	},
 
 	/**
-	 * Updates a single product in the store efficiently without re-fetching from DB.
-	 * Use this after updating a product to avoid O(N) database reads.
+	 * Updates a product by calling the service and updating the store.
 	 */
-	updateProduct: (id: number, updatedProduct: Product) => {
-		set((state) => ({
-			products: state.products.map((product) =>
-				product.id === id ? updatedProduct : product,
-			),
-		}));
+	updateProduct: async (id: number, product: Partial<Omit<Product, "id">>) => {
+		try {
+			const updatedProduct = await updateProductService(id, product);
+			if (updatedProduct) {
+				set((state) => ({
+					products: state.products.map((p) =>
+						p.id === id ? updatedProduct : p,
+					),
+				}));
+			}
+			return updatedProduct;
+		} catch (error) {
+			console.error("Error updating product:", error);
+			return null;
+		}
 	},
 
 	/**
-	 * Deletes a single product from the store efficiently without re-fetching from DB.
-	 * Use this after deleting a product to avoid O(N) database reads.
+	 * Deletes a product by calling the service and updating the store.
 	 */
-	deleteProduct: (id: number) => {
-		set((state) => ({
-			products: state.products.filter((product) => product.id !== id),
-		}));
+	deleteProduct: async (id: number) => {
+		try {
+			const success = await deleteProductService(id);
+			if (success) {
+				set((state) => ({
+					products: state.products.filter((product) => product.id !== id),
+				}));
+			}
+			return success;
+		} catch (error) {
+			console.error("Error deleting product:", error);
+			return false;
+		}
 	},
 
 	/**

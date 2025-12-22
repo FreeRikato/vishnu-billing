@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
 
 export default function HomeScreen() {
-	const { user, isLoading, error } = useUser(HOME_CONSTANTS.USER_ID);
+	const { user, isLoading, error } = useUser();
 
 	const handleCreateInvoice = () => {
 		router.push("/invoice/create");

@@ -1,6 +1,6 @@
 import { eq, like } from "drizzle-orm";
 import { db } from "@/db/client";
-import { Contact } from "@/db/schema";
+import { Contact, Invoice } from "@/db/schema";
 import type { Contact as ContactType } from "@/types";
 
 function generateRandomHexColor(): string {
@@ -132,12 +132,27 @@ export async function updateContact(
 	}
 }
 
-export async function deleteContact(id: number): Promise<boolean> {
+export async function deleteContact(
+	id: number,
+): Promise<
+	| { success: true }
+	| { success: false; reason: "has_invoices" | "unknown_error" }
+> {
 	try {
+		// Check for existing invoices first
+		const existingInvoices = await db
+			.select()
+			.from(Invoice)
+			.where(eq(Invoice.customerId, id));
+
+		if (existingInvoices.length > 0) {
+			return { success: false, reason: "has_invoices" };
+		}
+
 		await db.delete(Contact).where(eq(Contact.id, id));
-		return true;
+		return { success: true };
 	} catch (error) {
 		console.error("Error deleting contact:", error);
-		return false;
+		return { success: false, reason: "unknown_error" };
 	}
 }

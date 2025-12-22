@@ -1,25 +1,44 @@
 import { useState } from "react";
-import { mockInvoices } from "@/assets";
+import { useSearch } from "@/hooks/useSearch";
+import { useInvoiceStore } from "@/store/invoiceStore";
 import type { Invoice } from "@/types";
 
 export function useInvoices() {
-	const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+	const storeInvoices = useInvoiceStore((state) => state.invoices);
 	const [selectionMode, setSelectionMode] = useState(false);
-	const [searchText, setSearchText] = useState("");
 
-	const toggleInvoice = (id: string) => {
-		setInvoices((prev) => {
-			const updated = prev.map((invoice) =>
-				invoice.id === id ? { ...invoice, checked: !invoice.checked } : invoice,
-			);
+	// Convert store invoices to UI format with checked state
+	const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+
+	const invoices: Invoice[] = storeInvoices.map((inv) => ({
+		id: inv.id,
+		customerName: inv.customerName,
+		invoiceNumber: inv.invoiceNumber,
+		amount: `$${inv.total.toFixed(2)}`,
+		date: new Date(inv.date).toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		}),
+		status: inv.status as "unpaid" | "partial" | "paid",
+		checked: checkedIds.has(inv.id),
+	}));
+
+	const toggleInvoice = (id: number) => {
+		setCheckedIds((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(id)) {
+				newSet.delete(id);
+			} else {
+				newSet.add(id);
+			}
 
 			// Check if all invoices are unselected
-			const hasAnySelected = updated.some((invoice) => invoice.checked);
-			if (!hasAnySelected) {
+			if (newSet.size === 0) {
 				setSelectionMode(false);
 			}
 
-			return updated;
+			return newSet;
 		});
 	};
 
@@ -31,12 +50,18 @@ export function useInvoices() {
 		return invoices.filter((invoice) => invoice.checked).length;
 	};
 
-	const filteredInvoices = invoices.filter(
-		(invoice) =>
-			invoice.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-			invoice.date.toLowerCase().includes(searchText.toLowerCase()) ||
-			invoice.invoiceNumber.toLowerCase().includes(searchText.toLowerCase()),
-	);
+	// Filter function for search
+	const filterFn = (invoice: Invoice, query: string) =>
+		invoice.customerName.toLowerCase().includes(query.toLowerCase()) ||
+		invoice.date.toLowerCase().includes(query.toLowerCase()) ||
+		invoice.invoiceNumber.toLowerCase().includes(query.toLowerCase());
+
+	// Use debounced search hook
+	const {
+		searchText,
+		setSearchText,
+		results: filteredInvoices,
+	} = useSearch(invoices, filterFn);
 
 	return {
 		invoices: filteredInvoices,

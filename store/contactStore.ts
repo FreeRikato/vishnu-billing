@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { getAllContacts } from "@/services/contactService";
+import {
+	createContact as createContactService,
+	deleteContact as deleteContactService,
+	getAllContacts,
+	updateContact as updateContactService,
+} from "@/services/contactService";
 import type { Contact } from "@/types";
 
 interface ContactStore {
@@ -8,9 +13,35 @@ interface ContactStore {
 	fetchAll: () => Promise<void>;
 	refresh: () => Promise<void>;
 	search: (query: string) => Contact[];
-	addContact: (contact: Contact) => void;
-	updateContact: (id: number, contact: Contact) => void;
-	deleteContact: (id: number) => void;
+	/**
+	 * Creates a new contact by calling the service and updating the store.
+	 * @param contact - Contact data without id, initials, color
+	 * @returns The created contact or null if failed
+	 */
+	createContact: (
+		contact: Omit<Contact, "id" | "initials" | "color">,
+	) => Promise<Contact | null>;
+	/**
+	 * Updates a contact by calling the service and updating the store.
+	 * @param id - Contact ID
+	 * @param contact - Partial contact data to update
+	 * @returns The updated contact or null if failed
+	 */
+	updateContact: (
+		id: number,
+		contact: Partial<Omit<Contact, "id">>,
+	) => Promise<Contact | null>;
+	/**
+	 * Deletes a contact by calling the service and updating the store.
+	 * @param id - Contact ID
+	 * @returns Object with success status and optional reason for failure
+	 */
+	deleteContact: (
+		id: number,
+	) => Promise<
+		| { success: true }
+		| { success: false; reason: "has_invoices" | "unknown_error" }
+	>;
 }
 
 /**
@@ -45,33 +76,65 @@ export const useContactStore = create<ContactStore>((set, get) => ({
 	},
 
 	/**
-	 * Adds a single contact to the store efficiently without re-fetching from DB.
-	 * Use this after creating a contact to avoid O(N) database reads.
+	 * Creates a new contact by calling the service and updating the store.
 	 */
-	addContact: (contact: Contact) => {
-		set((state) => ({ contacts: [...state.contacts, contact] }));
+	createContact: async (
+		contact: Omit<Contact, "id" | "initials" | "color">,
+	) => {
+		try {
+			const newContact = await createContactService(contact);
+			if (newContact) {
+				set((state) => ({ contacts: [...state.contacts, newContact] }));
+			}
+			return newContact;
+		} catch (error) {
+			console.error("Error creating contact:", error);
+			return null;
+		}
 	},
 
 	/**
-	 * Updates a single contact in the store efficiently without re-fetching from DB.
-	 * Use this after updating a contact to avoid O(N) database reads.
+	 * Updates a contact by calling the service and updating the store.
 	 */
-	updateContact: (id: number, updatedContact: Contact) => {
-		set((state) => ({
-			contacts: state.contacts.map((contact) =>
-				contact.id === id ? updatedContact : contact,
-			),
-		}));
+	updateContact: async (id: number, contact: Partial<Omit<Contact, "id">>) => {
+		try {
+			const updatedContact = await updateContactService(id, contact);
+			if (updatedContact) {
+				set((state) => ({
+					contacts: state.contacts.map((c) =>
+						c.id === id ? updatedContact : c,
+					),
+				}));
+			}
+			return updatedContact;
+		} catch (error) {
+			console.error("Error updating contact:", error);
+			return null;
+		}
 	},
 
 	/**
-	 * Deletes a single contact from the store efficiently without re-fetching from DB.
-	 * Use this after deleting a contact to avoid O(N) database reads.
+	 * Deletes a contact by calling the service and updating the store.
+	 * @returns Object with success status and optional reason for failure
 	 */
-	deleteContact: (id: number) => {
-		set((state) => ({
-			contacts: state.contacts.filter((contact) => contact.id !== id),
-		}));
+	deleteContact: async (
+		id: number,
+	): Promise<
+		| { success: true }
+		| { success: false; reason: "has_invoices" | "unknown_error" }
+	> => {
+		try {
+			const result = await deleteContactService(id);
+			if (result.success) {
+				set((state) => ({
+					contacts: state.contacts.filter((contact) => contact.id !== id),
+				}));
+			}
+			return result;
+		} catch (error) {
+			console.error("Error deleting contact:", error);
+			return { success: false, reason: "unknown_error" };
+		}
 	},
 
 	/**

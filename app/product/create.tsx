@@ -2,7 +2,6 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
-import { createProduct } from "@/services/productService";
 import { useProductStore } from "@/store/productStore";
 
 export default function CreateProductScreen() {
@@ -38,15 +37,14 @@ export default function CreateProductScreen() {
 		}
 
 		try {
-			const newProduct = await createProduct({
+			// Use store method which wraps service and updates state
+			const newProduct = await useProductStore.getState().createProduct({
 				name: formData.name,
 				price: priceValue,
 				unit: formData.unit,
 			});
 
 			if (newProduct) {
-				// Use efficient state update instead of refresh
-				useProductStore.getState().addProduct(newProduct);
 				Alert.alert("Success", "Product created successfully");
 				router.back();
 			} else {

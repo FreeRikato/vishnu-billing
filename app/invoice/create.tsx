@@ -2,6 +2,8 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Print from "expo-print";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -13,26 +15,37 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { generateInvoiceNumber } from "@/services/invoiceService";
 import { useContactStore } from "@/store/contactStore";
+import { useInvoiceStore } from "@/store/invoiceStore";
 import { useProductStore } from "@/store/productStore";
 import type { Product as ProductType } from "@/types";
 import { calculateDiscountAmount } from "@/utils/invoiceUtils";
+import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 import { ContactPickerModal } from "../../components/invoice/ContactPickerModal";
 import { DiscountModal } from "../../components/invoice/DiscountModal";
 import { ProductPickerModal } from "../../components/invoice/ProductPickerModal";
 import type {
 	Customer,
-	Discount,
 	DiscountType,
 	InvoiceProduct,
 } from "../../types/invoice";
 
 const TAX_RATE = 0.05; // 5%
 
+// Helper to get YYYY-MM-DD in local time
+function getLocalDateString(): string {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, "0");
+	const day = String(now.getDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
 // Helper to convert ProductType to InvoiceProduct
 function toInvoiceProduct(product: ProductType): InvoiceProduct {
 	return {
-		id: String(product.id),
+		id: product.id,
 		name: product.name,
 		description: product.unit,
 		price: product.price,
@@ -44,10 +57,11 @@ export default function CreateInvoiceScreen() {
 	// Get real data from stores
 	const contacts = useContactStore((state) => state.contacts);
 	const products = useProductStore((state) => state.products);
+	const addInvoice = useInvoiceStore((state) => state.addInvoice);
 
 	// Convert contacts to customers
 	const customers: Customer[] = contacts.map((contact) => ({
-		id: String(contact.id),
+		id: contact.id,
 		name: contact.name,
 	}));
 
@@ -58,7 +72,7 @@ export default function CreateInvoiceScreen() {
 	const [discountModalVisible, setDiscountModalVisible] = useState(false);
 	const [productPickerVisible, setProductPickerVisible] = useState(false);
 	const [contactPickerVisible, setContactPickerVisible] = useState(false);
-	const [selectedProductId, setSelectedProductId] = useState<string | null>(
+	const [selectedProductId, setSelectedProductId] = useState<number | null>(
 		null,
 	);
 	const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -76,13 +90,14 @@ export default function CreateInvoiceScreen() {
 		return sum + calculateDiscountAmount(itemTotal, product.discount);
 	}, 0);
 
-	const tax = subtotal * TAX_RATE;
-	const total = subtotal + tax;
+	// Round calculations to 2 decimal places for currency integrity
+	const roundedSubtotal = Math.round(subtotal * 100) / 100;
+	const roundedTotalDiscount = Math.round(totalDiscount * 100) / 100;
+	const tax = Math.round(roundedSubtotal * TAX_RATE * 100) / 100;
+	const total = Math.round((roundedSubtotal + tax) * 100) / 100;
 
-	// Get available products (not yet added to invoice)
-	const availableProducts = products.filter(
-		(p) => !invoiceItems.some((item) => item.id === String(p.id)),
-	);
+	// Get all products (filtering is handled in the modal)
+	const availableProducts = products;
 
 	const handleCancel = () => {
 		Alert.alert(
@@ -113,14 +128,105 @@ export default function CreateInvoiceScreen() {
 	};
 
 	const handleProductSelect = (product: InvoiceProduct) => {
-		setInvoiceItems((prev) => [...prev, { ...product, quantity: 1 }]);
+		setInvoiceItems((prev) => {
+			const exists = prev.some((item) => item.id === product.id);
+			if (exists) {
+				// Remove if already selected (toggle behavior)
+				return prev.filter((item) => item.id !== product.id);
+			}
+			// Add new product
+			return [...prev, { ...product, quantity: 1 }];
+		});
 	};
 
-	const handlePreviewPDF = () => {
-		Alert.alert("Preview PDF", "This would generate and show a PDF preview");
+	const handlePreviewPDF = async () => {
+		if (!selectedCustomer) {
+			Alert.alert("Error", "Please select a customer first");
+			return;
+		}
+
+		if (invoiceItems.length === 0) {
+			Alert.alert("Error", "Please add at least one product to the invoice");
+			return;
+		}
+
+		// Find the full contact object to get phone number
+		const contact = contacts.find((c) => c.name === selectedCustomer.name);
+		if (!contact) {
+			Alert.alert("Error", "Contact not found");
+			return;
+		}
+
+		try {
+			// Generate invoice number once using the service
+			const invoiceNumber = generateInvoiceNumber();
+
+			// Generate invoice HTML
+			const html = generateInvoiceHtml(
+				"Vishnu Billing", // Sender name
+				invoiceNumber, // Invoice number
+				getLocalDateString(), // Date (local time)
+				{
+					name: contact.name,
+					phone: contact.phone,
+				},
+				invoiceItems,
+				{
+					subtotal: roundedSubtotal,
+					totalDiscount: roundedTotalDiscount,
+					tax,
+					total,
+				},
+			);
+
+			// Generate PDF to file
+			const { uri } = await Print.printToFileAsync({ html });
+
+			// Get the file directory and create final path
+			const fileDir = FileSystem.documentDirectory ?? "";
+			const fileName = `invoice_${Date.now()}.pdf`;
+			const pdfPath = `${fileDir}${fileName}`;
+
+			// Copy PDF from temporary location to app documents directory
+			await FileSystem.copyAsync({
+				from: uri,
+				to: pdfPath,
+			});
+
+			// Create invoice in database
+			const newInvoice = await addInvoice({
+				invoiceNumber,
+				customerId: contact.id,
+				customerName: contact.name,
+				customerPhone: contact.phone,
+				items: invoiceItems,
+				summary: {
+					subtotal: roundedSubtotal,
+					totalDiscount: roundedTotalDiscount,
+					tax,
+					total,
+				},
+				date: getLocalDateString(),
+				pdfPath,
+			});
+
+			if (newInvoice) {
+				Alert.alert("Success", "Invoice created successfully and PDF saved!", [
+					{
+						text: "OK",
+						onPress: () => router.back(),
+					},
+				]);
+			} else {
+				Alert.alert("Error", "Failed to save invoice to database");
+			}
+		} catch (error) {
+			console.error("Error generating PDF:", error);
+			Alert.alert("Error", "Failed to generate PDF");
+		}
 	};
 
-	const handleQuantityChange = (productId: string, change: number) => {
+	const handleQuantityChange = (productId: number, change: number) => {
 		setInvoiceItems((prev) =>
 			prev.map((item) => {
 				if (item.id === productId) {
@@ -132,7 +238,7 @@ export default function CreateInvoiceScreen() {
 		);
 	};
 
-	const handleRemoveProduct = (productId: string) => {
+	const handleRemoveProduct = (productId: number) => {
 		Alert.alert("Remove Product", "Remove this product from the invoice?", [
 			{ text: "Cancel", style: "cancel" },
 			{
@@ -147,7 +253,7 @@ export default function CreateInvoiceScreen() {
 		]);
 	};
 
-	const handleAddDiscount = (productId: string) => {
+	const handleAddDiscount = (productId: number) => {
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
 	};
@@ -166,7 +272,7 @@ export default function CreateInvoiceScreen() {
 		setSelectedProductId(null);
 	};
 
-	const handleEditDiscount = (productId: string) => {
+	const handleEditDiscount = (productId: number) => {
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
 	};
@@ -308,7 +414,9 @@ export default function CreateInvoiceScreen() {
 					<View style={styles.summaryCard}>
 						<View style={styles.summaryRow}>
 							<Text style={styles.summaryLabel}>Subtotal</Text>
-							<Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+							<Text style={styles.summaryValue}>
+								${roundedSubtotal.toFixed(2)}
+							</Text>
 						</View>
 						<View style={styles.summaryRow}>
 							<Text style={styles.summaryLabel}>
@@ -318,7 +426,7 @@ export default function CreateInvoiceScreen() {
 								</TouchableOpacity>
 							</Text>
 							<Text style={styles.summaryValue}>
-								-${totalDiscount.toFixed(2)}
+								-${roundedTotalDiscount.toFixed(2)}
 							</Text>
 						</View>
 						<View style={styles.summaryRow}>
@@ -338,10 +446,10 @@ export default function CreateInvoiceScreen() {
 			<View style={styles.footer}>
 				<TouchableOpacity
 					onPress={handlePreviewPDF}
-					style={styles.previewButton}
+					style={styles.createButton}
 				>
 					<MaterialIcons name="description" size={24} />
-					<Text style={styles.previewButtonText}>Preview PDF</Text>
+					<Text style={styles.createButtonText}>Create Invoice</Text>
 				</TouchableOpacity>
 			</View>
 
@@ -390,6 +498,7 @@ export default function CreateInvoiceScreen() {
 				onClose={() => setProductPickerVisible(false)}
 				onProductSelect={handleProductSelect}
 				products={availableProducts.map(toInvoiceProduct)}
+				selectedProductIds={invoiceItems.map((i) => i.id)}
 			/>
 		</SafeAreaView>
 	);
@@ -708,7 +817,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 16,
 		paddingBottom: 24,
 	},
-	previewButton: {
+	createButton: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
@@ -722,7 +831,7 @@ const styles = StyleSheet.create({
 		shadowRadius: 8,
 		elevation: 8,
 	},
-	previewButtonText: {
+	createButtonText: {
 		fontSize: 18,
 		fontWeight: "800",
 		color: "#000000",

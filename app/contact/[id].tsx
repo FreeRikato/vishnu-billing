@@ -3,11 +3,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
-import {
-	deleteContact,
-	getContactById,
-	updateContact,
-} from "@/services/contactService";
+import { getContactById } from "@/services/contactService";
 import { useContactStore } from "@/store/contactStore";
 import type { Contact } from "@/types";
 
@@ -39,7 +35,7 @@ function generateInitials(name: string): string {
 
 export default function ContactDetailScreen() {
 	const router = useRouter();
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id } = useLocalSearchParams();
 
 	// State for contact data and loading
 	const [contact, setContact] = useState<Contact | null>(null);
@@ -56,8 +52,11 @@ export default function ContactDetailScreen() {
 	// Load existing contact data
 	const loadContact = useCallback(async () => {
 		try {
-			const contactId = Number(id);
-			if (contactId > 0) {
+			// Safely parse ID
+			const idString = Array.isArray(id) ? id[0] : id;
+			const contactId = Number(idString);
+
+			if (contactId && !Number.isNaN(contactId)) {
 				const contactData = await getContactById(contactId);
 				if (contactData) {
 					setContact(contactData);
@@ -112,16 +111,17 @@ export default function ContactDetailScreen() {
 		}
 
 		try {
-			const updatedContact = await updateContact(contact.id, {
-				name: formData.name,
-				phone: formData.phone,
-				initials: formData.initials,
-				color: formData.color,
-			});
+			// Use store method which wraps service and updates state
+			const updatedContact = await useContactStore
+				.getState()
+				.updateContact(contact.id, {
+					name: formData.name,
+					phone: formData.phone,
+					initials: formData.initials,
+					color: formData.color,
+				});
 
 			if (updatedContact) {
-				// Use efficient state update instead of refresh
-				useContactStore.getState().updateContact(contact.id, updatedContact);
 				Alert.alert("Success", "Contact updated successfully");
 				router.back();
 			} else {
@@ -153,14 +153,22 @@ export default function ContactDetailScreen() {
 					style: "destructive",
 					onPress: async () => {
 						try {
-							const success = await deleteContact(contact.id);
-							if (success) {
-								// Use efficient state update instead of refresh
-								useContactStore.getState().deleteContact(contact.id);
+							// Use store method which wraps service and updates state
+							const result = await useContactStore
+								.getState()
+								.deleteContact(contact.id);
+							if (result.success) {
 								Alert.alert("Success", "Contact deleted successfully");
 								router.back();
 							} else {
-								Alert.alert("Error", "Failed to delete contact");
+								if (result.reason === "has_invoices") {
+									Alert.alert(
+										"Cannot Delete Contact",
+										"This contact is associated with existing invoices. Please delete the invoices first.",
+									);
+								} else {
+									Alert.alert("Error", "Failed to delete contact");
+								}
 							}
 						} catch (error) {
 							console.error("Error deleting contact:", error);

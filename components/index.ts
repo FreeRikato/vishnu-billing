@@ -7,6 +7,7 @@ export { default as FloatingShareButton } from "./FloatingShareButton";
 export { HomeHeader } from "./HomeHeader";
 export { default as InvoiceItem } from "./InvoiceItem";
 export { default as InvoiceList } from "./InvoiceList";
+export { InvoicePreviewCard } from "./invoice/InvoicePreviewCard";
 export { default as ProductHeader } from "./ProductHeader";
 export { default as ProductItem } from "./ProductItem";
 export { default as ProductList } from "./ProductList";

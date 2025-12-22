@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import {
 	Alert,
 	StatusBar,
@@ -30,11 +31,7 @@ export default function InvoiceScreen() {
 	} = useInvoices();
 
 	const handleInvoicePress = (invoice: Invoice) => {
-		Alert.alert(
-			"Invoice Details",
-			`Customer: ${invoice.customerName}\nInvoice: ${invoice.invoiceNumber}\nAmount: ${invoice.amount}\nDate: ${invoice.date}\nStatus: ${invoice.status}`,
-			[{ text: "OK", style: "default" }],
-		);
+		router.push(`/invoice/${invoice.id}`);
 	};
 
 	const handleSharePress = () => {

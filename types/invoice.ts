@@ -1,5 +1,5 @@
 export interface Invoice {
-	id: string;
+	id: number;
 	customerName: string;
 	invoiceNumber: string;
 	amount: string;
@@ -9,7 +9,7 @@ export interface Invoice {
 }
 
 export interface Customer {
-	id: string;
+	id: number;
 	name: string;
 }
 
@@ -21,7 +21,7 @@ export interface Discount {
 }
 
 export interface InvoiceProduct {
-	id: string;
+	id: number; // Product ID (number for consistency with DB)
 	name: string;
 	description: string;
 	price: number;

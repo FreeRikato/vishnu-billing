@@ -6,7 +6,6 @@ import {
 	KeyboardAvoidingView,
 	Modal,
 	Platform,
-	SafeAreaView,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -14,6 +13,7 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { invoiceStyles } from "../../styles/invoice";
 import type { Discount, DiscountType } from "../../types/invoice";
 import { calculateDiscountAmount as coreCalculateDiscountAmount } from "../../utils/invoiceUtils";
@@ -166,7 +166,7 @@ export function DiscountModal({
 
 	const renderToggleOption = (
 		type: DiscountType,
-		icon: keyof typeof MaterialIcons.glyphMap, // 6. Fix Types
+		icon: keyof typeof MaterialIcons.glyphMap,
 		label: string,
 	) => {
 		const isActive = discountType === type;

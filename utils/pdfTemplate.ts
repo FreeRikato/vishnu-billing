@@ -1,12 +1,7 @@
 import type { InvoiceProduct, InvoiceSummary } from "@/types/invoice";
 
-// The HTML Shell
-export const INVOICE_HTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
+// 1. styles separated for reuse
+const STYLES = `
     body {
       font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
       color: #333;
@@ -111,10 +106,17 @@ export const INVOICE_HTML = `
       border-top: 1px solid #eee;
       padding-top: 20px;
     }
-  </style>
-</head>
-<body>
+    /* Page break utility for merged PDF */
+    .page-break {
+      page-break-after: always;
+      height: 0;
+      display: block;
+      clear: both;
+    }
+`;
 
+// 2. Body template for a single invoice
+const INVOICE_BODY_TEMPLATE = `
   <div class="header">
     <div>
       <div class="company-name">{{senderName}}</div>
@@ -176,25 +178,24 @@ export const INVOICE_HTML = `
   <div class="footer">
     <p>Thank you for your business!</p>
   </div>
-
-</body>
-</html>
 `;
 
-// Helper to generate HTML based on data types
-export function generateInvoiceHtml(
-	senderName: string,
-	invoiceNumber: string,
-	date: string,
-	customer: { name: string; phone: string },
-	items: InvoiceProduct[],
-	summary: InvoiceSummary,
-) {
-	// Generate rows
-	const rows = items
+// Helper types
+type InvoiceData = {
+	senderName: string;
+	invoiceNumber: string;
+	date: string;
+	customerName: string;
+	customerPhone: string;
+	items: InvoiceProduct[];
+	summary: InvoiceSummary;
+};
+
+// Helper to generate table rows
+function generateRows(items: InvoiceProduct[]) {
+	return items
 		.map((item) => {
 			const lineTotal = (item.price * item.quantity).toFixed(2);
-
 			return `
       <tr>
         <td>
@@ -209,16 +210,76 @@ export function generateInvoiceHtml(
     `;
 		})
 		.join("");
-
-	// Replace placeholders
-	return INVOICE_HTML.replace("{{senderName}}", senderName)
-		.replace("{{invoiceNumber}}", invoiceNumber)
-		.replace("{{date}}", date)
-		.replace("{{customerName}}", customer.name)
-		.replace("{{customerPhone}}", customer.phone)
-		.replace("{{tableRows}}", rows)
-		.replace("{{subtotal}}", `${summary.subtotal.toFixed(2)}`)
-		.replace("{{discount}}", `${summary.totalDiscount.toFixed(2)}`)
-		.replace("{{tax}}", `${summary.tax.toFixed(2)}`)
-		.replace("{{total}}", `${summary.total.toFixed(2)}`);
 }
+
+// Helper to fill the template with data
+function fillInvoiceTemplate(template: string, data: InvoiceData) {
+	const rows = generateRows(data.items);
+	return template
+		.replace("{{senderName}}", data.senderName)
+		.replace("{{invoiceNumber}}", data.invoiceNumber)
+		.replace("{{date}}", data.date)
+		.replace("{{customerName}}", data.customerName)
+		.replace("{{customerPhone}}", data.customerPhone)
+		.replace("{{tableRows}}", rows)
+		.replace("{{subtotal}}", `${data.summary.subtotal.toFixed(2)}`)
+		.replace("{{discount}}", `${data.summary.totalDiscount.toFixed(2)}`)
+		.replace("{{tax}}", `${data.summary.tax.toFixed(2)}`)
+		.replace("{{total}}", `${data.summary.total.toFixed(2)}`);
+}
+
+// Wrap content in HTML shell
+function wrapHtml(bodyContent: string) {
+	return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>${STYLES}</style>
+</head>
+<body>
+  ${bodyContent}
+</body>
+</html>
+`;
+}
+
+// Main function to generate single invoice HTML
+export function generateInvoiceHtml(
+	senderName: string,
+	invoiceNumber: string,
+	date: string,
+	customer: { name: string; phone: string },
+	items: InvoiceProduct[],
+	summary: InvoiceSummary,
+) {
+	const data: InvoiceData = {
+		senderName,
+		invoiceNumber,
+		date,
+		customerName: customer.name,
+		customerPhone: customer.phone,
+		items,
+		summary,
+	};
+	const body = fillInvoiceTemplate(INVOICE_BODY_TEMPLATE, data);
+	return wrapHtml(body);
+}
+
+// New function to generate merged HTML for multiple invoices
+export function generateMergedInvoiceHtml(
+	invoices: Omit<InvoiceData, "senderName">[],
+	senderName: string,
+) {
+	const bodies = invoices.map((inv) =>
+		fillInvoiceTemplate(INVOICE_BODY_TEMPLATE, { ...inv, senderName }),
+	);
+
+	// Join all bodies with a page break div
+	const mergedBody = bodies.join('<div class="page-break"></div>');
+
+	return wrapHtml(mergedBody);
+}
+
+// Export constant for backward compatibility if needed, though functions are preferred
+export const INVOICE_HTML = wrapHtml(INVOICE_BODY_TEMPLATE);

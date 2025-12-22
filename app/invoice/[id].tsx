@@ -4,10 +4,11 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
+	Platform,
 	ScrollView,
 	StatusBar,
 	StyleSheet,
@@ -15,6 +16,16 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import {
+	Gesture,
+	GestureDetector,
+	GestureHandlerRootView,
+} from "react-native-gesture-handler";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { InvoicePreviewCard } from "@/components/invoice/InvoicePreviewCard";
 import { useInvoiceStore } from "@/store/invoiceStore";
@@ -32,6 +43,29 @@ export default function InvoicePreviewScreen() {
 		state.getInvoiceById(invoiceId),
 	);
 	const [capturing, setCapturing] = useState(false);
+
+	// Zoom Logic for Android (Pinch to Inspect)
+	const scale = useSharedValue(1);
+	const savedScale = useSharedValue(1);
+
+	const pinchGesture = useMemo(
+		() =>
+			Gesture.Pinch()
+				.onUpdate((e) => {
+					scale.value = savedScale.value * e.scale;
+				})
+				.onEnd(() => {
+					// Snap back to 1 on release for Android to ensure usability
+					scale.value = withSpring(1);
+					savedScale.value = 1;
+				}),
+		[scale, savedScale],
+	);
+
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: scale.value }],
+		zIndex: 10, // Ensure it sits on top when zooming
+	}));
 
 	if (!invoice) {
 		return (
@@ -147,69 +181,81 @@ export default function InvoicePreviewScreen() {
 
 	return (
 		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-			<StatusBar barStyle="light-content" backgroundColor="#000000" />
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 
-			{/* Header */}
-			<View style={styles.header}>
-				<TouchableOpacity onPress={handleBack} style={styles.backButton}>
-					<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
-				</TouchableOpacity>
-				<Text style={styles.headerTitle}>Invoice Preview</Text>
-				<View style={styles.placeholder} />
-			</View>
-
-			{capturing && (
-				<View style={styles.loadingOverlay}>
-					<ActivityIndicator size="large" color="#13ec6a" />
-					<Text style={styles.loadingText}>Generating PDF...</Text>
-				</View>
-			)}
-
-			{/* Main Content */}
-			<ScrollView
-				style={styles.scrollView}
-				contentContainerStyle={styles.scrollContent}
-				showsVerticalScrollIndicator={false}
-			>
-				{/* Zoom Hint */}
-				<View style={styles.zoomHint}>
-					<MaterialIcons name="zoom-in" size={16} color="#9CA3AF" />
-					<Text style={styles.zoomHintText}>Pinch to zoom invoice</Text>
+				{/* Header */}
+				<View style={styles.header}>
+					<TouchableOpacity onPress={handleBack} style={styles.backButton}>
+						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
+					</TouchableOpacity>
+					<Text style={styles.headerTitle}>Invoice Preview</Text>
+					<View style={styles.placeholder} />
 				</View>
 
-				{/* Invoice Preview Card */}
-				<View style={styles.previewContainer}>
-					<InvoicePreviewCard invoice={invoice} />
-				</View>
+				{capturing && (
+					<View style={styles.loadingOverlay}>
+						<ActivityIndicator size="large" color="#13ec6a" />
+						<Text style={styles.loadingText}>Generating PDF...</Text>
+					</View>
+				)}
 
-				{/* Page Count */}
-				<View style={styles.pageIndicator}>
-					<Text style={styles.pageIndicatorText}>Page 1 of 1</Text>
-				</View>
-
-				{/* Spacer for bottom elements */}
-				<View style={styles.spacer} />
-			</ScrollView>
-
-			{/* Floating Bottom Action Bar */}
-			<View style={styles.actionBar}>
-				<TouchableOpacity
-					onPress={handleSave}
-					style={styles.saveButton}
-					disabled={capturing}
+				{/* Main Content */}
+				<ScrollView
+					style={styles.scrollView}
+					contentContainerStyle={styles.scrollContent}
+					showsVerticalScrollIndicator={false}
+					minimumZoomScale={1}
+					maximumZoomScale={3}
 				>
-					<MaterialIcons name="save-alt" size={24} color="#ffffff" />
-					<Text style={styles.saveButtonText}>Save</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					onPress={handleShare}
-					style={styles.shareButton}
-					disabled={capturing}
-				>
-					<MaterialIcons name="share" size={24} color="#000000" />
-					<Text style={styles.shareButtonText}>Share</Text>
-				</TouchableOpacity>
-			</View>
+					{/* Zoom Hint */}
+					<View style={styles.zoomHint}>
+						<MaterialIcons name="zoom-in" size={16} color="#9CA3AF" />
+						<Text style={styles.zoomHintText}>Pinch to zoom invoice</Text>
+					</View>
+
+					{/* Invoice Preview Card */}
+					<View style={styles.previewContainer}>
+						{Platform.OS === "android" ? (
+							<GestureDetector gesture={pinchGesture}>
+								<Animated.View style={animatedStyle}>
+									<InvoicePreviewCard invoice={invoice} />
+								</Animated.View>
+							</GestureDetector>
+						) : (
+							<InvoicePreviewCard invoice={invoice} />
+						)}
+					</View>
+
+					{/* Page Count */}
+					<View style={styles.pageIndicator}>
+						<Text style={styles.pageIndicatorText}>Page 1 of 1</Text>
+					</View>
+
+					{/* Spacer for bottom elements */}
+					<View style={styles.spacer} />
+				</ScrollView>
+
+				{/* Floating Bottom Action Bar */}
+				<View style={styles.actionBar}>
+					<TouchableOpacity
+						onPress={handleSave}
+						style={styles.saveButton}
+						disabled={capturing}
+					>
+						<MaterialIcons name="save-alt" size={24} color="#ffffff" />
+						<Text style={styles.saveButtonText}>Save</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={handleShare}
+						style={styles.shareButton}
+						disabled={capturing}
+					>
+						<MaterialIcons name="share" size={24} color="#000000" />
+						<Text style={styles.shareButtonText}>Share</Text>
+					</TouchableOpacity>
+				</View>
+			</GestureHandlerRootView>
 		</SafeAreaView>
 	);
 }
@@ -308,7 +354,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.25,
 		shadowRadius: 3.84,
 		elevation: 5,
-		overflow: "hidden",
+		// overflow: "hidden", // Removed to allow zoom to spill over if needed
 	},
 	pageIndicator: {
 		marginTop: 24,

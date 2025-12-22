@@ -1,10 +1,10 @@
+import { router } from "expo-router";
+import { ActivityIndicator, Alert, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { CreateInvoiceButton, HomeHeader } from "@/components";
 import { HOME_CONSTANTS } from "@/constants/home";
 import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
-import { ActivityIndicator, Alert, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 
 export default function HomeScreen() {
 	const { user, isLoading, error } = useUser(HOME_CONSTANTS.USER_ID);

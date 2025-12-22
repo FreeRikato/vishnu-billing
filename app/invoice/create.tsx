@@ -5,68 +5,84 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+	Alert,
+	ScrollView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useContactStore } from "@/store/contactStore";
+import { useProductStore } from "@/store/productStore";
+import type { Product as ProductType } from "@/types";
+import { calculateDiscountAmount } from "@/utils/invoiceUtils";
+import { ContactPickerModal } from "../../components/invoice/ContactPickerModal";
 import { DiscountModal } from "../../components/invoice/DiscountModal";
-import type { Discount, DiscountType, Product } from "../../types/invoice";
-
-const mockProducts: Product[] = [
-	{
-		id: "1",
-		name: "Lawn Mowing Service",
-		description: "Weekly Maintenance",
-		price: 50.0,
-		quantity: 1,
-	},
-	{
-		id: "2",
-		name: "Fertilizer Application",
-		description: "Spring Treatment",
-		price: 25.0,
-		quantity: 2,
-		discount: { value: 10, type: "percent" },
-	},
-];
+import { ProductPickerModal } from "../../components/invoice/ProductPickerModal";
+import type {
+	Customer,
+	Discount,
+	DiscountType,
+	InvoiceProduct,
+} from "../../types/invoice";
 
 const TAX_RATE = 0.05; // 5%
 
+// Helper to convert ProductType to InvoiceProduct
+function toInvoiceProduct(product: ProductType): InvoiceProduct {
+	return {
+		id: String(product.id),
+		name: product.name,
+		description: product.unit,
+		price: product.price,
+		quantity: 1,
+	};
+}
+
 export default function CreateInvoiceScreen() {
+	// Get real data from stores
+	const contacts = useContactStore((state) => state.contacts);
+	const products = useProductStore((state) => state.products);
+
+	// Convert contacts to customers
+	const customers: Customer[] = contacts.map((contact) => ({
+		id: String(contact.id),
+		name: contact.name,
+	}));
+
+	// State for invoice items (products added to invoice)
+	const [invoiceItems, setInvoiceItems] = useState<InvoiceProduct[]>([]);
+
+	// Modal visibility states
 	const [discountModalVisible, setDiscountModalVisible] = useState(false);
+	const [productPickerVisible, setProductPickerVisible] = useState(false);
+	const [contactPickerVisible, setContactPickerVisible] = useState(false);
 	const [selectedProductId, setSelectedProductId] = useState<string | null>(
 		null,
 	);
+	const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+		null,
+	);
 
-	const calculateDiscountAmount = (
-		itemTotal: number,
-		discount?: Discount,
-	): number => {
-		if (!discount) return 0;
-		if (discount.type === "percent") {
-			return (itemTotal * discount.value) / 100;
-		} else {
-			return Math.min(discount.value, itemTotal);
-		}
-	};
-
-	const subtotal = mockProducts.reduce((sum, product) => {
+	const subtotal = invoiceItems.reduce((sum, product) => {
 		const itemTotal = product.price * product.quantity;
 		const discount = calculateDiscountAmount(itemTotal, product.discount);
 		return sum + itemTotal - discount;
 	}, 0);
 
-	const totalDiscount = mockProducts.reduce((sum, product) => {
+	const totalDiscount = invoiceItems.reduce((sum, product) => {
 		const itemTotal = product.price * product.quantity;
 		return sum + calculateDiscountAmount(itemTotal, product.discount);
 	}, 0);
 
 	const tax = subtotal * TAX_RATE;
 	const total = subtotal + tax;
+
+	// Get available products (not yet added to invoice)
+	const availableProducts = products.filter(
+		(p) => !invoiceItems.some((item) => item.id === String(p.id)),
+	);
 
 	const handleCancel = () => {
 		Alert.alert(
@@ -80,18 +96,24 @@ export default function CreateInvoiceScreen() {
 	};
 
 	const handleSelectCustomer = () => {
-		Alert.alert("Select Customer", "Customer selection would open here");
+		setContactPickerVisible(true);
 	};
 
 	const handleCreateNewCustomer = () => {
-		Alert.alert(
-			"Create New Customer",
-			"This would navigate to create customer screen",
-		);
+		router.push("/contact/create");
 	};
 
 	const handleAddProduct = () => {
-		Alert.alert("Add Product", "Product selection would open here");
+		setProductPickerVisible(true);
+	};
+
+	const handleContactSelect = (customer: Customer) => {
+		setSelectedCustomer(customer);
+		setContactPickerVisible(false);
+	};
+
+	const handleProductSelect = (product: InvoiceProduct) => {
+		setInvoiceItems((prev) => [...prev, { ...product, quantity: 1 }]);
 	};
 
 	const handlePreviewPDF = () => {
@@ -99,14 +121,30 @@ export default function CreateInvoiceScreen() {
 	};
 
 	const handleQuantityChange = (productId: string, change: number) => {
-		Alert.alert(
-			"Quantity",
-			`Change quantity for product ${productId} by ${change}`,
+		setInvoiceItems((prev) =>
+			prev.map((item) => {
+				if (item.id === productId) {
+					const newQuantity = Math.max(1, item.quantity + change);
+					return { ...item, quantity: newQuantity };
+				}
+				return item;
+			}),
 		);
 	};
 
 	const handleRemoveProduct = (productId: string) => {
-		Alert.alert("Remove Product", `Remove product ${productId} from invoice?`);
+		Alert.alert("Remove Product", "Remove this product from the invoice?", [
+			{ text: "Cancel", style: "cancel" },
+			{
+				text: "Remove",
+				style: "destructive",
+				onPress: () => {
+					setInvoiceItems((prev) =>
+						prev.filter((item) => item.id !== productId),
+					);
+				},
+			},
+		]);
 	};
 
 	const handleAddDiscount = (productId: string) => {
@@ -116,10 +154,14 @@ export default function CreateInvoiceScreen() {
 
 	const handleApplyDiscount = (value: number, type: DiscountType) => {
 		if (selectedProductId) {
-			const product = mockProducts.find((p) => p.id === selectedProductId);
-			if (product) {
-				product.discount = { value, type };
-			}
+			setInvoiceItems((prev) =>
+				prev.map((item) => {
+					if (item.id === selectedProductId) {
+						return { ...item, discount: { value, type } };
+					}
+					return item;
+				}),
+			);
 		}
 		setSelectedProductId(null);
 	};
@@ -158,7 +200,15 @@ export default function CreateInvoiceScreen() {
 							onPress={handleSelectCustomer}
 							style={styles.customerSelect}
 						>
-							<Text style={styles.customerSelectText}>Select Customer</Text>
+							<Text
+								style={
+									selectedCustomer
+										? styles.customerSelectedText
+										: styles.customerSelectText
+								}
+							>
+								{selectedCustomer ? selectedCustomer.name : "Select Customer"}
+							</Text>
 							<MaterialIcons name="expand-more" size={24} color="#13ec6a" />
 						</TouchableOpacity>
 						<TouchableOpacity
@@ -175,7 +225,7 @@ export default function CreateInvoiceScreen() {
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>What are they buying?</Text>
 					<View style={styles.productsSection}>
-						{mockProducts.map((product) => (
+						{invoiceItems.map((product) => (
 							<View key={product.id} style={styles.productCard}>
 								<View style={styles.productHeader}>
 									<View style={styles.productInfo}>
@@ -238,15 +288,17 @@ export default function CreateInvoiceScreen() {
 								)}
 							</View>
 						))}
-						<TouchableOpacity
-							onPress={handleAddProduct}
-							style={styles.addProductButton}
-						>
-							<View style={styles.addProductIcon}>
-								<Ionicons name="add-circle" size={28} color="#13ec6a" />
-							</View>
-							<Text style={styles.addProductText}>Add Product</Text>
-						</TouchableOpacity>
+						{availableProducts.length > 0 && (
+							<TouchableOpacity
+								onPress={handleAddProduct}
+								style={styles.addProductButton}
+							>
+								<View style={styles.addProductIcon}>
+									<Ionicons name="add-circle" size={28} color="#13ec6a" />
+								</View>
+								<Text style={styles.addProductText}>Add Product</Text>
+							</TouchableOpacity>
+						)}
 					</View>
 				</View>
 
@@ -300,27 +352,44 @@ export default function CreateInvoiceScreen() {
 				onApply={handleApplyDiscount}
 				initialValue={
 					(selectedProductId &&
-						mockProducts.find((p) => p.id === selectedProductId)?.discount
+						invoiceItems.find((p) => p.id === selectedProductId)?.discount
 							?.value) ||
 					0
 				}
 				initialType={
 					(selectedProductId &&
-						mockProducts.find((p) => p.id === selectedProductId)?.discount
+						invoiceItems.find((p) => p.id === selectedProductId)?.discount
 							?.type) ||
 					"percent"
 				}
 				productPrice={
 					selectedProductId
-						? mockProducts.find((p) => p.id === selectedProductId)?.price || 0
+						? invoiceItems.find((p) => p.id === selectedProductId)?.price || 0
 						: 0
 				}
 				productQuantity={
 					selectedProductId
-						? mockProducts.find((p) => p.id === selectedProductId)?.quantity ||
+						? invoiceItems.find((p) => p.id === selectedProductId)?.quantity ||
 							1
 						: 1
 				}
+			/>
+
+			{/* Contact Picker Modal */}
+			<ContactPickerModal
+				visible={contactPickerVisible}
+				onClose={() => setContactPickerVisible(false)}
+				onContactSelect={handleContactSelect}
+				customers={customers}
+				selectedCustomerId={selectedCustomer?.id}
+			/>
+
+			{/* Product Picker Modal */}
+			<ProductPickerModal
+				visible={productPickerVisible}
+				onClose={() => setProductPickerVisible(false)}
+				onProductSelect={handleProductSelect}
+				products={availableProducts.map(toInvoiceProduct)}
 			/>
 		</SafeAreaView>
 	);
@@ -372,7 +441,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 	},
 	scrollContent: {
-		paddingBottom: 100, // Add padding to account for fixed footer
+		paddingBottom: 100,
 	},
 	section: {
 		marginTop: 24,
@@ -403,6 +472,11 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: "500",
 		color: "#9ca3af",
+	},
+	customerSelectedText: {
+		fontSize: 18,
+		fontWeight: "500",
+		color: "#ffffff",
 	},
 	createCustomerButton: {
 		flexDirection: "row",

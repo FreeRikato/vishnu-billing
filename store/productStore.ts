@@ -8,6 +8,9 @@ interface ProductStore {
 	fetchAll: () => Promise<void>;
 	refresh: () => Promise<void>;
 	search: (query: string) => Product[];
+	addProduct: (product: Product) => void;
+	updateProduct: (id: number, product: Product) => void;
+	deleteProduct: (id: number) => void;
 }
 
 /**
@@ -39,6 +42,36 @@ export const useProductStore = create<ProductStore>((set, get) => ({
 	 */
 	refresh: async () => {
 		await get().fetchAll();
+	},
+
+	/**
+	 * Adds a single product to the store efficiently without re-fetching from DB.
+	 * Use this after creating a product to avoid O(N) database reads.
+	 */
+	addProduct: (product: Product) => {
+		set((state) => ({ products: [...state.products, product] }));
+	},
+
+	/**
+	 * Updates a single product in the store efficiently without re-fetching from DB.
+	 * Use this after updating a product to avoid O(N) database reads.
+	 */
+	updateProduct: (id: number, updatedProduct: Product) => {
+		set((state) => ({
+			products: state.products.map((product) =>
+				product.id === id ? updatedProduct : product,
+			),
+		}));
+	},
+
+	/**
+	 * Deletes a single product from the store efficiently without re-fetching from DB.
+	 * Use this after deleting a product to avoid O(N) database reads.
+	 */
+	deleteProduct: (id: number) => {
+		set((state) => ({
+			products: state.products.filter((product) => product.id !== id),
+		}));
 	},
 
 	/**

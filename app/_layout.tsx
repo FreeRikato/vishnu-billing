@@ -1,8 +1,3 @@
-import { db, expoDb } from "@/db/client"; // Import expoDb
-import migrations from "@/drizzle/migrations";
-import { useColorScheme } from "@/hooks";
-import { useContactStore } from "@/store/contactStore";
-import { useProductStore } from "@/store/productStore";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
@@ -10,6 +5,11 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
+import { db, expoDb } from "@/db/client"; // Import expoDb
+import migrations from "@/drizzle/migrations";
+import { useColorScheme } from "@/hooks";
+import { useContactStore } from "@/store/contactStore";
+import { useProductStore } from "@/store/productStore";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 

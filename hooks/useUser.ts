@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { User } from "@/types";
 import { getUserById } from "@/services/userService";
+import type { User } from "@/types";
 
 export function useUser(id: number = 1) {
 	const [user, setUser] = useState<User | null>(null);

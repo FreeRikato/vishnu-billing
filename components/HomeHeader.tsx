@@ -1,7 +1,7 @@
-import { Text, TouchableOpacity, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import type { User } from "@/types";
+import { Text, TouchableOpacity, View } from "react-native";
 import { homeStyles } from "@/styles";
+import type { User } from "@/types";
 
 interface HomeHeaderProps {
 	user: User | null;
@@ -12,9 +12,7 @@ export function HomeHeader({ user, onSyncCloud }: HomeHeaderProps) {
 	return (
 		<View style={homeStyles.header}>
 			<View style={homeStyles.headerTop}>
-				<Text style={homeStyles.greeting}>
-					Hello, {user?.name || "User"}
-				</Text>
+				<Text style={homeStyles.greeting}>Hello, {user?.name || "User"}</Text>
 				<TouchableOpacity
 					style={homeStyles.backupIcon}
 					onPress={onSyncCloud}
@@ -23,7 +21,9 @@ export function HomeHeader({ user, onSyncCloud }: HomeHeaderProps) {
 					<MaterialIcons name="cloud-done" size={24} color="#4CAF50" />
 				</TouchableOpacity>
 			</View>
-			<Text style={homeStyles.backupStatus}>Everything is backed up safely.</Text>
+			<Text style={homeStyles.backupStatus}>
+				Everything is backed up safely.
+			</Text>
 		</View>
 	);
 }

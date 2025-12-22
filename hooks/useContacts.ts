@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback } from "react";
 import { useContactStore } from "@/store/contactStore";
+import type { Contact } from "@/types";
+import { useSearch } from "./useSearch";
 
 /**
  * Hook for managing contact list UI state and search functionality.
@@ -7,39 +9,28 @@ import { useContactStore } from "@/store/contactStore";
  * Provides debounced local search filtering for optimal UX.
  */
 export function useContacts() {
-	const [searchText, setSearchText] = useState("");
-	const [debouncedSearchText, setDebouncedSearchText] = useState("");
-
 	// Subscribe to store state for contacts and loading
 	const contacts = useContactStore((state) => state.contacts);
 	const loading = useContactStore((state) => state.loading);
 
-	// Debounce search text
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setDebouncedSearchText(searchText);
-		}, 300);
-		return () => clearTimeout(timer);
-	}, [searchText]);
-
-	// Compute filtered contacts using useMemo
-	// Filter locally to avoid dependency issues with store search function
-	const filteredContacts = useMemo(() => {
-		if (!debouncedSearchText.trim()) {
-			return contacts;
-		}
-		const lowerQuery = debouncedSearchText.toLowerCase();
-		return contacts.filter(
-			(contact) =>
-				contact.name.toLowerCase().includes(lowerQuery) ||
-				contact.phone.includes(debouncedSearchText),
+	// Define how to filter a contact
+	const filterContact = useCallback((contact: Contact, query: string) => {
+		const lowerQuery = query.toLowerCase();
+		return (
+			contact.name.toLowerCase().includes(lowerQuery) ||
+			contact.phone.includes(query)
 		);
-	}, [debouncedSearchText, contacts]);
+	}, []);
+
+	const { searchText, setSearchText, results } = useSearch(
+		contacts,
+		filterContact,
+	);
 
 	return {
 		searchText,
 		setSearchText,
-		contacts: filteredContacts,
+		contacts: results,
 		loading,
 	};
 }

@@ -8,6 +8,9 @@ interface ContactStore {
 	fetchAll: () => Promise<void>;
 	refresh: () => Promise<void>;
 	search: (query: string) => Contact[];
+	addContact: (contact: Contact) => void;
+	updateContact: (id: number, contact: Contact) => void;
+	deleteContact: (id: number) => void;
 }
 
 /**
@@ -39,6 +42,36 @@ export const useContactStore = create<ContactStore>((set, get) => ({
 	 */
 	refresh: async () => {
 		await get().fetchAll();
+	},
+
+	/**
+	 * Adds a single contact to the store efficiently without re-fetching from DB.
+	 * Use this after creating a contact to avoid O(N) database reads.
+	 */
+	addContact: (contact: Contact) => {
+		set((state) => ({ contacts: [...state.contacts, contact] }));
+	},
+
+	/**
+	 * Updates a single contact in the store efficiently without re-fetching from DB.
+	 * Use this after updating a contact to avoid O(N) database reads.
+	 */
+	updateContact: (id: number, updatedContact: Contact) => {
+		set((state) => ({
+			contacts: state.contacts.map((contact) =>
+				contact.id === id ? updatedContact : contact,
+			),
+		}));
+	},
+
+	/**
+	 * Deletes a single contact from the store efficiently without re-fetching from DB.
+	 * Use this after deleting a contact to avoid O(N) database reads.
+	 */
+	deleteContact: (id: number) => {
+		set((state) => ({
+			contacts: state.contacts.filter((contact) => contact.id !== id),
+		}));
 	},
 
 	/**

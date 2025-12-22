@@ -1,5 +1,5 @@
-import { db } from "@/db/client";
 import { eq } from "drizzle-orm";
+import { db } from "@/db/client";
 import { User } from "@/db/schema";
 import type { User as UserType } from "@/types";
 

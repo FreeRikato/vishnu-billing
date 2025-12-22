@@ -9,29 +9,29 @@ export interface Invoice {
 }
 
 export interface Customer {
-  id: string;
-  name: string;
+	id: string;
+	name: string;
 }
 
 export type DiscountType = "percent" | "fixed";
 
 export interface Discount {
-  value: number;
-  type: DiscountType;
+	value: number;
+	type: DiscountType;
 }
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  quantity: number;
-  discount?: Discount;
+export interface InvoiceProduct {
+	id: string;
+	name: string;
+	description: string;
+	price: number;
+	quantity: number;
+	discount?: Discount;
 }
 
 export interface InvoiceSummary {
-  subtotal: number;
-  totalDiscount: number;
-  tax: number;
-  total: number;
+	subtotal: number;
+	totalDiscount: number;
+	tax: number;
+	total: number;
 }

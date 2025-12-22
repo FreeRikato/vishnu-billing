@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback } from "react";
 import { useProductStore } from "@/store/productStore";
+import type { Product } from "@/types";
+import { useSearch } from "./useSearch";
 
 /**
  * Hook for managing product list UI state and search functionality.
@@ -7,37 +9,25 @@ import { useProductStore } from "@/store/productStore";
  * Provides debounced local search filtering for optimal UX.
  */
 export function useProducts() {
-	const [searchText, setSearchText] = useState("");
-	const [debouncedSearchText, setDebouncedSearchText] = useState("");
-
 	// Subscribe to store state for products and loading
 	const products = useProductStore((state) => state.products);
 	const loading = useProductStore((state) => state.loading);
 
-	// Debounce search text
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setDebouncedSearchText(searchText);
-		}, 300);
-		return () => clearTimeout(timer);
-	}, [searchText]);
+	// Define how to filter a product
+	const filterProduct = useCallback((product: Product, query: string) => {
+		const lowerQuery = query.toLowerCase();
+		return product.name.toLowerCase().includes(lowerQuery);
+	}, []);
 
-	// Compute filtered products using useMemo
-	// Filter locally to avoid dependency issues with store search function
-	const filteredProducts = useMemo(() => {
-		if (!debouncedSearchText.trim()) {
-			return products;
-		}
-		const lowerQuery = debouncedSearchText.toLowerCase();
-		return products.filter((product) =>
-			product.name.toLowerCase().includes(lowerQuery),
-		);
-	}, [debouncedSearchText, products]);
+	const { searchText, setSearchText, results } = useSearch(
+		products,
+		filterProduct,
+	);
 
 	return {
 		searchText,
 		setSearchText,
-		products: filteredProducts,
+		products: results,
 		loading,
 	};
 }

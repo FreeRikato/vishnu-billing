@@ -63,6 +63,11 @@ export function useInvoices() {
 		results: filteredInvoices,
 	} = useSearch(invoices, filterFn);
 
+	const cancelSelection = () => {
+		setCheckedIds(new Set());
+		setSelectionMode(false);
+	};
+
 	return {
 		invoices: filteredInvoices,
 		selectionMode,
@@ -71,5 +76,6 @@ export function useInvoices() {
 		toggleInvoice,
 		enableSelectionMode,
 		getSelectedCount,
+		cancelSelection,
 	};
 }

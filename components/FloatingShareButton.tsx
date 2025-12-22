@@ -5,12 +5,14 @@ interface FloatingShareButtonProps {
 	visible: boolean;
 	selectedCount: number;
 	onPress?: () => void;
+	onCancel?: () => void;
 }
 
 export default function FloatingShareButton({
 	visible,
 	selectedCount,
 	onPress,
+	onCancel,
 }: FloatingShareButtonProps) {
 	if (!visible || selectedCount === 0) return null;
 
@@ -20,6 +22,23 @@ export default function FloatingShareButton({
 			bottom: 30,
 			right: 20,
 			zIndex: 50,
+			alignItems: "center" as const,
+			gap: 16,
+		},
+		cancelButton: {
+			width: 48,
+			height: 48,
+			backgroundColor: "#1C1C1E",
+			borderRadius: 24,
+			justifyContent: "center" as const,
+			alignItems: "center" as const,
+			borderWidth: 1,
+			borderColor: "rgba(255, 255, 255, 0.1)",
+			shadowColor: "#000",
+			shadowOffset: { width: 0, height: 4 },
+			shadowOpacity: 0.2,
+			shadowRadius: 8,
+			elevation: 8,
 		},
 		floatingButton: {
 			width: 56,
@@ -55,6 +74,11 @@ export default function FloatingShareButton({
 
 	return (
 		<View style={styles.floatingAction}>
+			{onCancel && (
+				<TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+					<Ionicons name="close" size={24} color="#ffffff" />
+				</TouchableOpacity>
+			)}
 			<TouchableOpacity style={styles.floatingButton} onPress={onPress}>
 				<Ionicons name="share" size={24} color="#000000" />
 				<View style={styles.selectedCount}>

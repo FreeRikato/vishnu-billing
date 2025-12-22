@@ -35,6 +35,7 @@ export default function InvoiceScreen() {
 		toggleInvoice,
 		enableSelectionMode,
 		getSelectedCount,
+		cancelSelection,
 	} = useInvoices();
 
 	const handleInvoicePress = (invoice: Invoice) => {
@@ -183,6 +184,7 @@ export default function InvoiceScreen() {
 					visible={selectionMode}
 					selectedCount={getSelectedCount()}
 					onPress={handleSharePress}
+					onCancel={cancelSelection}
 				/>
 
 				{/* Loading Indicator */}

@@ -1,6 +1,6 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { contactsStyles } from "@/styles/contacts";
 import type { Product } from "@/types";
-import { contactsStyles } from "../styles/contacts";
 import ProductItem from "./ProductItem";
 
 interface ProductListProps {

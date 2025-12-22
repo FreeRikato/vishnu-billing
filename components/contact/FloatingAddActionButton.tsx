@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
-import { contactsStyles } from "../styles/contacts";
+import { contactsStyles } from "@/styles/contacts";
 
 interface FloatingActionButtonProps {
 	onPress?: () => void;

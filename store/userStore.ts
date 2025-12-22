@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import {
-	createUser,
 	ensureDefaultUser,
 	getUserById,
 	updateUser,
@@ -18,7 +17,7 @@ interface UserStore {
 /**
  * Zustand store for managing user state globally.
  */
-export const useUserStore = create<UserStore>((set, get) => ({
+export const useUserStore = create<UserStore>((set, _get) => ({
 	user: null,
 	loading: false,
 

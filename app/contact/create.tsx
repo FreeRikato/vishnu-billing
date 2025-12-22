@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
 import { useContactStore } from "@/store/contactStore";
+import { validateContact } from "@/utils/validation";
 
 const COLORS = [
 	"#3B82F6",
@@ -57,21 +58,22 @@ export default function CreateContactScreen() {
 	};
 
 	const handleSave = async () => {
-		if (!formData.name.trim()) {
-			Alert.alert("Error", "Name is required");
-			return;
-		}
+		// Validate using Zod schema
+		const validation = validateContact({
+			name: formData.name.trim(),
+			phone: formData.phone.trim(),
+		});
 
-		if (!formData.phone.trim()) {
-			Alert.alert("Error", "Phone number is required");
+		if (!validation.success) {
+			Alert.alert("Error", validation.error);
 			return;
 		}
 
 		try {
 			// Use store method which wraps service and updates state
 			const newContact = await useContactStore.getState().createContact({
-				name: formData.name,
-				phone: formData.phone,
+				name: validation.data.name,
+				phone: validation.data.phone,
 			});
 
 			if (newContact) {

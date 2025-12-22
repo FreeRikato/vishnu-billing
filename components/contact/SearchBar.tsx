@@ -5,7 +5,7 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
-import { contactsStyles } from "../styles/contacts";
+import { contactsStyles } from "@/styles/contacts";
 
 interface SearchBarProps {
 	value: string;

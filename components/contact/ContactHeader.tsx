@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
-import { contactsStyles } from "../styles/contacts";
+import { contactsStyles } from "@/styles/contacts";
 
 interface ContactHeaderProps {
 	onSettingsPress?: () => void;

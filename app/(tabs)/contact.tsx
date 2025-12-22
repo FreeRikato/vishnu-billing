@@ -1,13 +1,15 @@
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ContactHeader from "@/components/ContactHeader";
-import ContactList from "@/components/ContactList";
-import FloatingAddActionButton from "@/components/FloatingAddActionButton";
-import SearchBar from "@/components/SearchBar";
+import {
+	ContactHeader,
+	ContactList,
+	FloatingAddActionButton,
+	SearchBar,
+} from "@/components";
 import { useContacts } from "@/hooks/useContacts";
+import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
-import { contactsStyles } from "../../styles/contacts";
 
 export default function ContactScreen() {
 	const { searchText, setSearchText, contacts, loading } = useContacts();

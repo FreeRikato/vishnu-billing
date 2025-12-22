@@ -50,3 +50,8 @@ export const InvoiceItem = sqliteTable("invoice_item", {
 	discountValue: real(),
 	discountType: text(),
 });
+
+export const SystemMeta = sqliteTable("system_meta", {
+	key: text().primaryKey(),
+	value: text().notNull(),
+});

@@ -1,4 +1,4 @@
-import ContactHeader from "./ContactHeader";
+import ContactHeader from "@/components/contact/ContactHeader";
 
 interface ProductHeaderProps {
 	onSettingsPress: () => void;

@@ -74,7 +74,10 @@ export default function InvoiceScreen() {
 								.filter((i): i is NonNullable<typeof i> => i !== null);
 
 							if (fullInvoices.length === 0) {
-								Alert.alert("Error", "Could not fetch details for selected invoices.");
+								Alert.alert(
+									"Error",
+									"Could not fetch details for selected invoices.",
+								);
 								return;
 							}
 

@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
+import { productsStyles } from "@/styles/products";
 import type { Product } from "@/types";
-import { productsStyles } from "../styles/products";
 
 interface ProductItemProps {
 	product: Product;

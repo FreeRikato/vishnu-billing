@@ -1,6 +1,6 @@
 import { FlatList, View } from "react-native";
+import { contactsStyles } from "@/styles/contacts";
 import type { Invoice } from "@/types";
-import { contactsStyles } from "../styles/contacts";
 import InvoiceItem from "./InvoiceItem";
 
 interface InvoiceListProps {

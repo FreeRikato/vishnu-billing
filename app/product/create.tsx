@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
 import { useProductStore } from "@/store/productStore";
+import { validateProduct } from "@/utils/validation";
 
 export default function CreateProductScreen() {
 	const router = useRouter();
@@ -15,33 +16,27 @@ export default function CreateProductScreen() {
 	});
 
 	const handleSave = async () => {
-		if (!formData.name.trim()) {
-			Alert.alert("Error", "Product name is required");
-			return;
-		}
-
-		if (!formData.price.trim()) {
-			Alert.alert("Error", "Price is required");
-			return;
-		}
-
+		// Parse price to number for validation
 		const priceValue = parseFloat(formData.price);
-		if (Number.isNaN(priceValue) || priceValue < 0) {
-			Alert.alert("Error", "Please enter a valid price");
-			return;
-		}
 
-		if (!formData.unit.trim()) {
-			Alert.alert("Error", "Unit is required");
+		// Validate using Zod schema
+		const validation = validateProduct({
+			name: formData.name.trim(),
+			price: priceValue,
+			unit: formData.unit.trim(),
+		});
+
+		if (!validation.success) {
+			Alert.alert("Error", validation.error);
 			return;
 		}
 
 		try {
 			// Use store method which wraps service and updates state
 			const newProduct = await useProductStore.getState().createProduct({
-				name: formData.name,
-				price: priceValue,
-				unit: formData.unit,
+				name: validation.data.name,
+				price: validation.data.price,
+				unit: validation.data.unit,
 			});
 
 			if (newProduct) {

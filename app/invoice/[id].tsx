@@ -1,9 +1,6 @@
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import * as FileSystem from "expo-file-system/legacy";
-import * as Print from "expo-print";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import * as Sharing from "expo-sharing";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
@@ -28,6 +25,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { InvoicePreviewCard } from "@/components/invoice/InvoicePreviewCard";
+import PdfService from "@/services/pdfService";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 
@@ -39,9 +37,7 @@ export default function InvoicePreviewScreen() {
 	const idString = Array.isArray(id) ? id[0] : id;
 	const invoiceId = Number(idString);
 
-	const invoice = useInvoiceStore((state) =>
-		state.getInvoiceById(invoiceId),
-	);
+	const invoice = useInvoiceStore((state) => state.getInvoiceById(invoiceId));
 	const [capturing, setCapturing] = useState(false);
 
 	// Zoom Logic for Android (Pinch to Inspect)
@@ -92,11 +88,8 @@ export default function InvoicePreviewScreen() {
 	// Get PDF URI - checks if saved PDF exists, otherwise generates it
 	const getPdfUri = async (): Promise<string> => {
 		// Check if stored PDF exists
-		if (invoice.pdfPath) {
-			const fileInfo = await FileSystem.getInfoAsync(invoice.pdfPath);
-			if (fileInfo.exists) {
-				return invoice.pdfPath;
-			}
+		if (invoice.pdfPath && (await PdfService.pdfExists(invoice.pdfPath))) {
+			return invoice.pdfPath;
 		}
 
 		// Fallback to generating it
@@ -114,8 +107,7 @@ export default function InvoicePreviewScreen() {
 			},
 		);
 
-		const { uri } = await Print.printToFileAsync({ html });
-		return uri;
+		return await PdfService.generatePdf(html);
 	};
 
 	const handleBack = () => {
@@ -125,31 +117,21 @@ export default function InvoicePreviewScreen() {
 	const handleSave = async () => {
 		setCapturing(true);
 		try {
-			// Get PDF URI (uses saved PDF if available)
 			const pdfUri = await getPdfUri();
+			const result = await PdfService.sharePdf(
+				pdfUri,
+				`Save Invoice ${invoice.invoiceNumber}`,
+			);
 
-			// Check if sharing is available (iOS Files app, Android Storage)
-			const isAvailable = await Sharing.isAvailableAsync();
-			if (isAvailable) {
-				// On iOS: allows saving to Files app
-				// On Android: allows saving via system picker
-				await Sharing.shareAsync(pdfUri, {
-					mimeType: "application/pdf",
-					dialogTitle: `Save Invoice ${invoice.invoiceNumber}`,
-					// On iOS, this enables the "Save to Files" option
-				});
-			} else {
+			if (!result.success && !result.cancelled) {
 				Alert.alert(
 					"Info",
 					"PDF generated but sharing is not available on this device.",
 				);
 			}
 		} catch (error) {
-			// User cancelled sharing is not an error
-			if (error instanceof Error && !error.message.includes("cancelled")) {
-				console.error("Error saving invoice:", error);
-				Alert.alert("Error", "Failed to save invoice PDF");
-			}
+			console.error("Error saving invoice:", error);
+			Alert.alert("Error", "Failed to save invoice PDF");
 		} finally {
 			setCapturing(false);
 		}
@@ -158,18 +140,14 @@ export default function InvoicePreviewScreen() {
 	const handleShare = async () => {
 		setCapturing(true);
 		try {
-			// Get PDF URI (uses saved PDF if available)
 			const pdfUri = await getPdfUri();
+			const result = await PdfService.sharePdf(
+				pdfUri,
+				`Share Invoice ${invoice.invoiceNumber}`,
+			);
 
-			// Share the PDF
-			const isAvailable = await Sharing.isAvailableAsync();
-			if (isAvailable) {
-				await Sharing.shareAsync(pdfUri, {
-					mimeType: "application/pdf",
-					dialogTitle: `Share Invoice ${invoice.invoiceNumber}`,
-				});
-			} else {
-				Alert.alert("Success", "Invoice PDF saved successfully!");
+			if (!result.success && !result.cancelled) {
+				Alert.alert("Error", "Failed to share invoice PDF");
 			}
 		} catch (error) {
 			console.error("Error sharing invoice:", error);

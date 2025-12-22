@@ -2,10 +2,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import * as FileSystem from "expo-file-system/legacy";
-import * as Print from "expo-print";
 import { router } from "expo-router";
-import { useState } from "react";
 import {
 	Alert,
 	ScrollView,
@@ -15,129 +12,47 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getLocalDateString, useCreateInvoice } from "@/hooks/useCreateInvoice";
 import { generateInvoiceNumber } from "@/services/invoiceService";
+import PdfService from "@/services/pdfService";
 import { useContactStore } from "@/store/contactStore";
 import { useInvoiceStore } from "@/store/invoiceStore";
-import { useProductStore } from "@/store/productStore";
-import type { Product as ProductType } from "@/types";
-import { calculateDiscountAmount } from "@/utils/invoiceUtils";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 import { ContactPickerModal } from "../../components/invoice/ContactPickerModal";
 import { DiscountModal } from "../../components/invoice/DiscountModal";
 import { ProductPickerModal } from "../../components/invoice/ProductPickerModal";
-import type {
-	Customer,
-	DiscountType,
-	InvoiceProduct,
-} from "../../types/invoice";
-
-const TAX_RATE = 0.05; // 5%
-
-// Helper to get YYYY-MM-DD in local time
-function getLocalDateString(): string {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = String(now.getMonth() + 1).padStart(2, "0");
-	const day = String(now.getDate()).padStart(2, "0");
-	return `${year}-${month}-${day}`;
-}
-
-// Helper to convert ProductType to InvoiceProduct
-function toInvoiceProduct(product: ProductType): InvoiceProduct {
-	return {
-		id: product.id,
-		name: product.name,
-		description: product.unit,
-		price: product.price,
-		quantity: 1,
-	};
-}
 
 export default function CreateInvoiceScreen() {
-	// Get real data from stores
-	const contacts = useContactStore((state) => state.contacts);
-	const products = useProductStore((state) => state.products);
 	const addInvoice = useInvoiceStore((state) => state.addInvoice);
+	const contacts = useContactStore((state) => state.contacts);
 
-	// Convert contacts to customers
-	const customers: Customer[] = contacts.map((contact) => ({
-		id: contact.id,
-		name: contact.name,
-	}));
-
-	// State for invoice items (products added to invoice)
-	const [invoiceItems, setInvoiceItems] = useState<InvoiceProduct[]>([]);
-
-	// Modal visibility states
-	const [discountModalVisible, setDiscountModalVisible] = useState(false);
-	const [productPickerVisible, setProductPickerVisible] = useState(false);
-	const [contactPickerVisible, setContactPickerVisible] = useState(false);
-	const [selectedProductId, setSelectedProductId] = useState<number | null>(
-		null,
-	);
-	const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-		null,
-	);
-
-	const subtotal = invoiceItems.reduce((sum, product) => {
-		const itemTotal = product.price * product.quantity;
-		const discount = calculateDiscountAmount(itemTotal, product.discount);
-		return sum + itemTotal - discount;
-	}, 0);
-
-	const totalDiscount = invoiceItems.reduce((sum, product) => {
-		const itemTotal = product.price * product.quantity;
-		return sum + calculateDiscountAmount(itemTotal, product.discount);
-	}, 0);
-
-	// Round calculations to 2 decimal places for currency integrity
-	const roundedSubtotal = Math.round(subtotal * 100) / 100;
-	const roundedTotalDiscount = Math.round(totalDiscount * 100) / 100;
-	const tax = Math.round(roundedSubtotal * TAX_RATE * 100) / 100;
-	const total = Math.round((roundedSubtotal + tax) * 100) / 100;
-
-	// Get all products (filtering is handled in the modal)
-	const availableProducts = products;
-
-	const handleCancel = () => {
-		Alert.alert(
-			"Cancel",
-			"Are you sure you want to cancel creating this invoice?",
-			[
-				{ text: "No", style: "cancel" },
-				{ text: "Yes", onPress: () => router.back() },
-			],
-		);
-	};
-
-	const handleSelectCustomer = () => {
-		setContactPickerVisible(true);
-	};
-
-	const handleCreateNewCustomer = () => {
-		router.push("/contact/create");
-	};
-
-	const handleAddProduct = () => {
-		setProductPickerVisible(true);
-	};
-
-	const handleContactSelect = (customer: Customer) => {
-		setSelectedCustomer(customer);
-		setContactPickerVisible(false);
-	};
-
-	const handleProductSelect = (product: InvoiceProduct) => {
-		setInvoiceItems((prev) => {
-			const exists = prev.some((item) => item.id === product.id);
-			if (exists) {
-				// Remove if already selected (toggle behavior)
-				return prev.filter((item) => item.id !== product.id);
-			}
-			// Add new product
-			return [...prev, { ...product, quantity: 1 }];
-		});
-	};
+	// Use the custom hook to manage state and handlers
+	const {
+		invoiceItems,
+		summary,
+		selectedCustomer,
+		discountModalVisible,
+		productPickerVisible,
+		contactPickerVisible,
+		selectedProductId,
+		availableProducts,
+		customers,
+		handleCancel,
+		handleSelectCustomer,
+		handleCreateNewCustomer,
+		handleAddProduct,
+		handleContactSelect,
+		handleProductSelect,
+		handleQuantityChange,
+		handleRemoveProduct,
+		handleAddDiscount,
+		handleApplyDiscount,
+		handleEditDiscount,
+		setDiscountModalVisible,
+		setProductPickerVisible,
+		setContactPickerVisible,
+		toInvoiceProduct,
+	} = useCreateInvoice();
 
 	const handlePreviewPDF = async () => {
 		if (!selectedCustomer) {
@@ -171,27 +86,17 @@ export default function CreateInvoiceScreen() {
 					phone: contact.phone,
 				},
 				invoiceItems,
-				{
-					subtotal: roundedSubtotal,
-					totalDiscount: roundedTotalDiscount,
-					tax,
-					total,
-				},
+				summary,
 			);
 
-			// Generate PDF to file
-			const { uri } = await Print.printToFileAsync({ html });
+			// Generate and save PDF using PdfService
+			const fileName = PdfService.generateFileName("invoice");
+			const result = await PdfService.generateAndSavePdf(html, fileName);
 
-			// Get the file directory and create final path
-			const fileDir = FileSystem.documentDirectory ?? "";
-			const fileName = `invoice_${Date.now()}.pdf`;
-			const pdfPath = `${fileDir}${fileName}`;
-
-			// Copy PDF from temporary location to app documents directory
-			await FileSystem.copyAsync({
-				from: uri,
-				to: pdfPath,
-			});
+			if (!result) {
+				Alert.alert("Error", "Failed to generate PDF");
+				return;
+			}
 
 			// Create invoice in database
 			const newInvoice = await addInvoice({
@@ -200,14 +105,9 @@ export default function CreateInvoiceScreen() {
 				customerName: contact.name,
 				customerPhone: contact.phone,
 				items: invoiceItems,
-				summary: {
-					subtotal: roundedSubtotal,
-					totalDiscount: roundedTotalDiscount,
-					tax,
-					total,
-				},
+				summary,
 				date: getLocalDateString(),
-				pdfPath,
+				pdfPath: result.savedPath ?? result.tempUri,
 			});
 
 			if (newInvoice) {
@@ -224,57 +124,6 @@ export default function CreateInvoiceScreen() {
 			console.error("Error generating PDF:", error);
 			Alert.alert("Error", "Failed to generate PDF");
 		}
-	};
-
-	const handleQuantityChange = (productId: number, change: number) => {
-		setInvoiceItems((prev) =>
-			prev.map((item) => {
-				if (item.id === productId) {
-					const newQuantity = Math.max(1, item.quantity + change);
-					return { ...item, quantity: newQuantity };
-				}
-				return item;
-			}),
-		);
-	};
-
-	const handleRemoveProduct = (productId: number) => {
-		Alert.alert("Remove Product", "Remove this product from the invoice?", [
-			{ text: "Cancel", style: "cancel" },
-			{
-				text: "Remove",
-				style: "destructive",
-				onPress: () => {
-					setInvoiceItems((prev) =>
-						prev.filter((item) => item.id !== productId),
-					);
-				},
-			},
-		]);
-	};
-
-	const handleAddDiscount = (productId: number) => {
-		setSelectedProductId(productId);
-		setDiscountModalVisible(true);
-	};
-
-	const handleApplyDiscount = (value: number, type: DiscountType) => {
-		if (selectedProductId) {
-			setInvoiceItems((prev) =>
-				prev.map((item) => {
-					if (item.id === selectedProductId) {
-						return { ...item, discount: { value, type } };
-					}
-					return item;
-				}),
-			);
-		}
-		setSelectedProductId(null);
-	};
-
-	const handleEditDiscount = (productId: number) => {
-		setSelectedProductId(productId);
-		setDiscountModalVisible(true);
 	};
 
 	return (
@@ -415,7 +264,7 @@ export default function CreateInvoiceScreen() {
 						<View style={styles.summaryRow}>
 							<Text style={styles.summaryLabel}>Subtotal</Text>
 							<Text style={styles.summaryValue}>
-								${roundedSubtotal.toFixed(2)}
+								${summary.subtotal.toFixed(2)}
 							</Text>
 						</View>
 						<View style={styles.summaryRow}>
@@ -426,17 +275,17 @@ export default function CreateInvoiceScreen() {
 								</TouchableOpacity>
 							</Text>
 							<Text style={styles.summaryValue}>
-								-${roundedTotalDiscount.toFixed(2)}
+								-${summary.totalDiscount.toFixed(2)}
 							</Text>
 						</View>
 						<View style={styles.summaryRow}>
 							<Text style={styles.summaryLabel}>Tax (5%)</Text>
-							<Text style={styles.summaryValue}>${tax.toFixed(2)}</Text>
+							<Text style={styles.summaryValue}>${summary.tax.toFixed(2)}</Text>
 						</View>
 						<View style={styles.divider} />
 						<View style={styles.totalRow}>
 							<Text style={styles.totalLabel}>Total</Text>
-							<Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+							<Text style={styles.totalValue}>${summary.total.toFixed(2)}</Text>
 						</View>
 					</View>
 				</View>

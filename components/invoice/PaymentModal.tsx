@@ -14,25 +14,34 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { invoiceStyles } from "../../styles/invoice";
+import { invoiceStyles } from "@/styles";
+import {
+	centsToDecimal,
+	decimalToCents,
+	formatCurrency,
+} from "@/utils/currency";
 
 interface PaymentModalProps {
 	visible: boolean;
 	onClose: () => void;
-	onSave: (amount: number) => void;
-	totalAmount: number;
-	currentPaidAmount: number;
+	onSave: (amountInCents: number) => void;
+	totalAmountInCents: number;
+	currentPaidAmountInCents: number;
 }
 
 export function PaymentModal({
 	visible,
 	onClose,
 	onSave,
-	totalAmount,
-	currentPaidAmount,
+	totalAmountInCents,
+	currentPaidAmountInCents,
 }: PaymentModalProps) {
 	const [showModal, setShowModal] = useState(visible);
-	const [amount, setAmount] = useState(currentPaidAmount.toString());
+	const [amount, setAmount] = useState(
+		currentPaidAmountInCents > 0
+			? centsToDecimal(currentPaidAmountInCents).toString()
+			: "",
+	);
 
 	const slideAnim = useRef(new Animated.Value(600)).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -65,10 +74,14 @@ export function PaymentModal({
 	useEffect(() => {
 		if (visible) {
 			setShowModal(true);
-			setAmount(currentPaidAmount > 0 ? currentPaidAmount.toString() : "");
+			setAmount(
+				currentPaidAmountInCents > 0
+					? centsToDecimal(currentPaidAmountInCents).toString()
+					: "",
+			);
 			animateIn();
 		}
-	}, [visible, currentPaidAmount, animateIn]);
+	}, [visible, currentPaidAmountInCents, animateIn]);
 
 	const handleClose = () => {
 		Keyboard.dismiss();
@@ -91,16 +104,17 @@ export function PaymentModal({
 
 	const handleSave = () => {
 		const numAmount = parseFloat(amount);
-		if (isNaN(numAmount)) {
+		if (Number.isNaN(numAmount) || numAmount < 0) {
 			onSave(0);
 		} else {
-			onSave(numAmount);
+			// Convert rupees to cents
+			onSave(decimalToCents(numAmount));
 		}
 		handleClose();
 	};
 
 	const handleFullPayment = () => {
-		setAmount(totalAmount.toString());
+		setAmount(centsToDecimal(totalAmountInCents).toString());
 	};
 
 	const handleClear = () => {
@@ -108,8 +122,11 @@ export function PaymentModal({
 	};
 
 	// Calculate remaining balance dynamically for display
-	const currentInputAmount = parseFloat(amount) || 0;
-	const remaining = Math.max(0, totalAmount - currentInputAmount);
+	const currentInputAmountInCents = decimalToCents(parseFloat(amount) || 0);
+	const remainingInCents = Math.max(
+		0,
+		totalAmountInCents - currentInputAmountInCents,
+	);
 
 	return (
 		<Modal
@@ -145,13 +162,13 @@ export function PaymentModal({
 								<View style={invoiceStyles.modalHeader}>
 									<Text style={invoiceStyles.modalTitle}>Record Payment</Text>
 									<Text style={styles.subtitle}>
-										Total Due: ${totalAmount.toFixed(2)}
+										Total Due: {formatCurrency(totalAmountInCents)}
 									</Text>
 								</View>
 
 								{/* Input Field */}
 								<View style={invoiceStyles.inputContainer}>
-									<Text style={styles.currencyPrefix}>$</Text>
+									<Text style={styles.currencyPrefix}>₹</Text>
 									<TextInput
 										ref={inputRef}
 										style={[invoiceStyles.input, { textAlign: "left" }]}
@@ -185,12 +202,12 @@ export function PaymentModal({
 										<Text
 											style={[
 												styles.balanceValue,
-												remaining === 0
+												remainingInCents === 0
 													? { color: "#13ec6a" }
 													: { color: "#ef4444" },
 											]}
 										>
-											${remaining.toFixed(2)}
+											{formatCurrency(remainingInCents)}
 										</Text>
 									</View>
 								</View>
@@ -200,11 +217,13 @@ export function PaymentModal({
 									<TouchableOpacity
 										style={[
 											invoiceStyles.actionButton,
-											invoiceStyles.cancelButton,
+											invoiceStyles.cancelActionButton,
 										]}
 										onPress={handleClose}
 									>
-										<Text style={invoiceStyles.cancelButtonText}>Cancel</Text>
+										<Text style={invoiceStyles.cancelActionButtonText}>
+											Cancel
+										</Text>
 									</TouchableOpacity>
 									<TouchableOpacity
 										style={[

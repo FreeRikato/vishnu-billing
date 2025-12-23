@@ -1,6 +1,7 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { invoiceStyles } from "@/styles";
 import type { Customer } from "@/types";
 
 interface InvoiceCreateCustomerSelectionProps {
@@ -15,18 +16,18 @@ export function InvoiceCreateCustomerSelection({
 	onCreateNewCustomer,
 }: InvoiceCreateCustomerSelectionProps) {
 	return (
-		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Who is this for?</Text>
-			<View style={styles.customerSection}>
+		<View style={invoiceStyles.section}>
+			<Text style={invoiceStyles.sectionTitle}>Who is this for?</Text>
+			<View style={invoiceStyles.customerSection}>
 				<TouchableOpacity
 					onPress={onSelectCustomer}
-					style={styles.customerSelect}
+					style={invoiceStyles.customerSelect}
 				>
 					<Text
 						style={
 							selectedCustomer
-								? styles.customerSelectedText
-								: styles.customerSelectText
+								? invoiceStyles.customerSelectedText
+								: invoiceStyles.customerSelectText
 						}
 					>
 						{selectedCustomer ? selectedCustomer.name : "Select Customer"}
@@ -35,67 +36,14 @@ export function InvoiceCreateCustomerSelection({
 				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={onCreateNewCustomer}
-					style={styles.createCustomerButton}
+					style={invoiceStyles.createCustomerButton}
 				>
 					<AntDesign name="user-add" size={24} color="#13ec6a" />
-					<Text style={styles.createCustomerText}>Create New Customer</Text>
+					<Text style={invoiceStyles.createCustomerText}>
+						Create New Customer
+					</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	section: {
-		marginTop: 24,
-		marginBottom: 12,
-	},
-	sectionTitle: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#ffffff",
-		marginBottom: 12,
-		paddingHorizontal: 4,
-	},
-	customerSection: {
-		gap: 12,
-	},
-	customerSelect: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		backgroundColor: "#121212",
-		borderWidth: 2,
-		borderColor: "#374151",
-		borderRadius: 12,
-		paddingHorizontal: 16,
-		paddingVertical: 20,
-	},
-	customerSelectText: {
-		fontSize: 18,
-		fontWeight: "500",
-		color: "#9ca3af",
-	},
-	customerSelectedText: {
-		fontSize: 18,
-		fontWeight: "500",
-		color: "#ffffff",
-	},
-	createCustomerButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 12,
-		borderWidth: 1,
-		borderColor: "#374151",
-		borderStyle: "dashed",
-		borderRadius: 12,
-		paddingVertical: 16,
-		backgroundColor: "transparent",
-	},
-	createCustomerText: {
-		fontSize: 16,
-		fontWeight: "700",
-		color: "#13ec6a",
-	},
-});

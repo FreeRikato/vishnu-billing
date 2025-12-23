@@ -1,11 +1,12 @@
 import { router } from "expo-router";
-import { Alert, ScrollView, StyleSheet } from "react-native";
+import { Alert, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getLocalDateString, useCreateInvoice } from "@/hooks/useCreateInvoice";
 import { generateInvoiceNumber } from "@/services/invoiceService";
 import PdfService from "@/services/pdfService";
 import { useContactStore } from "@/store/contactStore";
 import { useInvoiceStore } from "@/store/invoiceStore";
+import { invoiceStyles } from "@/styles";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 import { ContactPickerModal } from "../../components/invoice/ContactPickerModal";
 import { DiscountModal } from "../../components/invoice/DiscountModal";
@@ -124,14 +125,17 @@ export default function CreateInvoiceScreen() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+		<SafeAreaView
+			style={invoiceStyles.container}
+			edges={["top", "left", "right"]}
+		>
 			{/* Header */}
 			<InvoiceCreateHeader onCancel={handleCancel} />
 
 			<ScrollView
-				style={styles.scrollView}
+				style={invoiceStyles.scrollView}
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={styles.scrollContent}
+				contentContainerStyle={invoiceStyles.scrollContent}
 			>
 				{/* Customer Selection Section */}
 				<InvoiceCreateCustomerSelection
@@ -220,17 +224,3 @@ export default function CreateInvoiceScreen() {
 		</SafeAreaView>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#000000",
-	},
-	scrollView: {
-		flex: 1,
-		paddingHorizontal: 16,
-	},
-	scrollContent: {
-		paddingBottom: 100,
-	},
-});

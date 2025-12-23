@@ -211,4 +211,64 @@ export const contactsStyles = StyleSheet.create({
 		color: "#13EC6A",
 		fontWeight: "bold",
 	},
+
+	// AvatarPreview styles
+	avatarPreviewContainer: {
+		alignItems: "center",
+		marginBottom: 32,
+	},
+	avatarPreview: {
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: 16,
+	},
+	avatarPreviewText: {
+		fontSize: 42,
+		fontWeight: "bold",
+	},
+
+	// ColorPicker styles
+	colorPickerContainer: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 12,
+		paddingHorizontal: 8,
+	},
+	colorOption: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+
+	// DeleteContactButton styles
+	deleteSection: {
+		paddingTop: 32,
+		paddingBottom: 16,
+	},
+	deleteButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 12,
+		paddingVertical: 20,
+		borderRadius: 50,
+		borderWidth: 2,
+		borderColor: "rgba(239, 68, 68, 0.3)",
+		backgroundColor: "rgba(239, 68, 68, 0.05)",
+		marginBottom: 16,
+	},
+	deleteButtonText: {
+		color: "#EF4444",
+		fontSize: 20,
+		fontWeight: "bold",
+		letterSpacing: 0.5,
+	},
+	deleteWarning: {
+		textAlign: "center",
+		color: "#6B7280",
+		fontSize: 14,
+		fontWeight: "500",
+	},
 });

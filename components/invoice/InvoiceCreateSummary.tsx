@@ -1,6 +1,8 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { invoiceStyles } from "@/styles";
 import type { Discount, InvoiceSummary } from "@/types";
+import { basisPointsToPercent, formatCurrency } from "@/utils/currency";
 
 interface InvoiceCreateSummaryProps {
 	summary: InvoiceSummary;
@@ -14,14 +16,14 @@ export function InvoiceCreateSummary({
 	onAddGlobalDiscount,
 }: InvoiceCreateSummaryProps) {
 	return (
-		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Summary</Text>
-			<View style={styles.summaryCard}>
+		<View style={invoiceStyles.section}>
+			<Text style={invoiceStyles.sectionTitle}>Summary</Text>
+			<View style={invoiceStyles.summaryCard}>
 				{/* Subtotal */}
-				<View style={styles.summaryRow}>
-					<Text style={styles.summaryLabel}>Subtotal</Text>
-					<Text style={styles.summaryValue}>
-						${summary.subtotal.toFixed(2)}
+				<View style={invoiceStyles.summaryRow}>
+					<Text style={invoiceStyles.summaryLabel}>Subtotal</Text>
+					<Text style={invoiceStyles.summaryValue}>
+						{formatCurrency(summary.subtotal)}
 					</Text>
 				</View>
 
@@ -29,138 +31,55 @@ export function InvoiceCreateSummary({
 				{!globalDiscount ? (
 					<TouchableOpacity
 						onPress={onAddGlobalDiscount}
-						style={styles.addDiscountButton}
+						style={invoiceStyles.addDiscountButton}
 					>
 						<MaterialIcons name="discount" size={16} color="#13ec6a" />
-						<Text style={styles.addDiscountText}>Add Discount</Text>
+						<Text style={invoiceStyles.addDiscountText}>Add Discount</Text>
 					</TouchableOpacity>
 				) : (
-					<View style={styles.summaryRow}>
+					<View style={invoiceStyles.summaryRow}>
 						<TouchableOpacity
-							style={styles.discountInfo}
+							style={invoiceStyles.discountInfo}
 							onPress={onAddGlobalDiscount}
 						>
-							<Text style={styles.discountText}>
-								Discount ({globalDiscount.value}
-								{globalDiscount.type === "percent" ? "%" : ""})
+							<Text style={invoiceStyles.discountText}>
+								Discount (
+								{globalDiscount.type === "percent"
+									? `${basisPointsToPercent(globalDiscount.value)}%`
+									: formatCurrency(globalDiscount.value)}
+								)
 							</Text>
-							<Text style={styles.editText}>Edit</Text>
+							<Text style={invoiceStyles.editText}>Edit</Text>
 						</TouchableOpacity>
 					</View>
 				)}
 
 				{/* Total Savings (Informational) */}
-				<View style={styles.summaryRow}>
-					<Text style={styles.summaryLabel}>Total Savings</Text>
-					<Text style={styles.summaryValue}>
-						-${summary.totalDiscount.toFixed(2)}
+				<View style={invoiceStyles.summaryRow}>
+					<Text style={invoiceStyles.summaryLabel}>Total Savings</Text>
+					<Text style={invoiceStyles.summaryValue}>
+						-{formatCurrency(summary.totalDiscount)}
 					</Text>
 				</View>
 
 				{/* Tax */}
-				<View style={styles.summaryRow}>
-					<Text style={styles.summaryLabel}>Tax (5%)</Text>
-					<Text style={styles.summaryValue}>${summary.tax.toFixed(2)}</Text>
+				<View style={invoiceStyles.summaryRow}>
+					<Text style={invoiceStyles.summaryLabel}>Tax (5%)</Text>
+					<Text style={invoiceStyles.summaryValue}>
+						{formatCurrency(summary.tax)}
+					</Text>
 				</View>
 
-				<View style={styles.divider} />
+				<View style={invoiceStyles.divider} />
 
 				{/* Total */}
-				<View style={styles.totalRow}>
-					<Text style={styles.totalLabel}>Total</Text>
-					<Text style={styles.totalValue}>${summary.total.toFixed(2)}</Text>
+				<View style={invoiceStyles.totalRow}>
+					<Text style={invoiceStyles.totalLabel}>Total</Text>
+					<Text style={invoiceStyles.totalValue}>
+						{formatCurrency(summary.total)}
+					</Text>
 				</View>
 			</View>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	section: {
-		marginTop: 24,
-		marginBottom: 12,
-	},
-	sectionTitle: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#ffffff",
-		marginBottom: 12,
-		paddingHorizontal: 4,
-	},
-	summaryCard: {
-		backgroundColor: "#121212",
-		borderRadius: 12,
-		padding: 20,
-		borderWidth: 1,
-		borderColor: "#374151",
-		gap: 16,
-	},
-	summaryRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	summaryLabel: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: "#9ca3af",
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-	},
-	addDiscountButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 4,
-		alignSelf: "flex-start",
-		marginTop: 4,
-	},
-	addDiscountText: {
-		fontSize: 14,
-		fontWeight: "700",
-		color: "#13ec6a",
-		textDecorationLine: "underline",
-	},
-	discountInfo: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		fontSize: 14,
-		color: "#9ca3af",
-	},
-	discountText: {
-		color: "#13ec6a",
-		fontWeight: "700",
-	},
-	editText: {
-		textDecorationLine: "underline",
-		fontSize: 12,
-	},
-	summaryValue: {
-		fontSize: 16,
-		fontWeight: "700",
-		color: "#ffffff",
-	},
-	divider: {
-		height: 1,
-		backgroundColor: "#374151",
-		marginVertical: 8,
-	},
-	totalRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-end",
-	},
-	totalLabel: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#ffffff",
-		marginBottom: 4,
-	},
-	totalValue: {
-		fontSize: 36,
-		fontWeight: "800",
-		color: "#13ec6a",
-		letterSpacing: -1,
-	},
-});

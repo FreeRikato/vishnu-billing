@@ -35,6 +35,12 @@ export const invoiceStyles = StyleSheet.create({
 		fontWeight: "700",
 		color: "#9db9a8",
 	},
+	cancelButton: {
+		paddingHorizontal: 8,
+		height: 48,
+		alignItems: "center",
+		justifyContent: "center",
+	},
 	scrollView: {
 		flex: 1,
 		paddingHorizontal: 16,
@@ -72,6 +78,11 @@ export const invoiceStyles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: "500",
 		color: "#9ca3af",
+	},
+	customerSelectedText: {
+		fontSize: 18,
+		fontWeight: "500",
+		color: "#ffffff",
 	},
 	createCustomerButton: {
 		flexDirection: "row",
@@ -306,6 +317,25 @@ export const invoiceStyles = StyleSheet.create({
 		paddingVertical: 16,
 		paddingBottom: 24,
 	},
+	createButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 8,
+		backgroundColor: "#13ec6a",
+		height: 56,
+		borderRadius: 12,
+		shadowColor: "#13ec6a",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.4,
+		shadowRadius: 8,
+		elevation: 8,
+	},
+	createButtonText: {
+		fontSize: 18,
+		fontWeight: "800",
+		color: "#000000",
+	},
 	previewButton: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -460,10 +490,10 @@ export const invoiceStyles = StyleSheet.create({
 		justifyContent: "center",
 		overflow: "hidden",
 	},
-	cancelButton: {
+	cancelActionButton: {
 		backgroundColor: "#242424",
 	},
-	cancelButtonText: {
+	cancelActionButtonText: {
 		fontSize: 16,
 		fontWeight: "700",
 		color: "#ffffff",
@@ -506,5 +536,468 @@ export const invoiceStyles = StyleSheet.create({
 	},
 	invoiceListContent: {
 		paddingBottom: 120,
+	},
+
+	// Invoice preview styles
+	deleteButton: {
+		width: 48,
+		height: 48,
+		justifyContent: "center",
+		alignItems: "flex-end",
+	},
+	previewContainer: {
+		alignSelf: "center",
+		backgroundColor: "#ffffff",
+		borderRadius: 4,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.25,
+		shadowRadius: 3.84,
+		elevation: 5,
+	},
+	spacer: {
+		height: 96,
+	},
+	loadingOverlay: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		backgroundColor: "rgba(0, 0, 0, 0.8)",
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 12,
+		zIndex: 50,
+	},
+	loadingText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#ffffff",
+	},
+	errorContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 16,
+	},
+	errorText: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: "#9ca3af",
+	},
+	placeholder: {
+		width: 64,
+	},
+
+	// InvoiceActionBar styles
+	actionBar: {
+		position: "absolute",
+		bottom: 30,
+		left: 20,
+		right: 20,
+		flexDirection: "row",
+		gap: 12,
+	},
+	paymentButton: {
+		flex: 1,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 4,
+		height: 64,
+		backgroundColor: "#1C1C1E",
+		borderRadius: 32,
+		borderWidth: 1,
+		borderColor: "rgba(19, 236, 106, 0.3)",
+	},
+	paymentButtonText: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#ffffff",
+	},
+	saveButton: {
+		flex: 1,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 4,
+		height: 64,
+		backgroundColor: "#1C1C1E",
+		borderRadius: 32,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.1)",
+	},
+	saveButtonText: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#ffffff",
+	},
+	shareButton: {
+		flex: 1.2,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 4,
+		height: 64,
+		backgroundColor: "#13ec6a",
+		borderRadius: 32,
+		shadowColor: "#13ec6a",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 8,
+		elevation: 8,
+	},
+	shareButtonText: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#000000",
+	},
+
+	// InvoiceItem styles
+	invoiceItem: {
+		flexDirection: "row",
+		alignItems: "flex-start",
+		gap: 16,
+		padding: 20,
+		marginBottom: 16,
+		borderRadius: 24,
+		backgroundColor: "#161b18",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.05,
+		shadowRadius: 2,
+		elevation: 2,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.05)",
+	},
+	checkboxWrapper: {
+		marginLeft: -8,
+		padding: 4,
+		opacity: 1,
+	},
+	checkbox: {
+		width: 32,
+		height: 32,
+		borderRadius: 16,
+		borderWidth: 2,
+		borderColor: "rgba(255, 255, 255, 0.3)",
+		backgroundColor: "transparent",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	checkboxChecked: {
+		backgroundColor: "#13ec6a",
+		borderColor: "#13ec6a",
+	},
+	checkIcon: {
+		color: "#000000",
+		fontSize: 20,
+	},
+	invoiceContent: {
+		flex: 1,
+		gap: 4,
+	},
+	invoiceHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+	},
+	customerName: {
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#ffffff",
+		flex: 1,
+	},
+	amount: {
+		fontSize: 20,
+		fontWeight: "700",
+	},
+	amountPaid: {
+		color: "#13ec6a",
+	},
+	amountPartial: {
+		color: "#ffd700",
+	},
+	amountUnpaid: {
+		color: "#ef4444",
+	},
+	invoiceDetails: {
+		gap: 2,
+	},
+	detailText: {
+		fontSize: 14,
+		color: "#9ca3af",
+		fontWeight: "500",
+	},
+	statusBadge: {
+		alignSelf: "flex-start",
+		marginTop: 8,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 6,
+		paddingHorizontal: 12,
+		paddingVertical: 4,
+		borderRadius: 12,
+	},
+	statusBadgePaid: {
+		backgroundColor: "rgba(19, 236, 106, 0.2)",
+	},
+	statusBadgePartial: {
+		backgroundColor: "rgba(255, 215, 0, 0.2)",
+	},
+	statusBadgeUnpaid: {
+		backgroundColor: "rgba(239, 68, 68, 0.2)",
+	},
+	statusText: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+	},
+	statusTextPaid: {
+		color: "#13ec6a",
+	},
+	statusTextPartial: {
+		color: "#ffd700",
+	},
+	statusTextUnpaid: {
+		color: "#ef4444",
+	},
+
+	// PageIndicator styles
+	pageIndicator: {
+		marginTop: 24,
+		alignSelf: "center",
+		backgroundColor: "#1C1C1E",
+		borderRadius: 9999,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.1)",
+		paddingHorizontal: 12,
+		paddingVertical: 4,
+	},
+	pageIndicatorText: {
+		fontSize: 12,
+		fontWeight: "600",
+		color: "#9CA3AF",
+	},
+
+	// PaymentModal specific styles
+	subtitle: {
+		fontSize: 16,
+		color: "#9CA3AF",
+		marginTop: 4,
+		fontWeight: "500",
+	},
+	currencyPrefix: {
+		fontSize: 64,
+		fontWeight: "800",
+		color: "#13ec6a",
+		marginRight: 4,
+	},
+	clearButton: {
+		position: "absolute",
+		right: 0,
+		top: "50%",
+		marginTop: -12,
+		backgroundColor: "#2a2a2a",
+		borderRadius: 12,
+		padding: 2,
+	},
+	quickActions: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 32,
+		paddingHorizontal: 8,
+	},
+	quickChip: {
+		backgroundColor: "rgba(19, 236, 106, 0.1)",
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+		borderRadius: 20,
+		borderWidth: 1,
+		borderColor: "rgba(19, 236, 106, 0.3)",
+	},
+	quickChipText: {
+		color: "#13ec6a",
+		fontWeight: "700",
+		fontSize: 14,
+	},
+	balanceContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	balanceLabel: {
+		color: "#9CA3AF",
+		fontSize: 14,
+	},
+	balanceValue: {
+		fontSize: 16,
+		fontWeight: "700",
+	},
+
+	// ZoomHint styles
+	zoomHint: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 8,
+		alignSelf: "center",
+		backgroundColor: "rgba(255, 255, 255, 0.1)",
+		borderRadius: 9999,
+		paddingHorizontal: 16,
+		paddingVertical: 6,
+		marginBottom: 24,
+	},
+	zoomHintText: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#9CA3AF",
+	},
+
+	// ContactPickerModal styles
+	contactItem: {
+		borderBottomWidth: 1,
+		borderBottomColor: "rgba(255, 255, 255, 0.1)",
+	},
+	contactContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingVertical: 16,
+		paddingHorizontal: 8,
+		marginHorizontal: -8,
+		borderRadius: 12,
+	},
+	contactContentPressed: {
+		backgroundColor: "rgba(255, 255, 255, 0.05)",
+	},
+	selectButton: {
+		height: 44,
+		minWidth: 96,
+		borderRadius: 9999,
+		borderWidth: 2,
+		borderColor: "#13ec6a",
+		backgroundColor: "transparent",
+		alignItems: "center",
+		justifyContent: "center",
+		shadowColor: "rgba(19, 236, 106, 0.1)",
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 1,
+		shadowRadius: 10,
+		elevation: 3,
+	},
+	selectButtonSelected: {
+		backgroundColor: "#13ec6a",
+		shadowColor: "rgba(19, 236, 106, 0.4)",
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 1,
+		shadowRadius: 15,
+		elevation: 5,
+	},
+	selectButtonContent: {
+		fontSize: 14,
+		fontWeight: "700",
+		color: "#13ec6a",
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+	},
+	selectedButtonContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+	},
+	selectedButtonText: {
+		fontSize: 14,
+		fontWeight: "700",
+		color: "#000000",
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+	},
+	contactListContent: {
+		paddingHorizontal: 20,
+		paddingBottom: 120,
+	},
+
+	// ProductPickerModal styles
+	productItem: {
+		borderBottomWidth: 1,
+		borderBottomColor: "rgba(255, 255, 255, 0.1)",
+	},
+	productContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingVertical: 16,
+		paddingHorizontal: 8,
+		marginHorizontal: -8,
+		borderRadius: 12,
+	},
+	productContentPressed: {
+		backgroundColor: "rgba(255, 255, 255, 0.05)",
+	},
+	productRightSection: {
+		flexDirection: "column",
+		alignItems: "flex-end",
+		gap: 8,
+	},
+	addButton: {
+		height: 44,
+		minWidth: 96,
+		borderRadius: 9999,
+		borderWidth: 2,
+		borderColor: "#13ec6a",
+		backgroundColor: "transparent",
+		alignItems: "center",
+		justifyContent: "center",
+		shadowColor: "rgba(19, 236, 106, 0.1)",
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 1,
+		shadowRadius: 10,
+		elevation: 3,
+	},
+	addButtonSelected: {
+		backgroundColor: "#13ec6a",
+		shadowColor: "rgba(19, 236, 106, 0.4)",
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 1,
+		shadowRadius: 15,
+		elevation: 5,
+	},
+	addButtonContent: {
+		fontSize: 14,
+		fontWeight: "700",
+		color: "#13ec6a",
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+	},
+	addedButtonContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+	},
+	addedButtonText: {
+		fontSize: 14,
+		fontWeight: "700",
+		color: "#000000",
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+	},
+	productListContent: {
+		paddingHorizontal: 20,
+		paddingBottom: 120,
+	},
+
+	// ContactPickerModal styles (additional missing styles)
+	contactInfo: {
+		flex: 1,
+	},
+	contactName: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: "#ffffff",
+		lineHeight: 24,
 	},
 });

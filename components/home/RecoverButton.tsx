@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { homeStyles } from "@/styles";
 
 interface RecoverButtonProps {
 	onRecover: () => void;
@@ -25,9 +26,12 @@ export function RecoverButton({ onRecover, enabled }: RecoverButtonProps) {
 	};
 
 	return (
-		<View style={[styles.devSection, !enabled && styles.hidden]}>
+		<View style={[homeStyles.devSection, !enabled && homeStyles.hidden]}>
 			<TouchableOpacity
-				style={[styles.recoverButton, !enabled && styles.recoverButtonDisabled]}
+				style={[
+					homeStyles.recoverButton,
+					!enabled && homeStyles.recoverButtonDisabled,
+				]}
 				onPress={handlePress}
 				activeOpacity={enabled ? 0.7 : 1}
 				disabled={!enabled}
@@ -39,55 +43,20 @@ export function RecoverButton({ onRecover, enabled }: RecoverButtonProps) {
 				/>
 				<View>
 					<Text
-						style={[styles.recoverText, !enabled && styles.recoverTextDisabled]}
+						style={[
+							homeStyles.recoverText,
+							!enabled && homeStyles.recoverTextDisabled,
+						]}
 					>
 						Recover from Cloud
 					</Text>
 					{!enabled && (
-						<Text style={styles.devNote}>(Disabled: Code Bypass Required)</Text>
+						<Text style={homeStyles.devNote}>
+							(Disabled: Code Bypass Required)
+						</Text>
 					)}
 				</View>
 			</TouchableOpacity>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	hidden: {
-		display: "none",
-	},
-	devSection: {
-		marginTop: 20,
-		borderTopWidth: 1,
-		borderTopColor: "#222",
-		paddingTop: 20,
-	},
-	recoverButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 12,
-		padding: 16,
-		borderRadius: 12,
-		borderWidth: 1,
-		borderColor: "#EF4444",
-		backgroundColor: "rgba(239, 68, 68, 0.1)",
-	},
-	recoverButtonDisabled: {
-		borderColor: "#333",
-		backgroundColor: "#1A1A1A",
-	},
-	recoverText: {
-		color: "#EF4444",
-		fontSize: 16,
-		fontWeight: "bold",
-	},
-	recoverTextDisabled: {
-		color: "#555",
-	},
-	devNote: {
-		fontSize: 10,
-		color: "#555",
-		marginTop: 2,
-	},
-});

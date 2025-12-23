@@ -1,8 +1,8 @@
 {
 	"version": "6",
 	"dialect": "sqlite",
-	"id": "1ef36953-cb7b-4500-85be-17681024a714",
-	"prevId": "78974ac3-2a95-47c6-80b1-d146f468d2c0",
+	"id": "98b8b483-8a83-48d8-82ed-3e68101e0d94",
+	"prevId": "76ee2c80-2a64-499f-9f86-4dd22eb0ecee",
 	"tables": {
 		"contact": {
 			"name": "contact",
@@ -89,35 +89,35 @@
 				},
 				"subtotal": {
 					"name": "subtotal",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
 				},
 				"totalDiscount": {
 					"name": "totalDiscount",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
 				},
 				"tax": {
 					"name": "tax",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
 				},
 				"total": {
 					"name": "total",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
 				},
 				"amountPaid": {
 					"name": "amountPaid",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false,
@@ -140,6 +140,13 @@
 				},
 				"pdfPath": {
 					"name": "pdfPath",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"deletedAt": {
+					"name": "deletedAt",
 					"type": "text",
 					"primaryKey": false,
 					"notNull": false,
@@ -208,7 +215,7 @@
 				},
 				"price": {
 					"name": "price",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
@@ -222,7 +229,7 @@
 				},
 				"discountValue": {
 					"name": "discountValue",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": false,
 					"autoincrement": false
@@ -279,7 +286,7 @@
 				},
 				"price": {
 					"name": "price",
-					"type": "real",
+					"type": "integer",
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false

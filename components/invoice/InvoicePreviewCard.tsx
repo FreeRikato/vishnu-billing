@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { InvoiceWithItems } from "@/types/invoice";
+import { basisPointsToPercent, centsToDecimal } from "@/utils/currency";
 
 interface InvoicePreviewCardProps {
 	invoice: InvoiceWithItems;
@@ -47,7 +48,7 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 						<Text style={cardStyles.dateText}>{formatDate(invoice.date)}</Text>
 						<Text style={[cardStyles.sectionLabel, cardStyles.mt2]}>Total</Text>
 						<Text style={cardStyles.totalAmount}>
-							${invoice.total.toFixed(2)}
+							₹{centsToDecimal(invoice.total).toFixed(2)}
 						</Text>
 					</View>
 				</View>
@@ -62,7 +63,9 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 					</View>
 					{invoice.items.map(
 						(item: InvoiceWithItems["items"][number], index: number) => {
-							const lineTotal = (item.price * item.quantity).toFixed(2);
+							const lineTotal = (
+								centsToDecimal(item.price) * item.quantity
+							).toFixed(2);
 							const isLast = index === invoice.items.length - 1;
 
 							return (
@@ -76,18 +79,20 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 									<View style={cardStyles.itemDetails}>
 										<Text style={cardStyles.itemName}>{item.name}</Text>
 										<Text style={cardStyles.itemMeta}>
-											{item.quantity} x {item.description} @ $
-											{item.price.toFixed(2)}
+											{item.quantity} x {item.description} @ ₹
+											{centsToDecimal(item.price).toFixed(2)}
 										</Text>
 										{item.discount && (
 											<Text style={cardStyles.discountText}>
-												Discount: -{item.discount.value}
-												{item.discount.type === "percent" ? "%" : ""}
+												Discount: -
+												{item.discount.type === "percent"
+													? `${basisPointsToPercent(item.discount.value)}%`
+													: `₹${centsToDecimal(item.discount.value).toFixed(2)}`}
 											</Text>
 										)}
 									</View>
 									<Text style={[cardStyles.itemAmount, cardStyles.textRight]}>
-										${lineTotal}
+										₹{lineTotal}
 									</Text>
 								</View>
 							);
@@ -100,25 +105,25 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 					<View style={cardStyles.summaryRow}>
 						<Text style={cardStyles.summaryLabel}>Subtotal</Text>
 						<Text style={cardStyles.summaryValue}>
-							${invoice.subtotal.toFixed(2)}
+							₹{centsToDecimal(invoice.subtotal).toFixed(2)}
 						</Text>
 					</View>
 					<View style={cardStyles.summaryRow}>
 						<Text style={cardStyles.summaryLabel}>Discount</Text>
 						<Text style={[cardStyles.summaryValue, cardStyles.discountValue]}>
-							-${invoice.totalDiscount.toFixed(2)}
+							-₹{centsToDecimal(invoice.totalDiscount).toFixed(2)}
 						</Text>
 					</View>
 					<View style={cardStyles.summaryRow}>
 						<Text style={cardStyles.summaryLabel}>Tax (5%)</Text>
 						<Text style={cardStyles.summaryValue}>
-							${invoice.tax.toFixed(2)}
+							₹{centsToDecimal(invoice.tax).toFixed(2)}
 						</Text>
 					</View>
 					<View style={[cardStyles.summaryRow, cardStyles.totalRow]}>
 						<Text style={cardStyles.totalLabel}>Total Due</Text>
 						<Text style={cardStyles.totalValue}>
-							${invoice.total.toFixed(2)}
+							₹{centsToDecimal(invoice.total).toFixed(2)}
 						</Text>
 					</View>
 				</View>

@@ -2,7 +2,14 @@ import NetInfo from "@react-native-community/netinfo";
 import { eq } from "drizzle-orm";
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
-import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import {
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	Timestamp,
+	writeBatch,
+} from "firebase/firestore";
 import { firestore } from "@/config/firebase";
 import { db } from "@/db/client";
 import {
@@ -15,7 +22,8 @@ import {
 } from "@/db/schema";
 
 // Hardcoded ID for this example since there is no Auth system.
-const BACKUP_DOC_ID = "user_device_backup";
+// In production, this should be derived from the authenticated user ID
+const DEVICE_BACKUP_ID = "user_device_backup";
 const BACKGROUND_BACKUP_TASK = "BACKGROUND_AUTO_BACKUP";
 
 export const SyncService = {
@@ -81,7 +89,7 @@ export const SyncService = {
 	},
 
 	/**
-	 * Uploads all local SQLite data to Firestore
+	 * Uploads all local SQLite data to Firestore using collections
 	 * @param type 'auto' (cron) or 'manual' (user triggered)
 	 */
 	async backupToCloud(type: "auto" | "manual" = "manual") {
@@ -141,19 +149,86 @@ export const SyncService = {
 		const invoices = await db.select().from(Invoice);
 		const invoiceItems = await db.select().from(InvoiceItem);
 
-		const backupData = {
-			users,
-			contacts,
-			products,
-			invoices,
-			invoiceItems,
+		// 2. Create a batch write for efficiency
+		// Firestore allows up to 500 operations per batch
+		const batch = writeBatch(firestore);
+
+		// Metadata document with timestamp
+		const metaRef = doc(
+			collection(firestore, "backups", DEVICE_BACKUP_ID, "meta"),
+		);
+		batch.set(metaRef, {
 			lastUpdated: Timestamp.now(),
 			backupType: type,
-			version: "1.0",
-		};
+			version: "2.0",
+			timestamp: Date.now(),
+		});
 
-		// 2. Upload to Firestore
-		await setDoc(doc(firestore, "backups", BACKUP_DOC_ID), backupData);
+		// Clear existing collections first
+		const existingCollections = [
+			"users",
+			"contacts",
+			"products",
+			"invoices",
+			"invoice_items",
+		];
+
+		for (const collectionName of existingCollections) {
+			const snapshot = await getDocs(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, collectionName),
+			);
+			snapshot.forEach((doc) => {
+				batch.delete(doc.ref);
+			});
+		}
+
+		// Add users
+		users.forEach((user) => {
+			const docRef = doc(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, "users"),
+				user.id.toString(),
+			);
+			batch.set(docRef, user);
+		});
+
+		// Add contacts
+		contacts.forEach((contact) => {
+			const docRef = doc(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, "contacts"),
+				contact.id.toString(),
+			);
+			batch.set(docRef, contact);
+		});
+
+		// Add products
+		products.forEach((product) => {
+			const docRef = doc(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, "products"),
+				product.id.toString(),
+			);
+			batch.set(docRef, product);
+		});
+
+		// Add invoices
+		invoices.forEach((invoice) => {
+			const docRef = doc(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, "invoices"),
+				invoice.id.toString(),
+			);
+			batch.set(docRef, invoice);
+		});
+
+		// Add invoice items
+		invoiceItems.forEach((item) => {
+			const docRef = doc(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, "invoice_items"),
+				item.id.toString(),
+			);
+			batch.set(docRef, item);
+		});
+
+		// Commit the batch
+		await batch.commit();
 
 		// 3. Update Metadata
 		if (type === "auto") {
@@ -161,7 +236,6 @@ export const SyncService = {
 			return BackgroundFetch.BackgroundFetchResult.NewData;
 		} else {
 			// Manual: Increment count and set date
-			// This logic is now safe because currentManualCount is scoped correctly
 			await this.setMeta("manual_backup_date", today);
 			await this.setMeta(
 				"manual_backup_count",
@@ -174,7 +248,8 @@ export const SyncService = {
 	},
 
 	/**
-	 * Downloads data from Firestore and replaces local SQLite data
+	 * Downloads data from Firestore collections and replaces local SQLite data
+	 * WARNING: This is destructive and will replace all local data
 	 */
 	async recoverFromCloud() {
 		if (!(await this.isOnline())) {
@@ -183,14 +258,38 @@ export const SyncService = {
 
 		console.log("Starting Recovery...");
 
-		const docRef = doc(firestore, "backups", BACKUP_DOC_ID);
-		const docSnap = await getDoc(docRef);
+		// Check if backup exists
+		const metaRef = doc(
+			collection(firestore, "backups", DEVICE_BACKUP_ID, "meta"),
+		);
+		const metaSnap = await getDoc(metaRef);
 
-		if (!docSnap.exists()) {
+		if (!metaSnap.exists()) {
 			throw new Error("No backup found in cloud.");
 		}
 
-		const data = docSnap.data();
+		// Fetch all collections
+		const [
+			usersSnap,
+			contactsSnap,
+			productsSnap,
+			invoicesSnap,
+			invoiceItemsSnap,
+		] = await Promise.all([
+			getDocs(collection(firestore, "backups", DEVICE_BACKUP_ID, "users")),
+			getDocs(collection(firestore, "backups", DEVICE_BACKUP_ID, "contacts")),
+			getDocs(collection(firestore, "backups", DEVICE_BACKUP_ID, "products")),
+			getDocs(collection(firestore, "backups", DEVICE_BACKUP_ID, "invoices")),
+			getDocs(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, "invoice_items"),
+			),
+		]);
+
+		const users = usersSnap.docs.map((doc) => doc.data() as any);
+		const contacts = contactsSnap.docs.map((doc) => doc.data() as any);
+		const products = productsSnap.docs.map((doc) => doc.data() as any);
+		const invoices = invoicesSnap.docs.map((doc) => doc.data() as any);
+		const invoiceItems = invoiceItemsSnap.docs.map((doc) => doc.data() as any);
 
 		await db.transaction(async (tx) => {
 			await tx.delete(InvoiceItem);
@@ -199,12 +298,12 @@ export const SyncService = {
 			await tx.delete(Product);
 			await tx.delete(User);
 
-			if (data.users?.length) await tx.insert(User).values(data.users);
-			if (data.products?.length) await tx.insert(Product).values(data.products);
-			if (data.contacts?.length) await tx.insert(Contact).values(data.contacts);
-			if (data.invoices?.length) await tx.insert(Invoice).values(data.invoices);
-			if (data.invoiceItems?.length)
-				await tx.insert(InvoiceItem).values(data.invoiceItems);
+			if (users.length > 0) await tx.insert(User).values(users);
+			if (contacts.length > 0) await tx.insert(Contact).values(contacts as any);
+			if (products.length > 0) await tx.insert(Product).values(products as any);
+			if (invoices.length > 0) await tx.insert(Invoice).values(invoices as any);
+			if (invoiceItems.length > 0)
+				await tx.insert(InvoiceItem).values(invoiceItems as any);
 		});
 
 		console.log("Recovery Complete.");

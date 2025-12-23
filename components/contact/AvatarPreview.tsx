@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { contactsStyles } from "@/styles";
 
 interface AvatarPreviewProps {
 	initials: string;
@@ -12,32 +13,18 @@ export default function AvatarPreview({
 	size = 120,
 }: AvatarPreviewProps) {
 	return (
-		<View style={styles.avatarPreviewContainer}>
+		<View style={contactsStyles.avatarPreviewContainer}>
 			<View
 				style={[
-					styles.avatarPreview,
+					contactsStyles.avatarPreview,
 					{ width: size, height: size, borderRadius: size / 2 },
 					{ backgroundColor: `${color}20` },
 				]}
 			>
-				<Text style={[styles.avatarPreviewText, { color }]}>{initials}</Text>
+				<Text style={[contactsStyles.avatarPreviewText, { color }]}>
+					{initials}
+				</Text>
 			</View>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	avatarPreviewContainer: {
-		alignItems: "center",
-		marginBottom: 32,
-	},
-	avatarPreview: {
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: 16,
-	},
-	avatarPreviewText: {
-		fontSize: 42,
-		fontWeight: "bold",
-	},
-});

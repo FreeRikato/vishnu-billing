@@ -1,4 +1,5 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
+import { homeStyles } from "@/styles";
 
 interface SyncStatusIndicatorProps {
 	isSyncing: boolean;
@@ -10,25 +11,9 @@ export function SyncStatusIndicator({ isSyncing }: SyncStatusIndicatorProps) {
 	}
 
 	return (
-		<View style={styles.syncIndicator}>
+		<View style={homeStyles.syncIndicator}>
 			<ActivityIndicator size="small" color="#13EC6A" />
-			<Text style={styles.syncText}>Syncing with Cloud...</Text>
+			<Text style={homeStyles.syncText}>Syncing with Cloud...</Text>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	syncIndicator: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		padding: 8,
-		gap: 8,
-		backgroundColor: "rgba(19, 236, 106, 0.1)",
-	},
-	syncText: {
-		color: "#13EC6A",
-		fontSize: 14,
-		fontWeight: "600",
-	},
-});

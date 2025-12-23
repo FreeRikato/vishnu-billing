@@ -1,8 +1,10 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { invoiceStyles } from "@/styles";
 import type { InvoiceProduct } from "@/types";
+import { basisPointsToPercent, formatCurrency } from "@/utils/currency";
 
 interface InvoiceProductCardProps {
 	product: InvoiceProduct;
@@ -20,32 +22,36 @@ export function InvoiceProductCard({
 	onEditDiscount,
 }: InvoiceProductCardProps) {
 	return (
-		<View style={styles.productCard}>
-			<View style={styles.productHeader}>
-				<View style={styles.productInfo}>
-					<Text style={styles.productName}>{product.name}</Text>
-					<Text style={styles.productDescription}>{product.description}</Text>
+		<View style={invoiceStyles.productCard}>
+			<View style={invoiceStyles.productHeader}>
+				<View style={invoiceStyles.productInfo}>
+					<Text style={invoiceStyles.productName}>{product.name}</Text>
+					<Text style={invoiceStyles.productDescription}>
+						{product.description}
+					</Text>
 				</View>
 				<TouchableOpacity
 					onPress={() => onRemove(product.id)}
-					style={styles.removeButton}
+					style={invoiceStyles.removeButton}
 				>
 					<AntDesign name="close-circle" size={20} color="#9ca3af" />
 				</TouchableOpacity>
 			</View>
-			<View style={styles.productFooter}>
-				<Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
-				<View style={styles.stepper}>
+			<View style={invoiceStyles.productFooter}>
+				<Text style={invoiceStyles.productPrice}>
+					{formatCurrency(product.price)}
+				</Text>
+				<View style={invoiceStyles.stepper}>
 					<TouchableOpacity
 						onPress={() => onQuantityChange(product.id, -1)}
-						style={styles.stepperButton}
+						style={invoiceStyles.stepperButton}
 					>
 						<Ionicons name="remove-circle" size={20} color="#ffffff" />
 					</TouchableOpacity>
-					<Text style={styles.stepperValue}>{product.quantity}</Text>
+					<Text style={invoiceStyles.stepperValue}>{product.quantity}</Text>
 					<TouchableOpacity
 						onPress={() => onQuantityChange(product.id, 1)}
-						style={styles.stepperButtonPrimary}
+						style={invoiceStyles.stepperButtonPrimary}
 					>
 						<Ionicons name="add-circle" size={20} />
 					</TouchableOpacity>
@@ -54,138 +60,26 @@ export function InvoiceProductCard({
 			{!product.discount ? (
 				<TouchableOpacity
 					onPress={() => onAddDiscount(product.id)}
-					style={styles.addDiscountButton}
+					style={invoiceStyles.addDiscountButton}
 				>
 					<MaterialIcons name="discount" size={16} color="#13ec6a" />
-					<Text style={styles.addDiscountText}>Add Discount</Text>
+					<Text style={invoiceStyles.addDiscountText}>Add Discount</Text>
 				</TouchableOpacity>
 			) : (
 				<TouchableOpacity
-					style={styles.discountInfo}
+					style={invoiceStyles.discountInfo}
 					onPress={() => onEditDiscount(product.id)}
 				>
-					<Text style={styles.discountText}>
-						-{product.discount.value}
-						{product.discount.type === "percent" ? "%" : ""} Off
+					<Text style={invoiceStyles.discountText}>
+						-
+						{product.discount.type === "percent"
+							? `${basisPointsToPercent(product.discount.value)}%`
+							: formatCurrency(product.discount.value)}{" "}
+						Off
 					</Text>
-					<Text style={styles.editText}>Edit</Text>
+					<Text style={invoiceStyles.editText}>Edit</Text>
 				</TouchableOpacity>
 			)}
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	productCard: {
-		backgroundColor: "#121212",
-		borderRadius: 12,
-		padding: 16,
-		borderWidth: 1,
-		borderColor: "#374151",
-		gap: 16,
-	},
-	productHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
-	},
-	productInfo: {
-		flex: 1,
-	},
-	productName: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#ffffff",
-	},
-	productDescription: {
-		fontSize: 14,
-		color: "#9ca3af",
-		marginTop: 2,
-	},
-	removeButton: {
-		padding: 4,
-		marginLeft: -4,
-	},
-	productFooter: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginTop: 4,
-	},
-	productPrice: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#ffffff",
-	},
-	stepper: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#000000",
-		borderRadius: 8,
-		padding: 4,
-		gap: 16,
-		borderWidth: 1,
-		borderColor: "#374151",
-	},
-	stepperButton: {
-		width: 40,
-		height: 40,
-		borderRadius: 6,
-		backgroundColor: "#1E1E1E",
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
-		elevation: 2,
-	},
-	stepperButtonPrimary: {
-		width: 40,
-		height: 40,
-		borderRadius: 6,
-		backgroundColor: "#13ec6a",
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "#13ec6a",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.3,
-		shadowRadius: 2,
-		elevation: 3,
-	},
-	stepperValue: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#ffffff",
-		minWidth: 24,
-		textAlign: "center",
-	},
-	addDiscountButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 4,
-		alignSelf: "flex-start",
-		marginTop: 4,
-	},
-	addDiscountText: {
-		fontSize: 14,
-		fontWeight: "700",
-		color: "#13ec6a",
-		textDecorationLine: "underline",
-	},
-	discountInfo: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		fontSize: 14,
-		color: "#9ca3af",
-	},
-	discountText: {
-		color: "#13ec6a",
-		fontWeight: "700",
-	},
-	editText: {
-		textDecorationLine: "underline",
-		fontSize: 12,
-	},
-});

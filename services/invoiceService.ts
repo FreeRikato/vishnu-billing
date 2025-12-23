@@ -34,6 +34,7 @@ export function generateInvoiceNumber(): string {
 
 /**
  * Get all invoices with their items
+ * All currency values are returned in cents (integers)
  */
 export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 	try {
@@ -52,21 +53,21 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 
 			result.push({
 				...invoice,
-				subtotal: Number(invoice.subtotal),
-				totalDiscount: Number(invoice.totalDiscount),
-				tax: Number(invoice.tax),
-				total: Number(invoice.total),
-				amountPaid: Number(invoice.amountPaid),
+				subtotal: invoice.subtotal, // Already in cents (integer)
+				totalDiscount: invoice.totalDiscount, // Already in cents
+				tax: invoice.tax, // Already in cents
+				total: invoice.total, // Already in cents
+				amountPaid: invoice.amountPaid, // Already in cents
 				items: items.map((item) => ({
 					id: item.id,
 					name: item.name,
 					description: item.description,
-					price: Number(item.price),
+					price: item.price, // Already in cents
 					quantity: item.quantity,
 					discount:
 						item.discountValue !== null && isDiscountType(item.discountType)
 							? {
-									value: Number(item.discountValue),
+									value: item.discountValue, // Already in cents/basis points
 									type: item.discountType,
 								}
 							: undefined,
@@ -83,6 +84,7 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 
 /**
  * Get invoice by ID
+ * All currency values are returned in cents (integers)
  */
 export async function getInvoiceById(
 	id: number,
@@ -102,21 +104,21 @@ export async function getInvoiceById(
 
 		return {
 			...invoice,
-			subtotal: Number(invoice.subtotal),
-			totalDiscount: Number(invoice.totalDiscount),
-			tax: Number(invoice.tax),
-			total: Number(invoice.total),
-			amountPaid: Number(invoice.amountPaid),
+			subtotal: invoice.subtotal, // Already in cents
+			totalDiscount: invoice.totalDiscount, // Already in cents
+			tax: invoice.tax, // Already in cents
+			total: invoice.total, // Already in cents
+			amountPaid: invoice.amountPaid, // Already in cents
 			items: items.map((item) => ({
 				id: item.id,
 				name: item.name,
 				description: item.description,
-				price: Number(item.price),
+				price: item.price, // Already in cents
 				quantity: item.quantity,
 				discount:
 					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
-								value: Number(item.discountValue),
+								value: item.discountValue, // Already in cents/basis points
 								type: item.discountType,
 							}
 						: undefined,
@@ -130,12 +132,13 @@ export async function getInvoiceById(
 
 /**
  * Create a new invoice with its items
+ * All currency values should be provided in cents (integers)
  */
 export async function createInvoice(
 	input: CreateInvoiceInput,
 ): Promise<InvoiceWithItems | null> {
 	try {
-		// Create the invoice
+		// Create the invoice - values should already be in cents
 		const invoiceResult = await db
 			.insert(Invoice)
 			.values({
@@ -143,11 +146,11 @@ export async function createInvoice(
 				customerId: input.customerId,
 				customerName: input.customerName,
 				customerPhone: input.customerPhone,
-				subtotal: input.summary.subtotal,
-				totalDiscount: input.summary.totalDiscount,
-				tax: input.summary.tax,
-				total: input.summary.total,
-				amountPaid: input.amountPaid ?? 0,
+				subtotal: input.summary.subtotal, // Already in cents
+				totalDiscount: input.summary.totalDiscount, // Already in cents
+				tax: input.summary.tax, // Already in cents
+				total: input.summary.total, // Already in cents
+				amountPaid: input.amountPaid ?? 0, // Already in cents
 				date: input.date,
 				status: "unpaid",
 				pdfPath: input.pdfPath ?? null,
@@ -162,12 +165,12 @@ export async function createInvoice(
 		// Create invoice items - preserve product reference for analytics
 		const itemsToInsert = input.items.map((item) => ({
 			invoiceId: newInvoice.id,
-			productId: item.id, // Now directly using number ID
+			productId: item.id,
 			name: item.name,
 			description: item.description,
-			price: item.price,
+			price: item.price, // Already in cents
 			quantity: item.quantity,
-			discountValue: item.discount?.value ?? null,
+			discountValue: item.discount?.value ?? null, // Already in cents/basis points
 			discountType: item.discount?.type ?? null,
 		}));
 
@@ -181,21 +184,21 @@ export async function createInvoice(
 
 		return {
 			...newInvoice,
-			subtotal: Number(newInvoice.subtotal),
-			totalDiscount: Number(newInvoice.totalDiscount),
-			tax: Number(newInvoice.tax),
-			total: Number(newInvoice.total),
-			amountPaid: Number(newInvoice.amountPaid),
+			subtotal: newInvoice.subtotal, // Already in cents
+			totalDiscount: newInvoice.totalDiscount, // Already in cents
+			tax: newInvoice.tax, // Already in cents
+			total: newInvoice.total, // Already in cents
+			amountPaid: newInvoice.amountPaid, // Already in cents
 			items: createdItems.map((item) => ({
 				id: item.id,
 				name: item.name,
 				description: item.description,
-				price: Number(item.price),
+				price: item.price, // Already in cents
 				quantity: item.quantity,
 				discount:
 					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
-								value: Number(item.discountValue),
+								value: item.discountValue, // Already in cents/basis points
 								type: item.discountType,
 							}
 						: undefined,
@@ -246,10 +249,7 @@ export async function deleteInvoice(id: number): Promise<boolean> {
 	try {
 		// Soft delete by setting deletedAt to current timestamp
 		const deletedAt = new Date().toISOString();
-		await db
-			.update(Invoice)
-			.set({ deletedAt })
-			.where(eq(Invoice.id, id));
+		await db.update(Invoice).set({ deletedAt }).where(eq(Invoice.id, id));
 		return true;
 	} catch (error) {
 		console.error("Error deleting invoice:", error);
@@ -259,10 +259,12 @@ export async function deleteInvoice(id: number): Promise<boolean> {
 
 /**
  * Update invoice payment and automatically calculate status
+ * @param id - Invoice ID
+ * @param amountPaidInCents - Payment amount in cents (integer)
  */
 export async function updateInvoicePayment(
 	id: number,
-	amountPaid: number,
+	amountPaidInCents: number,
 ): Promise<{
 	success: boolean;
 	newStatus?: "unpaid" | "partial" | "paid";
@@ -273,19 +275,17 @@ export async function updateInvoicePayment(
 		const currentInvoice = await getInvoiceById(id);
 		if (!currentInvoice) return { success: false };
 
-		// Ensure amountPaid is not negative and not more than total (optional constraint)
-		const cleanAmountPaid = Math.max(0, amountPaid);
+		// Ensure amountPaid is not negative
+		const cleanAmountPaid = Math.max(0, amountPaidInCents);
 
-		// Determine new status
+		// Determine new status (both values are in cents)
 		let newStatus: "unpaid" | "partial" | "paid" = "unpaid";
-		const total = currentInvoice.total;
+		const totalInCents = currentInvoice.total;
 
-		// Floating point comparison tolerance
-		const epsilon = 0.01;
-
-		if (cleanAmountPaid >= total - epsilon) {
+		// Direct integer comparison - no floating point issues
+		if (cleanAmountPaid >= totalInCents) {
 			newStatus = "paid";
-		} else if (cleanAmountPaid > epsilon) {
+		} else if (cleanAmountPaid > 0) {
 			newStatus = "partial";
 		} else {
 			newStatus = "unpaid";

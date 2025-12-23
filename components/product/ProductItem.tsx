@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { productsStyles } from "@/styles/products";
 import type { Product } from "@/types";
+import { formatCurrency } from "@/utils/currency";
 
 interface ProductItemProps {
 	product: Product;
@@ -28,7 +29,7 @@ export default function ProductItem({
 			</View>
 			<View style={productsStyles.productRight}>
 				<Text style={productsStyles.productPrice}>
-					${product.price.toFixed(2)}
+					{formatCurrency(product.price)}
 				</Text>
 				{onEdit && (
 					<TouchableOpacity

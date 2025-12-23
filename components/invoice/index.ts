@@ -1,7 +1,6 @@
 export { ContactPickerModal } from "./ContactPickerModal";
 export { CustomerSelection } from "./CustomerSelection";
 export { DiscountModal } from "./DiscountModal";
-export { PaymentModal } from "./PaymentModal";
 export { InvoiceActionBar } from "./InvoiceActionBar";
 export { InvoiceCreateCustomerSelection } from "./InvoiceCreateCustomerSelection";
 export { InvoiceCreateFooter } from "./InvoiceCreateFooter";
@@ -16,6 +15,7 @@ export { InvoiceProductCard } from "./InvoiceProductCard";
 export { InvoiceProductsSection } from "./InvoiceProductsSection";
 export { InvoiceSummary } from "./InvoiceSummary";
 export { PageIndicator } from "./PageIndicator";
+export { PaymentModal } from "./PaymentModal";
 export { PreviewButton } from "./PreviewButton";
 export { ProductItem } from "./ProductItem";
 export { ProductList } from "./ProductList";

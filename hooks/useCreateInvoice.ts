@@ -11,9 +11,10 @@ import type {
 	InvoiceProduct,
 	InvoiceSummary,
 } from "@/types/invoice";
+import { percentToBasisPoints } from "@/utils/currency";
 import { calculateDiscountAmount } from "@/utils/invoiceUtils";
 
-const TAX_RATE = 0.05; // 5%
+const TAX_RATE_BASIS_POINTS = 500; // 5% in basis points
 
 // Helper to get YYYY-MM-DD in local time
 function getLocalDateString(): string {
@@ -25,12 +26,13 @@ function getLocalDateString(): string {
 }
 
 // Helper to convert ProductType to InvoiceProduct
+// Product prices are now stored in cents
 function toInvoiceProduct(product: ProductType): InvoiceProduct {
 	return {
 		id: product.id,
 		name: product.name,
 		description: product.unit,
-		price: product.price,
+		price: product.price, // Already in cents
 		quantity: 1,
 	};
 }
@@ -104,41 +106,39 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	);
 
 	// Derived state (Calculations)
+	// All calculations are done in cents (integers) to avoid floating-point errors
 	const summary = useMemo(() => {
-		// 1. Calculate Item-level Subtotal (Net of item discounts)
+		// 1. Calculate Item-level Subtotal (Net of item discounts) - in cents
 		const subtotal = invoiceItems.reduce((sum, product) => {
-			const itemTotal = product.price * product.quantity;
+			const itemTotal = product.price * product.quantity; // price is in cents
 			const discount = calculateDiscountAmount(itemTotal, product.discount);
 			return sum + itemTotal - discount;
 		}, 0);
 
-		// 2. Calculate Total Item Discounts (Informational)
+		// 2. Calculate Total Item Discounts (Informational) - in cents
 		const itemDiscounts = invoiceItems.reduce((sum, product) => {
 			const itemTotal = product.price * product.quantity;
 			return sum + calculateDiscountAmount(itemTotal, product.discount);
 		}, 0);
 
-		// 3. Calculate Global Discount
+		// 3. Calculate Global Discount - in cents
 		const globalDiscountAmount = calculateDiscountAmount(
 			subtotal,
 			globalDiscount,
 		);
 
-		// 4. Calculate Final Totals
+		// 4. Calculate Final Totals - all in cents
 		const netSubtotal = subtotal - globalDiscountAmount;
-		const roundedSubtotal = Math.round(subtotal * 100) / 100;
-		const _roundedGlobalDiscount = Math.round(globalDiscountAmount * 100) / 100;
-		const roundedTotalDiscount =
-			Math.round((itemDiscounts + globalDiscountAmount) * 100) / 100;
 
-		const tax = Math.round(netSubtotal * TAX_RATE * 100) / 100;
-		const total = Math.round((netSubtotal + tax) * 100) / 100;
+		// Calculate tax using basis points (e.g., 5% = 500 basis points)
+		const tax = Math.round((netSubtotal * TAX_RATE_BASIS_POINTS) / 10000);
+		const total = netSubtotal + tax;
 
 		return {
-			subtotal: roundedSubtotal,
-			totalDiscount: roundedTotalDiscount, // Includes both item and global discounts
-			tax,
-			total,
+			subtotal, // Already in cents
+			totalDiscount: itemDiscounts + globalDiscountAmount, // Already in cents
+			tax, // Already in cents
+			total, // Already in cents
 		};
 	}, [invoiceItems, globalDiscount]);
 
@@ -239,7 +239,13 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 				if (value === 0) {
 					setGlobalDiscount(undefined);
 				} else {
-					setGlobalDiscount({ value, type });
+					// Convert percent to basis points for percent discounts
+					// For fixed discounts, convert rupees to cents
+					const discountValue =
+						type === "percent"
+							? percentToBasisPoints(value)
+							: Math.round(value * 100);
+					setGlobalDiscount({ value: discountValue, type });
 				}
 			} else if (selectedProductId) {
 				setInvoiceItems((prev) =>
@@ -251,7 +257,13 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 								const { discount, ...rest } = item;
 								return rest;
 							}
-							return { ...item, discount: { value, type } };
+							// Convert percent to basis points for percent discounts
+							// For fixed discounts, convert rupees to cents
+							const discountValue =
+								type === "percent"
+									? percentToBasisPoints(value)
+									: Math.round(value * 100);
+							return { ...item, discount: { value: discountValue, type } };
 						}
 						return item;
 					}),

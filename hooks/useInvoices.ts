@@ -3,6 +3,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import type { Invoice } from "@/types";
 import { isInvoiceStatus } from "@/types/invoice";
+import { formatCurrency } from "@/utils/currency";
 
 export function useInvoices() {
 	const storeInvoices = useInvoiceStore((state) => state.invoices);
@@ -15,7 +16,7 @@ export function useInvoices() {
 		id: inv.id,
 		customerName: inv.customerName,
 		invoiceNumber: inv.invoiceNumber,
-		amount: `$${inv.total.toFixed(2)}`,
+		amount: formatCurrency(inv.total), // inv.total is now in cents
 		date: new Date(inv.date).toLocaleDateString("en-US", {
 			month: "short",
 			day: "numeric",

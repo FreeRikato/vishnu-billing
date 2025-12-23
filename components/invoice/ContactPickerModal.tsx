@@ -3,11 +3,11 @@ import { useCallback, useState } from "react";
 import {
 	FlatList,
 	Pressable,
-	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { invoiceStyles } from "@/styles";
 import { useSearch } from "../../hooks/useSearch";
 import type { Customer } from "../../types/invoice";
 import { BaseSelectionModal } from "../common/BaseSelectionModal";
@@ -55,31 +55,31 @@ export function ContactPickerModal({
 		const isSelected = selectedId === item.id;
 
 		return (
-			<View style={styles.contactItem}>
+			<View style={invoiceStyles.contactItem}>
 				<Pressable
 					style={({ pressed }) => [
-						styles.contactContent,
-						pressed && styles.contactContentPressed,
+						invoiceStyles.contactContent,
+						pressed && invoiceStyles.contactContentPressed,
 					]}
 					onPress={() => handleContactSelect(item)}
 				>
-					<View style={styles.contactInfo}>
-						<Text style={styles.contactName}>{item.name}</Text>
+					<View style={invoiceStyles.contactInfo}>
+						<Text style={invoiceStyles.contactName}>{item.name}</Text>
 					</View>
 					<TouchableOpacity
 						style={[
-							styles.selectButton,
-							isSelected && styles.selectButtonSelected,
+							invoiceStyles.selectButton,
+							isSelected && invoiceStyles.selectButtonSelected,
 						]}
 						onPress={() => handleContactSelect(item)}
 					>
 						{isSelected ? (
-							<View style={styles.selectedButtonContent}>
+							<View style={invoiceStyles.selectedButtonContent}>
 								<Ionicons name="checkmark" size={16} color="#000000" />
-								<Text style={styles.selectedButtonText}>SELECTED</Text>
+								<Text style={invoiceStyles.selectedButtonText}>SELECTED</Text>
 							</View>
 						) : (
-							<Text style={styles.selectButtonContent}>SELECT</Text>
+							<Text style={invoiceStyles.selectButtonContent}>SELECT</Text>
 						)}
 					</TouchableOpacity>
 				</Pressable>
@@ -101,82 +101,8 @@ export function ContactPickerModal({
 				keyExtractor={(item) => String(item.id)}
 				renderItem={renderContactItem}
 				showsVerticalScrollIndicator={false}
-				contentContainerStyle={styles.contactListContent}
+				contentContainerStyle={invoiceStyles.contactListContent}
 			/>
 		</BaseSelectionModal>
 	);
 }
-
-const styles = StyleSheet.create({
-	contactItem: {
-		borderBottomWidth: 1,
-		borderBottomColor: "rgba(255, 255, 255, 0.1)",
-	},
-	contactContent: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingVertical: 16,
-		paddingHorizontal: 8,
-		marginHorizontal: -8,
-		borderRadius: 12,
-	},
-	contactContentPressed: {
-		backgroundColor: "rgba(255, 255, 255, 0.05)",
-	},
-	contactInfo: {
-		flex: 1,
-	},
-	contactName: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#ffffff",
-		lineHeight: 24,
-	},
-	selectButton: {
-		height: 44,
-		minWidth: 96,
-		borderRadius: 9999,
-		borderWidth: 2,
-		borderColor: "#13ec6a",
-		backgroundColor: "transparent",
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "rgba(19, 236, 106, 0.1)",
-		shadowOffset: { width: 0, height: 0 },
-		shadowOpacity: 1,
-		shadowRadius: 10,
-		elevation: 3,
-	},
-	selectButtonSelected: {
-		backgroundColor: "#13ec6a",
-		shadowColor: "rgba(19, 236, 106, 0.4)",
-		shadowOffset: { width: 0, height: 0 },
-		shadowOpacity: 1,
-		shadowRadius: 15,
-		elevation: 5,
-	},
-	selectButtonContent: {
-		fontSize: 14,
-		fontWeight: "700",
-		color: "#13ec6a",
-		letterSpacing: 0.5,
-		textTransform: "uppercase",
-	},
-	selectedButtonContent: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 4,
-	},
-	selectedButtonText: {
-		fontSize: 14,
-		fontWeight: "700",
-		color: "#000000",
-		letterSpacing: 0.5,
-		textTransform: "uppercase",
-	},
-	contactListContent: {
-		paddingHorizontal: 20,
-		paddingBottom: 120,
-	},
-});

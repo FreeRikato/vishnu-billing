@@ -1,7 +1,5 @@
-export interface Contact {
-	id: number;
-	name: string;
-	phone: string;
-	initials: string;
-	color: string;
-}
+import type { InferSelectModel } from "drizzle-orm";
+import type { Contact as ContactSchema } from "@/db/schema";
+
+// Infer Contact type from Drizzle schema
+export type Contact = InferSelectModel<typeof ContactSchema>;

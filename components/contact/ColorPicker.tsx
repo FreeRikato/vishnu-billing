@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { commonStyles, contactsStyles } from "@/styles";
 import { COLORS } from "@/utils/contactUtils";
 
 interface ColorPickerProps {
@@ -12,17 +13,17 @@ export default function ColorPicker({
 	onColorChange,
 }: ColorPickerProps) {
 	return (
-		<View style={styles.fieldContainer}>
-			<View style={styles.labelContainer}>
+		<View style={commonStyles.fieldContainer}>
+			<View style={commonStyles.labelContainer}>
 				<MaterialIcons name="palette" size={20} color="#9CA3AF" />
-				<Text style={styles.label}>Color</Text>
+				<Text style={commonStyles.label}>Color</Text>
 			</View>
-			<View style={styles.colorPickerContainer}>
+			<View style={contactsStyles.colorPickerContainer}>
 				{COLORS.map((color) => (
 					<TouchableOpacity
 						key={color}
 						style={[
-							styles.colorOption,
+							contactsStyles.colorOption,
 							{
 								backgroundColor: color,
 								borderWidth: selectedColor === color ? 3 : 0,
@@ -41,36 +42,3 @@ export default function ColorPicker({
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	fieldContainer: {
-		marginBottom: 32,
-	},
-	labelContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		marginBottom: 12,
-		paddingLeft: 8,
-	},
-	label: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#9CA3AF",
-		textTransform: "uppercase",
-		letterSpacing: 1,
-	},
-	colorPickerContainer: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		gap: 12,
-		paddingHorizontal: 8,
-	},
-	colorOption: {
-		width: 48,
-		height: 48,
-		borderRadius: 24,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-});

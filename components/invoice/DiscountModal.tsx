@@ -16,15 +16,20 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { invoiceStyles } from "../../styles/invoice";
 import type { Discount, DiscountType } from "../../types/invoice";
+import {
+	basisPointsToPercent,
+	centsToDecimal,
+	formatCurrency,
+} from "../../utils/currency";
 import { calculateDiscountAmount as coreCalculateDiscountAmount } from "../../utils/invoiceUtils";
 
 interface DiscountModalProps {
 	visible: boolean;
 	onClose: () => void;
 	onApply: (value: number, type: DiscountType) => void;
-	initialValue?: number;
+	initialValue?: number; // In basis points for percent, or cents for fixed
 	initialType?: DiscountType;
-	productPrice?: number;
+	productPrice?: number; // In cents
 	productQuantity?: number;
 }
 
@@ -42,14 +47,28 @@ export function DiscountModal({
 	const [showModal, setShowModal] = useState(visible);
 
 	const [discountType, setDiscountType] = useState<DiscountType>(initialType);
+
+	// Convert initial value from storage format to display format
+	// For percent: basis points -> percent (e.g., 1000 -> 10)
+	// For fixed: cents -> rupees (e.g., 1000 -> 10.00)
+	const getDisplayValue = useCallback(
+		(val: number, type: DiscountType): string => {
+			if (val === 0) return "";
+			return type === "percent"
+				? basisPointsToPercent(val).toString()
+				: centsToDecimal(val).toString();
+		},
+		[],
+	);
+
 	const [discountValue, setDiscountValue] = useState(
-		initialValue === 0 ? "" : initialValue.toString(),
+		getDisplayValue(initialValue, initialType),
 	);
 
 	const slideAnim = useRef(new Animated.Value(600)).current; // Start off-screen (bottom)
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 
-	const subtotal = productPrice * productQuantity;
+	const subtotal = productPrice * productQuantity; // In cents
 
 	const animateIn = useCallback(() => {
 		// Reset values just in case
@@ -75,11 +94,11 @@ export function DiscountModal({
 	useEffect(() => {
 		if (visible) {
 			setShowModal(true);
-			setDiscountValue(initialValue === 0 ? "" : initialValue.toString());
+			setDiscountValue(getDisplayValue(initialValue, initialType));
 			setDiscountType(initialType);
 			animateIn();
 		}
-	}, [visible, initialValue, initialType, animateIn]);
+	}, [visible, initialValue, initialType, animateIn, getDisplayValue]);
 
 	// 2. New Helper to handle the Exit Animation BEFORE unmounting
 	const handleClose = () => {
@@ -103,7 +122,7 @@ export function DiscountModal({
 
 	// 3. Validation & Preview Logic
 	const calculateDiscountAmount = (
-		total: number,
+		totalInCents: number,
 		val: string,
 		type: DiscountType,
 	): number => {
@@ -111,11 +130,16 @@ export function DiscountModal({
 		if (Number.isNaN(numValue)) return 0;
 
 		// Build a Discount object and use the shared calculation
+		// For percent: convert display value to basis points
+		// For fixed: convert display value to cents
 		const discount: Discount = {
-			value: type === "percent" ? Math.min(numValue, 100) : numValue,
+			value:
+				type === "percent"
+					? Math.min(numValue, 100) * 100 // Convert percent to basis points
+					: Math.round(numValue * 100), // Convert rupees to cents
 			type,
 		};
-		return coreCalculateDiscountAmount(total, discount);
+		return coreCalculateDiscountAmount(totalInCents, discount);
 	};
 
 	const discountAmount = calculateDiscountAmount(
@@ -144,10 +168,12 @@ export function DiscountModal({
 		if (discountType === "percent") {
 			if (rawValue > 100) finalValue = 100;
 		} else {
-			if (rawValue > subtotal) finalValue = subtotal;
+			// For fixed discounts, compare with the subtotal in rupees
+			const subtotalInRupees = centsToDecimal(subtotal);
+			if (rawValue > subtotalInRupees) finalValue = subtotalInRupees;
 		}
 
-		onApply(finalValue, discountType);
+		onApply(finalValue, discountType); // Parent handles conversion to cents/basis points
 		handleClose();
 	};
 
@@ -278,7 +304,7 @@ export function DiscountModal({
 									<Text style={invoiceStyles.mathFeedbackText}>
 										Reduces price by{" "}
 										<Text style={invoiceStyles.mathFeedbackValue}>
-											${discountAmount.toFixed(2)}
+											{formatCurrency(discountAmount)}
 										</Text>
 									</Text>
 								</View>
@@ -289,12 +315,14 @@ export function DiscountModal({
 								<TouchableOpacity
 									style={[
 										invoiceStyles.actionButton,
-										invoiceStyles.cancelButton,
+										invoiceStyles.cancelActionButton,
 									]}
 									onPress={handleClose}
 									activeOpacity={0.8}
 								>
-									<Text style={invoiceStyles.cancelButtonText}>Cancel</Text>
+									<Text style={invoiceStyles.cancelActionButtonText}>
+										Cancel
+									</Text>
 								</TouchableOpacity>
 								<TouchableOpacity
 									style={[

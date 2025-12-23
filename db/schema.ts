@@ -1,4 +1,4 @@
-import { int, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const User = sqliteTable("user", {
 	id: int().primaryKey({ autoIncrement: true }),
@@ -8,7 +8,7 @@ export const User = sqliteTable("user", {
 export const Product = sqliteTable("product", {
 	id: int().primaryKey({ autoIncrement: true }),
 	name: text().notNull(),
-	price: real().notNull(),
+	price: int().notNull(), // Stored in cents (e.g., $10.50 = 1050)
 	unit: text().notNull(),
 });
 
@@ -28,11 +28,11 @@ export const Invoice = sqliteTable("invoice", {
 		.references(() => Contact.id),
 	customerName: text().notNull(),
 	customerPhone: text().notNull(),
-	subtotal: real().notNull(),
-	totalDiscount: real().notNull(),
-	tax: real().notNull(),
-	total: real().notNull(),
-	amountPaid: real().notNull().default(0),
+	subtotal: int().notNull(), // Stored in cents
+	totalDiscount: int().notNull(), // Stored in cents
+	tax: int().notNull(), // Stored in cents
+	total: int().notNull(), // Stored in cents
+	amountPaid: int().notNull().default(0), // Stored in cents
 	date: text().notNull(),
 	status: text().notNull().default("unpaid"),
 	pdfPath: text(),
@@ -47,9 +47,9 @@ export const InvoiceItem = sqliteTable("invoice_item", {
 	productId: int().references(() => Product.id),
 	name: text().notNull(),
 	description: text().notNull(),
-	price: real().notNull(),
+	price: int().notNull(), // Stored in cents
 	quantity: int().notNull(),
-	discountValue: real(),
+	discountValue: int(), // Stored in cents for fixed, or basis points for percent (e.g., 10% = 1000)
 	discountType: text(),
 });
 

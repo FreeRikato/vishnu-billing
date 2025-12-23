@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
 import type { Product } from "@/types";
 import ProductItem from "./ProductItem";
@@ -20,6 +20,20 @@ export default function ProductList({
 		onPressProduct?.(product);
 	};
 
+	const renderProductItem = ({ item }: { item: Product }) => (
+		<ProductItem
+			product={item}
+			onPress={handleProductPress}
+			onEdit={onEditProduct}
+		/>
+	);
+
+	const renderEmptyState = () => (
+		<View style={contactsStyles.emptyContainer}>
+			<Text style={contactsStyles.emptyText}>No products found</Text>
+		</View>
+	);
+
 	if (loading) {
 		return (
 			<View style={contactsStyles.contactList}>
@@ -31,32 +45,20 @@ export default function ProductList({
 		);
 	}
 
-	if (products.length === 0) {
-		return (
-			<View style={contactsStyles.contactList}>
-				<View style={contactsStyles.emptyContainer}>
-					<Text style={contactsStyles.emptyText}>No products found</Text>
-				</View>
-			</View>
-		);
-	}
-
 	return (
-		<ScrollView
+		<FlatList
 			style={contactsStyles.contactList}
+			data={products}
+			renderItem={renderProductItem}
+			keyExtractor={(item) => String(item.id)}
 			showsVerticalScrollIndicator={false}
 			contentContainerStyle={contactsStyles.contactListContent}
-		>
-			{products.map((product) => (
-				<ProductItem
-					key={product.id}
-					product={product}
-					onPress={handleProductPress}
-					onEdit={onEditProduct}
-				/>
-			))}
-
-			<View style={contactsStyles.bottomSpacer} />
-		</ScrollView>
+			ListEmptyComponent={renderEmptyState}
+			ListFooterComponent={<View style={contactsStyles.bottomSpacer} />}
+			maintainVisibleContentPosition={{
+				minIndexForVisible: 0,
+				autoscrollToTopThreshold: 10,
+			}}
+		/>
 	);
 }

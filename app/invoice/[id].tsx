@@ -29,6 +29,7 @@ import {
 import { usePinchToZoom } from "@/hooks/usePinchToZoom";
 import PdfService from "@/services/pdfService";
 import { useInvoiceStore } from "@/store/invoiceStore";
+import { invoiceStyles } from "@/styles";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 
 export default function InvoicePreviewScreen() {
@@ -51,12 +52,15 @@ export default function InvoicePreviewScreen() {
 
 	if (!invoice) {
 		return (
-			<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+			<SafeAreaView
+				style={invoiceStyles.container}
+				edges={["top", "left", "right"]}
+			>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
-				<View style={styles.header}>
+				<View style={invoiceStyles.header}>
 					<TouchableOpacity
 						onPress={() => router.back()}
-						style={styles.backButton}
+						style={invoiceStyles.backButton}
 					>
 						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
 					</TouchableOpacity>
@@ -167,17 +171,26 @@ export default function InvoicePreviewScreen() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+		<SafeAreaView
+			style={invoiceStyles.container}
+			edges={["top", "left", "right"]}
+		>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 
 				{/* Header with Delete Button */}
-				<View style={styles.header}>
-					<TouchableOpacity onPress={handleBack} style={styles.backButton}>
+				<View style={invoiceStyles.header}>
+					<TouchableOpacity
+						onPress={handleBack}
+						style={invoiceStyles.backButton}
+					>
 						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
 					</TouchableOpacity>
-					<Text style={styles.headerTitle}>Invoice Preview</Text>
-					<TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+					<Text style={invoiceStyles.headerTitle}>Invoice Preview</Text>
+					<TouchableOpacity
+						onPress={handleDelete}
+						style={invoiceStyles.deleteButton}
+					>
 						<MaterialIcons name="delete-outline" size={28} color="#EF4444" />
 					</TouchableOpacity>
 				</View>
@@ -195,7 +208,7 @@ export default function InvoicePreviewScreen() {
 					<ZoomHint />
 
 					{/* Invoice Preview Card */}
-					<View style={styles.previewContainer}>
+					<View style={invoiceStyles.previewContainer}>
 						{Platform.OS === "android" ? (
 							<GestureDetector gesture={pinchGesture}>
 								<Animated.View style={animatedStyle}>
@@ -210,7 +223,7 @@ export default function InvoicePreviewScreen() {
 					<PageIndicator />
 
 					{/* Spacer for bottom elements */}
-					<View style={styles.spacer} />
+					<View style={invoiceStyles.spacer} />
 				</ScrollView>
 
 				{/* Floating Bottom Action Bar */}
@@ -226,8 +239,8 @@ export default function InvoicePreviewScreen() {
 					visible={isPaymentModalVisible}
 					onClose={() => setPaymentModalVisible(false)}
 					onSave={handlePaymentUpdate}
-					totalAmount={invoice.total}
-					currentPaidAmount={invoice.amountPaid || 0}
+					totalAmountInCents={invoice.total}
+					currentPaidAmountInCents={invoice.amountPaid || 0}
 				/>
 			</GestureHandlerRootView>
 		</SafeAreaView>
@@ -235,39 +248,6 @@ export default function InvoicePreviewScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#000000",
-	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingHorizontal: 16,
-		paddingVertical: 12,
-		height: 64,
-		backgroundColor: "#000000",
-		borderBottomWidth: 1,
-		borderBottomColor: "rgba(255, 255, 255, 0.1)",
-	},
-	backButton: {
-		width: 48,
-		height: 48,
-		justifyContent: "center",
-		alignItems: "flex-start",
-	},
-	deleteButton: {
-		width: 48,
-		height: 48,
-		justifyContent: "center",
-		alignItems: "flex-end",
-	},
-	headerTitle: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#FFFFFF",
-		textAlign: "center",
-	},
 	scrollView: {
 		flex: 1,
 	},
@@ -275,18 +255,5 @@ const styles = StyleSheet.create({
 		paddingTop: 16,
 		paddingBottom: 200,
 		paddingHorizontal: 16,
-	},
-	previewContainer: {
-		alignSelf: "center",
-		backgroundColor: "#ffffff",
-		borderRadius: 4,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.25,
-		shadowRadius: 3.84,
-		elevation: 5,
-	},
-	spacer: {
-		height: 96,
 	},
 });

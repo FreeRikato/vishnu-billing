@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { invoiceStyles } from "@/styles";
 import type { InvoiceProduct, Product } from "@/types";
 import { InvoiceProductCard } from "./InvoiceProductCard";
 
@@ -23,9 +24,9 @@ export function InvoiceProductsSection({
 	onAddProduct,
 }: InvoiceProductsSectionProps) {
 	return (
-		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>What are they buying?</Text>
-			<View style={styles.productsSection}>
+		<View style={invoiceStyles.section}>
+			<Text style={invoiceStyles.sectionTitle}>What are they buying?</Text>
+			<View style={invoiceStyles.productsSection}>
 				{invoiceItems.map((product) => (
 					<InvoiceProductCard
 						key={product.id}
@@ -39,56 +40,15 @@ export function InvoiceProductsSection({
 				{availableProducts.length > 0 && (
 					<TouchableOpacity
 						onPress={onAddProduct}
-						style={styles.addProductButton}
+						style={invoiceStyles.addProductButton}
 					>
-						<View style={styles.addProductIcon}>
+						<View style={invoiceStyles.addProductIcon}>
 							<Ionicons name="add-circle" size={28} color="#13ec6a" />
 						</View>
-						<Text style={styles.addProductText}>Add Product</Text>
+						<Text style={invoiceStyles.addProductText}>Add Product</Text>
 					</TouchableOpacity>
 				)}
 			</View>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	section: {
-		marginTop: 24,
-		marginBottom: 12,
-	},
-	sectionTitle: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#ffffff",
-		marginBottom: 12,
-		paddingHorizontal: 4,
-	},
-	productsSection: {
-		gap: 16,
-	},
-	addProductButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 8,
-		minHeight: 72,
-		borderWidth: 2,
-		borderColor: "rgba(19, 236, 106, 0.5)",
-		borderStyle: "dashed",
-		borderRadius: 12,
-		backgroundColor: "rgba(19, 236, 106, 0.1)",
-		paddingVertical: 16,
-		marginTop: 8,
-	},
-	addProductIcon: {
-		backgroundColor: "rgba(19, 236, 106, 0.2)",
-		borderRadius: 24,
-		padding: 4,
-	},
-	addProductText: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#13ec6a",
-	},
-});

@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
 import ContactItem from "./ContactItem";
@@ -16,6 +16,14 @@ export default function ContactList({
 	onPressContact,
 	loading = false,
 }: ContactListProps) {
+	const renderContactItem = ({ item }: { item: Contact }) => (
+		<ContactItem
+			contact={item}
+			onEdit={onEditContact}
+			onPress={onPressContact}
+		/>
+	);
+
 	if (loading) {
 		return (
 			<View
@@ -27,21 +35,18 @@ export default function ContactList({
 	}
 
 	return (
-		<ScrollView
+		<FlatList
 			style={contactsStyles.contactList}
+			data={contacts}
+			renderItem={renderContactItem}
+			keyExtractor={(item) => String(item.id)}
 			showsVerticalScrollIndicator={false}
 			contentContainerStyle={contactsStyles.contactListContent}
-		>
-			{contacts.map((contact) => (
-				<ContactItem
-					key={contact.id}
-					contact={contact}
-					onEdit={onEditContact}
-					onPress={onPressContact}
-				/>
-			))}
-
-			<View style={contactsStyles.bottomSpacer} />
-		</ScrollView>
+			ListFooterComponent={<View style={contactsStyles.bottomSpacer} />}
+			maintainVisibleContentPosition={{
+				minIndexForVisible: 0,
+				autoscrollToTopThreshold: 10,
+			}}
+		/>
 	);
 }

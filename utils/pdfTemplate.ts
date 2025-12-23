@@ -1,5 +1,16 @@
 import type { InvoiceProduct, InvoiceSummary } from "@/types/invoice";
 
+// Helper to convert cents to decimal for display
+function centsToDecimal(cents: number): number {
+	return cents / 100;
+}
+
+// Helper to convert basis points to percent for display
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _basisPointsToPercent(basisPoints: number): number {
+	return basisPoints / 100;
+}
+
 // 1. styles separated for reuse
 const STYLES = `
     body {
@@ -195,7 +206,9 @@ type InvoiceData = {
 function generateRows(items: InvoiceProduct[]) {
 	return items
 		.map((item) => {
-			const lineTotal = (item.price * item.quantity).toFixed(2);
+			// Convert price from cents to decimal
+			const priceInRupees = centsToDecimal(item.price);
+			const lineTotal = (priceInRupees * item.quantity).toFixed(2);
 			return `
       <tr>
         <td>
@@ -204,8 +217,8 @@ function generateRows(items: InvoiceProduct[]) {
         </td>
         <td>${item.description}</td>
         <td class="text-right">${item.quantity}</td>
-        <td class="text-right">${item.price.toFixed(2)}</td>
-        <td class="text-right">${lineTotal}</td>
+        <td class="text-right">₹${priceInRupees.toFixed(2)}</td>
+        <td class="text-right">₹${lineTotal}</td>
       </tr>
     `;
 		})
@@ -215,6 +228,7 @@ function generateRows(items: InvoiceProduct[]) {
 // Helper to fill the template with data
 function fillInvoiceTemplate(template: string, data: InvoiceData) {
 	const rows = generateRows(data.items);
+	// Convert summary values from cents to decimals
 	return template
 		.replace("{{senderName}}", data.senderName)
 		.replace("{{invoiceNumber}}", data.invoiceNumber)
@@ -222,10 +236,16 @@ function fillInvoiceTemplate(template: string, data: InvoiceData) {
 		.replace("{{customerName}}", data.customerName)
 		.replace("{{customerPhone}}", data.customerPhone)
 		.replace("{{tableRows}}", rows)
-		.replace("{{subtotal}}", `${data.summary.subtotal.toFixed(2)}`)
-		.replace("{{discount}}", `${data.summary.totalDiscount.toFixed(2)}`)
-		.replace("{{tax}}", `${data.summary.tax.toFixed(2)}`)
-		.replace("{{total}}", `${data.summary.total.toFixed(2)}`);
+		.replace(
+			"{{subtotal}}",
+			`₹${centsToDecimal(data.summary.subtotal).toFixed(2)}`,
+		)
+		.replace(
+			"{{discount}}",
+			`₹${centsToDecimal(data.summary.totalDiscount).toFixed(2)}`,
+		)
+		.replace("{{tax}}", `₹${centsToDecimal(data.summary.tax).toFixed(2)}`)
+		.replace("{{total}}", `₹${centsToDecimal(data.summary.total).toFixed(2)}`);
 }
 
 // Wrap content in HTML shell

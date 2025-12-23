@@ -126,12 +126,17 @@ export default function ProductDetailScreen() {
 					onPress: async () => {
 						try {
 							// Use store method which wraps service and updates state
-							const success = await useProductStore
+							const result = await useProductStore
 								.getState()
 								.deleteProduct(product.id);
-							if (success) {
+							if (result.success) {
 								Alert.alert("Success", "Product deleted successfully");
 								router.back();
+							} else if (result.reason === "in_use") {
+								Alert.alert(
+									"Cannot Delete",
+									"This product is used in one or more invoices. Please delete those invoices first.",
+								);
 							} else {
 								Alert.alert("Error", "Failed to delete product");
 							}

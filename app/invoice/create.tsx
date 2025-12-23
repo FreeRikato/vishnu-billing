@@ -31,6 +31,8 @@ export default function CreateInvoiceScreen() {
 		invoiceItems,
 		summary,
 		selectedCustomer,
+		globalDiscount,
+		isEditingGlobalDiscount,
 		discountModalVisible,
 		productPickerVisible,
 		contactPickerVisible,
@@ -46,6 +48,8 @@ export default function CreateInvoiceScreen() {
 		handleQuantityChange,
 		handleRemoveProduct,
 		handleAddDiscount,
+		handleAddGlobalDiscount,
+		handleRemoveGlobalDiscount,
 		handleApplyDiscount,
 		handleEditDiscount,
 		setDiscountModalVisible,
@@ -229,17 +233,16 @@ export default function CreateInvoiceScreen() {
 										<Text style={styles.addDiscountText}>Add Discount</Text>
 									</TouchableOpacity>
 								) : (
-									<View style={styles.discountInfo}>
+									<TouchableOpacity
+										style={styles.discountInfo}
+										onPress={() => handleEditDiscount(product.id)}
+									>
 										<Text style={styles.discountText}>
 											-{product.discount.value}
 											{product.discount.type === "percent" ? "%" : ""} Off
 										</Text>
-										<TouchableOpacity
-											onPress={() => handleEditDiscount(product.id)}
-										>
-											<Text style={styles.editText}>Edit</Text>
-										</TouchableOpacity>
-									</View>
+										<Text style={styles.editText}>Edit</Text>
+									</TouchableOpacity>
 								)}
 							</View>
 						))}
@@ -261,28 +264,55 @@ export default function CreateInvoiceScreen() {
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Summary</Text>
 					<View style={styles.summaryCard}>
+						{/* Subtotal */}
 						<View style={styles.summaryRow}>
 							<Text style={styles.summaryLabel}>Subtotal</Text>
 							<Text style={styles.summaryValue}>
 								${summary.subtotal.toFixed(2)}
 							</Text>
 						</View>
-						<View style={styles.summaryRow}>
-							<Text style={styles.summaryLabel}>
-								Discount
-								<TouchableOpacity style={styles.addDiscountBadge}>
-									<Text style={styles.addDiscountBadgeText}>Add</Text>
+
+						{/* Global Invoice Discount (Stacked below subtotal) */}
+						{!globalDiscount ? (
+							<TouchableOpacity
+								onPress={handleAddGlobalDiscount}
+								style={styles.addDiscountButton}
+							>
+								<MaterialIcons name="discount" size={16} color="#13ec6a" />
+								<Text style={styles.addDiscountText}>Add Discount</Text>
+							</TouchableOpacity>
+						) : (
+							<View style={styles.summaryRow}>
+								<TouchableOpacity
+									style={styles.discountInfo}
+									onPress={handleAddGlobalDiscount}
+								>
+									<Text style={styles.discountText}>
+										Discount ({globalDiscount.value}
+										{globalDiscount.type === "percent" ? "%" : ""})
+									</Text>
+									<Text style={styles.editText}>Edit</Text>
 								</TouchableOpacity>
-							</Text>
+							</View>
+						)}
+
+						{/* Total Savings (Informational) */}
+						<View style={styles.summaryRow}>
+							<Text style={styles.summaryLabel}>Total Savings</Text>
 							<Text style={styles.summaryValue}>
 								-${summary.totalDiscount.toFixed(2)}
 							</Text>
 						</View>
+
+						{/* Tax */}
 						<View style={styles.summaryRow}>
 							<Text style={styles.summaryLabel}>Tax (5%)</Text>
 							<Text style={styles.summaryValue}>${summary.tax.toFixed(2)}</Text>
 						</View>
+
 						<View style={styles.divider} />
+
+						{/* Total */}
 						<View style={styles.totalRow}>
 							<Text style={styles.totalLabel}>Total</Text>
 							<Text style={styles.totalValue}>${summary.total.toFixed(2)}</Text>
@@ -308,27 +338,35 @@ export default function CreateInvoiceScreen() {
 				onClose={() => setDiscountModalVisible(false)}
 				onApply={handleApplyDiscount}
 				initialValue={
-					(selectedProductId &&
-						invoiceItems.find((p) => p.id === selectedProductId)?.discount
-							?.value) ||
-					0
+					isEditingGlobalDiscount
+						? globalDiscount?.value || 0
+						: (selectedProductId &&
+								invoiceItems.find((p) => p.id === selectedProductId)?.discount
+									?.value) ||
+							0
 				}
 				initialType={
-					(selectedProductId &&
-						invoiceItems.find((p) => p.id === selectedProductId)?.discount
-							?.type) ||
-					"percent"
+					isEditingGlobalDiscount
+						? globalDiscount?.type || "percent"
+						: (selectedProductId &&
+								invoiceItems.find((p) => p.id === selectedProductId)?.discount
+									?.type) ||
+							"percent"
 				}
 				productPrice={
-					selectedProductId
-						? invoiceItems.find((p) => p.id === selectedProductId)?.price || 0
-						: 0
+					isEditingGlobalDiscount
+						? summary.subtotal
+						: selectedProductId
+							? invoiceItems.find((p) => p.id === selectedProductId)?.price || 0
+							: 0
 				}
 				productQuantity={
-					selectedProductId
-						? invoiceItems.find((p) => p.id === selectedProductId)?.quantity ||
-							1
-						: 1
+					isEditingGlobalDiscount
+						? 1
+						: selectedProductId
+							? invoiceItems.find((p) => p.id === selectedProductId)
+									?.quantity || 1
+							: 1
 				}
 			/>
 

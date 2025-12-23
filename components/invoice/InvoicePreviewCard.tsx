@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import type { InvoiceWithItems } from "@/store/invoiceStore";
+import type { InvoiceWithItems } from "@/types/invoice";
 
 interface InvoicePreviewCardProps {
 	invoice: InvoiceWithItems;
@@ -60,37 +60,39 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 							Amount
 						</Text>
 					</View>
-					{invoice.items.map((item, index) => {
-						const lineTotal = (item.price * item.quantity).toFixed(2);
-						const isLast = index === invoice.items.length - 1;
+					{invoice.items.map(
+						(item: InvoiceWithItems["items"][number], index: number) => {
+							const lineTotal = (item.price * item.quantity).toFixed(2);
+							const isLast = index === invoice.items.length - 1;
 
-						return (
-							<View
-								key={item.id}
-								style={[
-									cardStyles.tableRow,
-									!isLast && cardStyles.borderBottom,
-								]}
-							>
-								<View style={cardStyles.itemDetails}>
-									<Text style={cardStyles.itemName}>{item.name}</Text>
-									<Text style={cardStyles.itemMeta}>
-										{item.quantity} x {item.description} @ $
-										{item.price.toFixed(2)}
-									</Text>
-									{item.discount && (
-										<Text style={cardStyles.discountText}>
-											Discount: -{item.discount.value}
-											{item.discount.type === "percent" ? "%" : ""}
+							return (
+								<View
+									key={item.id}
+									style={[
+										cardStyles.tableRow,
+										!isLast && cardStyles.borderBottom,
+									]}
+								>
+									<View style={cardStyles.itemDetails}>
+										<Text style={cardStyles.itemName}>{item.name}</Text>
+										<Text style={cardStyles.itemMeta}>
+											{item.quantity} x {item.description} @ $
+											{item.price.toFixed(2)}
 										</Text>
-									)}
+										{item.discount && (
+											<Text style={cardStyles.discountText}>
+												Discount: -{item.discount.value}
+												{item.discount.type === "percent" ? "%" : ""}
+											</Text>
+										)}
+									</View>
+									<Text style={[cardStyles.itemAmount, cardStyles.textRight]}>
+										${lineTotal}
+									</Text>
 								</View>
-								<Text style={[cardStyles.itemAmount, cardStyles.textRight]}>
-									${lineTotal}
-								</Text>
-							</View>
-						);
-					})}
+							);
+						},
+					)}
 				</View>
 
 				{/* Summary Section */}

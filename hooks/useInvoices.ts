@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearch } from "@/hooks/useSearch";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import type { Invoice } from "@/types";
+import { isInvoiceStatus } from "@/types/invoice";
 
 export function useInvoices() {
 	const storeInvoices = useInvoiceStore((state) => state.invoices);
@@ -20,7 +21,7 @@ export function useInvoices() {
 			day: "numeric",
 			year: "numeric",
 		}),
-		status: inv.status as "unpaid" | "partial" | "paid",
+		status: isInvoiceStatus(inv.status) ? inv.status : "unpaid",
 		checked: checkedIds.has(inv.id),
 	}));
 

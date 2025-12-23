@@ -424,6 +424,7 @@ export const invoiceStyles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: 16,
+		marginBottom: 24, // Added margin to prevent overlap with buttons
 	},
 	mathFeedbackContainer: {
 		flexDirection: "row",

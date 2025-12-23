@@ -13,6 +13,7 @@ export interface Customer {
 	name: string;
 }
 
+export type InvoiceStatus = "unpaid" | "partial" | "paid";
 export type DiscountType = "percent" | "fixed";
 
 export interface Discount {
@@ -34,4 +35,39 @@ export interface InvoiceSummary {
 	totalDiscount: number;
 	tax: number;
 	total: number;
+}
+
+// Type definition for invoice with items from database
+export type InvoiceWithItems = {
+	id: number;
+	invoiceNumber: string;
+	customerId: number;
+	customerName: string;
+	customerPhone: string;
+	subtotal: number;
+	totalDiscount: number;
+	tax: number;
+	total: number;
+	date: string;
+	status: string;
+	pdfPath: string | null;
+	items: InvoiceProduct[];
+};
+
+// Type Guards for safe type narrowing
+
+/**
+ * Type guard for InvoiceStatus
+ * Safely narrows a string to InvoiceStatus type
+ */
+export function isInvoiceStatus(value: string): value is InvoiceStatus {
+	return ["unpaid", "partial", "paid"].includes(value);
+}
+
+/**
+ * Type guard for DiscountType
+ * Safely narrows a string to DiscountType type
+ */
+export function isDiscountType(value: string | null): value is DiscountType {
+	return value === "percent" || value === "fixed";
 }

@@ -34,6 +34,7 @@ export function FormField({
 					style={[
 						styles.input,
 						props.editable === false && styles.disabledInput,
+						props.multiline && styles.multilineInput,
 						style,
 					]}
 					placeholderTextColor="#666"
@@ -81,6 +82,9 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		color: "#FFFFFF",
 		fontWeight: "500",
+	},
+	multilineInput: {
+		height: 120,
 		textAlignVertical: "top", // Align text to top on Android for multiline inputs
 	},
 	disabledInput: {

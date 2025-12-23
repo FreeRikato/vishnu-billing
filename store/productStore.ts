@@ -32,9 +32,11 @@ interface ProductStore {
 	/**
 	 * Deletes a product by calling the service and updating the store.
 	 * @param id - Product ID
-	 * @returns true if successful, false otherwise
+	 * @returns Object with success boolean and optional reason for failure
 	 */
-	deleteProduct: (id: number) => Promise<boolean>;
+	deleteProduct: (
+		id: number,
+	) => Promise<{ success: boolean; reason?: "in_use" | "error" }>;
 }
 
 /**
@@ -109,16 +111,16 @@ export const useProductStore = create<ProductStore>((set, get) => ({
 	 */
 	deleteProduct: async (id: number) => {
 		try {
-			const success = await deleteProductService(id);
-			if (success) {
+			const result = await deleteProductService(id);
+			if (result.success) {
 				set((state) => ({
 					products: state.products.filter((product) => product.id !== id),
 				}));
 			}
-			return success;
+			return result;
 		} catch (error) {
 			console.error("Error deleting product:", error);
-			return false;
+			return { success: false, reason: "error" };
 		}
 	},
 

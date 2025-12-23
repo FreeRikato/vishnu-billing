@@ -6,29 +6,7 @@ import {
 	getAllInvoices,
 	updateInvoiceStatus,
 } from "@/services/invoiceService";
-
-export type InvoiceWithItems = {
-	id: number;
-	invoiceNumber: string;
-	customerId: number;
-	customerName: string;
-	customerPhone: string;
-	subtotal: number;
-	totalDiscount: number;
-	tax: number;
-	total: number;
-	date: string;
-	status: string;
-	pdfPath: string | null;
-	items: {
-		id: number; // Invoice item ID
-		name: string;
-		description: string;
-		price: number;
-		quantity: number;
-		discount?: { value: number; type: "percent" | "fixed" };
-	}[];
-};
+import type { InvoiceWithItems } from "@/types/invoice";
 
 interface InvoiceStore {
 	invoices: InvoiceWithItems[];

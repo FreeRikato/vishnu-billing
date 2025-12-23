@@ -1,6 +1,6 @@
 import { eq, like } from "drizzle-orm";
 import { db } from "@/db/client";
-import { Product } from "@/db/schema";
+import { InvoiceItem, Product } from "@/db/schema";
 import type { Product as ProductType } from "@/types";
 
 export async function getAllProducts(): Promise<ProductType[]> {
@@ -88,12 +88,26 @@ export async function updateProduct(
 	}
 }
 
-export async function deleteProduct(id: number): Promise<boolean> {
+export async function deleteProduct(id: number): Promise<{
+	success: boolean;
+	reason?: "in_use" | "error";
+}> {
 	try {
+		// Check if product is used in any invoice items
+		const usage = await db
+			.select()
+			.from(InvoiceItem)
+			.where(eq(InvoiceItem.productId, id))
+			.limit(1);
+
+		if (usage.length > 0) {
+			return { success: false, reason: "in_use" };
+		}
+
 		await db.delete(Product).where(eq(Product.id, id));
-		return true;
+		return { success: true };
 	} catch (error) {
 		console.error("Error deleting product:", error);
-		return false;
+		return { success: false, reason: "error" };
 	}
 }

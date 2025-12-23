@@ -6,6 +6,7 @@ import { useProductStore } from "@/store/productStore";
 import type { Product as ProductType } from "@/types";
 import type {
 	Customer,
+	Discount,
 	DiscountType,
 	InvoiceProduct,
 	InvoiceSummary,
@@ -44,6 +45,8 @@ export interface UseCreateInvoiceReturn {
 	selectedProductId: number | null;
 	availableProducts: ProductType[];
 	customers: Customer[];
+	globalDiscount: Discount | undefined;
+	isEditingGlobalDiscount: boolean;
 	// Actions
 	handleCancel: () => void;
 	handleSelectCustomer: () => void;
@@ -54,6 +57,8 @@ export interface UseCreateInvoiceReturn {
 	handleQuantityChange: (productId: number, change: number) => void;
 	handleRemoveProduct: (productId: number) => void;
 	handleAddDiscount: (productId: number) => void;
+	handleAddGlobalDiscount: () => void;
+	handleRemoveGlobalDiscount: () => void;
 	handleApplyDiscount: (value: number, type: DiscountType) => void;
 	handleEditDiscount: (productId: number) => void;
 	setDiscountModalVisible: (visible: boolean) => void;
@@ -82,6 +87,11 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	// State for invoice items (products added to invoice)
 	const [invoiceItems, setInvoiceItems] = useState<InvoiceProduct[]>([]);
 
+	const [globalDiscount, setGlobalDiscount] = useState<Discount | undefined>(
+		undefined,
+	);
+	const [isEditingGlobalDiscount, setIsEditingGlobalDiscount] = useState(false);
+
 	// Modal visibility states
 	const [discountModalVisible, setDiscountModalVisible] = useState(false);
 	const [productPickerVisible, setProductPickerVisible] = useState(false);
@@ -95,30 +105,42 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 
 	// Derived state (Calculations)
 	const summary = useMemo(() => {
+		// 1. Calculate Item-level Subtotal (Net of item discounts)
 		const subtotal = invoiceItems.reduce((sum, product) => {
 			const itemTotal = product.price * product.quantity;
 			const discount = calculateDiscountAmount(itemTotal, product.discount);
 			return sum + itemTotal - discount;
 		}, 0);
 
-		const totalDiscount = invoiceItems.reduce((sum, product) => {
+		// 2. Calculate Total Item Discounts (Informational)
+		const itemDiscounts = invoiceItems.reduce((sum, product) => {
 			const itemTotal = product.price * product.quantity;
 			return sum + calculateDiscountAmount(itemTotal, product.discount);
 		}, 0);
 
-		// Round calculations to 2 decimal places for currency integrity
+		// 3. Calculate Global Discount
+		const globalDiscountAmount = calculateDiscountAmount(
+			subtotal,
+			globalDiscount,
+		);
+
+		// 4. Calculate Final Totals
+		const netSubtotal = subtotal - globalDiscountAmount;
 		const roundedSubtotal = Math.round(subtotal * 100) / 100;
-		const roundedTotalDiscount = Math.round(totalDiscount * 100) / 100;
-		const tax = Math.round(roundedSubtotal * TAX_RATE * 100) / 100;
-		const total = Math.round((roundedSubtotal + tax) * 100) / 100;
+		const roundedGlobalDiscount = Math.round(globalDiscountAmount * 100) / 100;
+		const roundedTotalDiscount =
+			Math.round((itemDiscounts + globalDiscountAmount) * 100) / 100;
+
+		const tax = Math.round(netSubtotal * TAX_RATE * 100) / 100;
+		const total = Math.round((netSubtotal + tax) * 100) / 100;
 
 		return {
 			subtotal: roundedSubtotal,
-			totalDiscount: roundedTotalDiscount,
+			totalDiscount: roundedTotalDiscount, // Includes both item and global discounts
 			tax,
 			total,
 		};
-	}, [invoiceItems]);
+	}, [invoiceItems, globalDiscount]);
 
 	// Get all products (filtering is handled in the modal)
 	const availableProducts = products;
@@ -195,13 +217,26 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	}, []);
 
 	const handleAddDiscount = useCallback((productId: number) => {
+		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
 	}, []);
 
+	const handleAddGlobalDiscount = useCallback(() => {
+		setIsEditingGlobalDiscount(true);
+		setSelectedProductId(null);
+		setDiscountModalVisible(true);
+	}, []);
+
+	const handleRemoveGlobalDiscount = useCallback(() => {
+		setGlobalDiscount(undefined);
+	}, []);
+
 	const handleApplyDiscount = useCallback(
 		(value: number, type: DiscountType) => {
-			if (selectedProductId) {
+			if (isEditingGlobalDiscount) {
+				setGlobalDiscount({ value, type });
+			} else if (selectedProductId) {
 				setInvoiceItems((prev) =>
 					prev.map((item) => {
 						if (item.id === selectedProductId) {
@@ -212,11 +247,13 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 				);
 			}
 			setSelectedProductId(null);
+			setIsEditingGlobalDiscount(false);
 		},
-		[selectedProductId],
+		[selectedProductId, isEditingGlobalDiscount],
 	);
 
 	const handleEditDiscount = useCallback((productId: number) => {
+		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
 	}, []);
@@ -231,6 +268,8 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		selectedProductId,
 		availableProducts,
 		customers,
+		globalDiscount,
+		isEditingGlobalDiscount,
 		handleCancel,
 		handleSelectCustomer,
 		handleCreateNewCustomer,
@@ -240,6 +279,8 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		handleQuantityChange,
 		handleRemoveProduct,
 		handleAddDiscount,
+		handleAddGlobalDiscount,
+		handleRemoveGlobalDiscount,
 		handleApplyDiscount,
 		handleEditDiscount,
 		setDiscountModalVisible,

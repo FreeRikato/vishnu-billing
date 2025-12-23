@@ -1,7 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { Invoice, InvoiceItem } from "@/db/schema";
-import type { InvoiceProduct, InvoiceSummary } from "@/types/invoice";
+import {
+	type InvoiceProduct,
+	type InvoiceSummary,
+	type InvoiceWithItems,
+	isDiscountType,
+} from "@/types/invoice";
 
 export type CreateInvoiceInput = {
 	invoiceNumber: string;
@@ -12,22 +17,6 @@ export type CreateInvoiceInput = {
 	summary: InvoiceSummary;
 	date: string;
 	pdfPath?: string;
-};
-
-export type InvoiceWithItems = {
-	id: number;
-	invoiceNumber: string;
-	customerId: number;
-	customerName: string;
-	customerPhone: string;
-	subtotal: number;
-	totalDiscount: number;
-	tax: number;
-	total: number;
-	date: string;
-	status: string;
-	pdfPath: string | null;
-	items: InvoiceProduct[];
 };
 
 /**
@@ -70,10 +59,10 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 					price: Number(item.price),
 					quantity: item.quantity,
 					discount:
-						item.discountValue !== null && item.discountType !== null
+						item.discountValue !== null && isDiscountType(item.discountType)
 							? {
 									value: Number(item.discountValue),
-									type: item.discountType as "percent" | "fixed",
+									type: item.discountType,
 								}
 							: undefined,
 				})),
@@ -119,10 +108,10 @@ export async function getInvoiceById(
 				price: Number(item.price),
 				quantity: item.quantity,
 				discount:
-					item.discountValue !== null && item.discountType !== null
+					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
 								value: Number(item.discountValue),
-								type: item.discountType as "percent" | "fixed",
+								type: item.discountType,
 							}
 						: undefined,
 			})),
@@ -196,10 +185,10 @@ export async function createInvoice(
 				price: Number(item.price),
 				quantity: item.quantity,
 				discount:
-					item.discountValue !== null && item.discountType !== null
+					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
 								value: Number(item.discountValue),
-								type: item.discountType as "percent" | "fixed",
+								type: item.discountType,
 							}
 						: undefined,
 			})),

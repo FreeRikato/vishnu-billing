@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { Invoice, InvoiceItem } from "@/db/schema";
 import {
@@ -16,6 +16,7 @@ export type CreateInvoiceInput = {
 	items: InvoiceProduct[];
 	summary: InvoiceSummary;
 	date: string;
+	amountPaid?: number;
 	pdfPath?: string;
 };
 
@@ -36,7 +37,10 @@ export function generateInvoiceNumber(): string {
  */
 export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 	try {
-		const invoices = await db.select().from(Invoice);
+		const invoices = await db
+			.select()
+			.from(Invoice)
+			.where(isNull(Invoice.deletedAt));
 
 		const result: InvoiceWithItems[] = [];
 
@@ -52,6 +56,7 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 				totalDiscount: Number(invoice.totalDiscount),
 				tax: Number(invoice.tax),
 				total: Number(invoice.total),
+				amountPaid: Number(invoice.amountPaid),
 				items: items.map((item) => ({
 					id: item.id,
 					name: item.name,
@@ -101,6 +106,7 @@ export async function getInvoiceById(
 			totalDiscount: Number(invoice.totalDiscount),
 			tax: Number(invoice.tax),
 			total: Number(invoice.total),
+			amountPaid: Number(invoice.amountPaid),
 			items: items.map((item) => ({
 				id: item.id,
 				name: item.name,
@@ -141,6 +147,7 @@ export async function createInvoice(
 				totalDiscount: input.summary.totalDiscount,
 				tax: input.summary.tax,
 				total: input.summary.total,
+				amountPaid: input.amountPaid ?? 0,
 				date: input.date,
 				status: "unpaid",
 				pdfPath: input.pdfPath ?? null,
@@ -178,6 +185,7 @@ export async function createInvoice(
 			totalDiscount: Number(newInvoice.totalDiscount),
 			tax: Number(newInvoice.tax),
 			total: Number(newInvoice.total),
+			amountPaid: Number(newInvoice.amountPaid),
 			items: createdItems.map((item) => ({
 				id: item.id,
 				name: item.name,
@@ -232,17 +240,69 @@ export async function updateInvoicePdfPath(
 }
 
 /**
- * Delete an invoice and its items
+ * Delete an invoice using soft delete (sets deletedAt timestamp)
  */
 export async function deleteInvoice(id: number): Promise<boolean> {
 	try {
-		// Delete items first (foreign key constraint)
-		await db.delete(InvoiceItem).where(eq(InvoiceItem.invoiceId, id));
-		// Delete invoice
-		await db.delete(Invoice).where(eq(Invoice.id, id));
+		// Soft delete by setting deletedAt to current timestamp
+		const deletedAt = new Date().toISOString();
+		await db
+			.update(Invoice)
+			.set({ deletedAt })
+			.where(eq(Invoice.id, id));
 		return true;
 	} catch (error) {
 		console.error("Error deleting invoice:", error);
 		return false;
+	}
+}
+
+/**
+ * Update invoice payment and automatically calculate status
+ */
+export async function updateInvoicePayment(
+	id: number,
+	amountPaid: number,
+): Promise<{
+	success: boolean;
+	newStatus?: "unpaid" | "partial" | "paid";
+	newAmountPaid?: number;
+}> {
+	try {
+		// First get the invoice to know the total
+		const currentInvoice = await getInvoiceById(id);
+		if (!currentInvoice) return { success: false };
+
+		// Ensure amountPaid is not negative and not more than total (optional constraint)
+		const cleanAmountPaid = Math.max(0, amountPaid);
+
+		// Determine new status
+		let newStatus: "unpaid" | "partial" | "paid" = "unpaid";
+		const total = currentInvoice.total;
+
+		// Floating point comparison tolerance
+		const epsilon = 0.01;
+
+		if (cleanAmountPaid >= total - epsilon) {
+			newStatus = "paid";
+		} else if (cleanAmountPaid > epsilon) {
+			newStatus = "partial";
+		} else {
+			newStatus = "unpaid";
+		}
+
+		// Perform Update
+		await db
+			.update(Invoice)
+			.set({
+				amountPaid: cleanAmountPaid,
+				status: newStatus,
+			})
+			.where(eq(Invoice.id, id));
+
+		return { success: true, newStatus, newAmountPaid: cleanAmountPaid };
+	} catch (error) {
+		console.error("Error updating invoice payment:", error);
+		return { success: false };
 	}
 }

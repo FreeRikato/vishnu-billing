@@ -1,3 +1,4 @@
+import { EvilIcons, MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -6,6 +7,8 @@ import {
 	ScrollView,
 	StatusBar,
 	StyleSheet,
+	Text,
+	TouchableOpacity,
 	View,
 } from "react-native";
 import {
@@ -19,8 +22,8 @@ import {
 	InvoiceErrorState,
 	InvoiceLoadingOverlay,
 	InvoicePreviewCard,
-	InvoicePreviewHeader,
 	PageIndicator,
+	PaymentModal,
 	ZoomHint,
 } from "@/components";
 import { usePinchToZoom } from "@/hooks/usePinchToZoom";
@@ -37,7 +40,11 @@ export default function InvoicePreviewScreen() {
 	const invoiceId = Number(idString);
 
 	const invoice = useInvoiceStore((state) => state.getInvoiceById(invoiceId));
+	const updatePayment = useInvoiceStore((state) => state.updatePayment);
+	const deleteInvoice = useInvoiceStore((state) => state.deleteInvoice);
+
 	const [capturing, setCapturing] = useState(false);
+	const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
 
 	// Zoom Logic for Android (Pinch to Inspect)
 	const { pinchGesture, animatedStyle } = usePinchToZoom();
@@ -46,7 +53,14 @@ export default function InvoicePreviewScreen() {
 		return (
 			<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
-				<InvoicePreviewHeader onBack={() => router.back()} />
+				<View style={styles.header}>
+					<TouchableOpacity
+						onPress={() => router.back()}
+						style={styles.backButton}
+					>
+						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
+					</TouchableOpacity>
+				</View>
 				<InvoiceErrorState />
 			</SafeAreaView>
 		);
@@ -54,14 +68,13 @@ export default function InvoicePreviewScreen() {
 
 	// Get PDF URI - checks if saved PDF exists, otherwise generates it
 	const getPdfUri = async (): Promise<string> => {
-		// Check if stored PDF exists
 		if (invoice.pdfPath && (await PdfService.pdfExists(invoice.pdfPath))) {
 			return invoice.pdfPath;
 		}
 
 		// Fallback to generating it
 		const html = generateInvoiceHtml(
-			"Vishnu Billing", // senderName
+			"Vishnu Billing",
 			invoice.invoiceNumber,
 			invoice.date,
 			{ name: invoice.customerName, phone: invoice.customerPhone },
@@ -79,6 +92,28 @@ export default function InvoicePreviewScreen() {
 
 	const handleBack = () => {
 		router.back();
+	};
+
+	const handleDelete = () => {
+		Alert.alert(
+			"Delete Invoice",
+			"Are you sure you want to delete this invoice? This action cannot be undone.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Delete",
+					style: "destructive",
+					onPress: async () => {
+						const success = await deleteInvoice(invoiceId);
+						if (success) {
+							router.back();
+						} else {
+							Alert.alert("Error", "Failed to delete invoice");
+						}
+					},
+				},
+			],
+		);
 	};
 
 	const handleSave = async () => {
@@ -124,13 +159,28 @@ export default function InvoicePreviewScreen() {
 		}
 	};
 
+	const handlePaymentUpdate = async (amount: number) => {
+		const success = await updatePayment(invoiceId, amount);
+		if (!success) {
+			Alert.alert("Error", "Failed to update payment");
+		}
+	};
+
 	return (
 		<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 
-				{/* Header */}
-				<InvoicePreviewHeader onBack={handleBack} />
+				{/* Header with Delete Button */}
+				<View style={styles.header}>
+					<TouchableOpacity onPress={handleBack} style={styles.backButton}>
+						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
+					</TouchableOpacity>
+					<Text style={styles.headerTitle}>Invoice Preview</Text>
+					<TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+						<MaterialIcons name="delete-outline" size={28} color="#EF4444" />
+					</TouchableOpacity>
+				</View>
 
 				{capturing && <InvoiceLoadingOverlay />}
 
@@ -142,7 +192,6 @@ export default function InvoicePreviewScreen() {
 					minimumZoomScale={1}
 					maximumZoomScale={3}
 				>
-					{/* Zoom Hint */}
 					<ZoomHint />
 
 					{/* Invoice Preview Card */}
@@ -158,7 +207,6 @@ export default function InvoicePreviewScreen() {
 						)}
 					</View>
 
-					{/* Page Count */}
 					<PageIndicator />
 
 					{/* Spacer for bottom elements */}
@@ -169,7 +217,17 @@ export default function InvoicePreviewScreen() {
 				<InvoiceActionBar
 					onSave={handleSave}
 					onShare={handleShare}
+					onPayment={() => setPaymentModalVisible(true)}
 					disabled={capturing}
+				/>
+
+				{/* Payment Modal */}
+				<PaymentModal
+					visible={isPaymentModalVisible}
+					onClose={() => setPaymentModalVisible(false)}
+					onSave={handlePaymentUpdate}
+					totalAmount={invoice.total}
+					currentPaidAmount={invoice.amountPaid || 0}
 				/>
 			</GestureHandlerRootView>
 		</SafeAreaView>
@@ -181,11 +239,40 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#000000",
 	},
+	header: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingHorizontal: 16,
+		paddingVertical: 12,
+		height: 64,
+		backgroundColor: "#000000",
+		borderBottomWidth: 1,
+		borderBottomColor: "rgba(255, 255, 255, 0.1)",
+	},
+	backButton: {
+		width: 48,
+		height: 48,
+		justifyContent: "center",
+		alignItems: "flex-start",
+	},
+	deleteButton: {
+		width: 48,
+		height: 48,
+		justifyContent: "center",
+		alignItems: "flex-end",
+	},
+	headerTitle: {
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#FFFFFF",
+		textAlign: "center",
+	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
-		paddingTop: 24,
+		paddingTop: 16,
 		paddingBottom: 200,
 		paddingHorizontal: 16,
 	},
@@ -193,13 +280,11 @@ const styles = StyleSheet.create({
 		alignSelf: "center",
 		backgroundColor: "#ffffff",
 		borderRadius: 4,
-		// Simple shadow for depth against black bg
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.25,
 		shadowRadius: 3.84,
 		elevation: 5,
-		// overflow: "hidden", // Removed to allow zoom to spill over if needed
 	},
 	spacer: {
 		height: 96,

@@ -32,9 +32,11 @@ export const Invoice = sqliteTable("invoice", {
 	totalDiscount: real().notNull(),
 	tax: real().notNull(),
 	total: real().notNull(),
+	amountPaid: real().notNull().default(0),
 	date: text().notNull(),
 	status: text().notNull().default("unpaid"),
 	pdfPath: text(),
+	deletedAt: text(),
 });
 
 export const InvoiceItem = sqliteTable("invoice_item", {

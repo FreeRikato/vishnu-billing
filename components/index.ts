@@ -24,6 +24,7 @@ export { SyncStatusIndicator } from "./home/SyncStatusIndicator";
 export { ContactPickerModal } from "./invoice/ContactPickerModal";
 export { CustomerSelection } from "./invoice/CustomerSelection";
 export { DiscountModal } from "./invoice/DiscountModal";
+export { PaymentModal } from "./invoice/PaymentModal";
 export { default as FloatingShareButton } from "./invoice/FloatingShareButton";
 export { InvoiceActionBar } from "./invoice/InvoiceActionBar";
 export { InvoiceErrorState } from "./invoice/InvoiceErrorState";

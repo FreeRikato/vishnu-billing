@@ -4,6 +4,7 @@ import {
 	createInvoice,
 	deleteInvoice,
 	getAllInvoices,
+	updateInvoicePayment,
 	updateInvoiceStatus,
 } from "@/services/invoiceService";
 import type { InvoiceWithItems } from "@/types/invoice";
@@ -18,6 +19,7 @@ interface InvoiceStore {
 		id: number,
 		status: "unpaid" | "partial" | "paid",
 	) => Promise<boolean>;
+	updatePayment: (id: number, amountPaid: number) => Promise<boolean>;
 	deleteInvoice: (id: number) => Promise<boolean>;
 	getInvoiceById: (id: number) => InvoiceWithItems | null;
 }
@@ -90,6 +92,36 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
 			return success;
 		} catch (error) {
 			console.error("Error updating invoice status:", error);
+			return false;
+		}
+	},
+
+	/**
+	 * Updates the payment amount for an invoice and recalculates status.
+	 * @param id - Invoice ID
+	 * @param amountPaid - Total amount paid so far
+	 * @returns true if successful
+	 */
+	updatePayment: async (id: number, amountPaid: number) => {
+		try {
+			const result = await updateInvoicePayment(id, amountPaid);
+			if (result.success && result.newStatus !== undefined) {
+				set((state) => ({
+					invoices: state.invoices.map((invoice) =>
+						invoice.id === id
+							? {
+									...invoice,
+									amountPaid: result.newAmountPaid!,
+									status: result.newStatus!,
+								}
+							: invoice,
+					),
+				}));
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error("Error updating invoice payment:", error);
 			return false;
 		}
 	},

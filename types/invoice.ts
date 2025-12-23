@@ -48,9 +48,11 @@ export type InvoiceWithItems = {
 	totalDiscount: number;
 	tax: number;
 	total: number;
+	amountPaid: number;
 	date: string;
 	status: string;
 	pdfPath: string | null;
+	deletedAt: string | null;
 	items: InvoiceProduct[];
 };
 

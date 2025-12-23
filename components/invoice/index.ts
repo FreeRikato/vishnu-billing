@@ -1,6 +1,7 @@
 export { ContactPickerModal } from "./ContactPickerModal";
 export { CustomerSelection } from "./CustomerSelection";
 export { DiscountModal } from "./DiscountModal";
+export { PaymentModal } from "./PaymentModal";
 export { InvoiceActionBar } from "./InvoiceActionBar";
 export { InvoiceCreateCustomerSelection } from "./InvoiceCreateCustomerSelection";
 export { InvoiceCreateFooter } from "./InvoiceCreateFooter";

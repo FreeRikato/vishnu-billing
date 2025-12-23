@@ -63,12 +63,7 @@ export function PaymentModal({
 				duration: 200,
 				useNativeDriver: true,
 			}),
-		]).start(() => {
-			// Auto focus input after animation on Android/iOS
-			setTimeout(() => {
-				inputRef.current?.focus();
-			}, 100);
-		});
+		]).start();
 	}, [fadeAnim, slideAnim]);
 
 	useEffect(() => {
@@ -177,6 +172,7 @@ export function PaymentModal({
 										placeholder="0.00"
 										placeholderTextColor="#333333"
 										keyboardType="decimal-pad"
+										autoFocus
 										selectTextOnFocus
 									/>
 									{amount.length > 0 && (

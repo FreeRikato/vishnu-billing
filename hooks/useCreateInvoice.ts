@@ -127,7 +127,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		// 4. Calculate Final Totals
 		const netSubtotal = subtotal - globalDiscountAmount;
 		const roundedSubtotal = Math.round(subtotal * 100) / 100;
-		const roundedGlobalDiscount = Math.round(globalDiscountAmount * 100) / 100;
+		const _roundedGlobalDiscount = Math.round(globalDiscountAmount * 100) / 100;
 		const roundedTotalDiscount =
 			Math.round((itemDiscounts + globalDiscountAmount) * 100) / 100;
 
@@ -235,11 +235,22 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	const handleApplyDiscount = useCallback(
 		(value: number, type: DiscountType) => {
 			if (isEditingGlobalDiscount) {
-				setGlobalDiscount({ value, type });
+				// Remove discount if value is 0, otherwise set it
+				if (value === 0) {
+					setGlobalDiscount(undefined);
+				} else {
+					setGlobalDiscount({ value, type });
+				}
 			} else if (selectedProductId) {
 				setInvoiceItems((prev) =>
 					prev.map((item) => {
 						if (item.id === selectedProductId) {
+							// Remove discount if value is 0, otherwise set it
+							if (value === 0) {
+								// biome-ignore lint/correctness/noUnusedVariables: We want to remove discount from the object
+								const { discount, ...rest } = item;
+								return rest;
+							}
 							return { ...item, discount: { value, type } };
 						}
 						return item;

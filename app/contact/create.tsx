@@ -1,40 +1,11 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert } from "react-native";
+import { AvatarPreview, ColorPicker } from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
 import { useContactStore } from "@/store/contactStore";
+import { generateInitials, generateRandomColor } from "@/utils/contactUtils";
 import { validateContact } from "@/utils/validation";
-
-const COLORS = [
-	"#3B82F6",
-	"#8B5CF6",
-	"#F97316",
-	"#10B981",
-	"#14B8A6",
-	"#F59E0B",
-	"#EF4444",
-	"#EC4899",
-	"#6366F1",
-	"#84CC16",
-	"#06B6D4",
-	"#64748B",
-	"#F43F5E",
-	"#A855F7",
-	"#22C55E",
-];
-
-function generateInitials(name: string): string {
-	return name
-		.split(" ")
-		.map((word) => word.charAt(0).toUpperCase())
-		.join("")
-		.slice(0, 2);
-}
-
-function generateRandomColor(): string {
-	return COLORS[Math.floor(Math.random() * COLORS.length)];
-}
 
 export default function CreateContactScreen() {
 	const router = useRouter();
@@ -101,18 +72,10 @@ export default function CreateContactScreen() {
 				onSave={handleSave}
 			>
 				{/* Contact Avatar Preview */}
-				<View style={styles.avatarPreviewContainer}>
-					<View
-						style={[
-							styles.avatarPreview,
-							{ backgroundColor: `${formData.color}20` },
-						]}
-					>
-						<Text style={[styles.avatarPreviewText, { color: formData.color }]}>
-							{formData.initials || "?"}
-						</Text>
-					</View>
-				</View>
+				<AvatarPreview
+					initials={formData.initials || "?"}
+					color={formData.color}
+				/>
 
 				<FormField
 					label="Full Name"
@@ -146,83 +109,11 @@ export default function CreateContactScreen() {
 				/>
 
 				{/* Color Selection */}
-				<View style={styles.fieldContainer}>
-					<View style={styles.labelContainer}>
-						<MaterialIcons name="palette" size={20} color="#9CA3AF" />
-						<Text style={styles.label}>Color</Text>
-					</View>
-					<View style={styles.colorPickerContainer}>
-						{COLORS.map((color) => (
-							<TouchableOpacity
-								key={color}
-								style={[
-									styles.colorOption,
-									{
-										backgroundColor: color,
-										borderWidth: formData.color === color ? 3 : 0,
-										borderColor:
-											formData.color === color ? "#000000" : "transparent",
-									},
-								]}
-								onPress={() => setFormData((prev) => ({ ...prev, color }))}
-							>
-								{formData.color === color && (
-									<MaterialIcons name="check" size={16} color="#FFFFFF" />
-								)}
-							</TouchableOpacity>
-						))}
-					</View>
-				</View>
+				<ColorPicker
+					selectedColor={formData.color}
+					onColorChange={(color) => setFormData((prev) => ({ ...prev, color }))}
+				/>
 			</ScreenLayout>
 		</>
 	);
 }
-
-const styles = StyleSheet.create({
-	avatarPreviewContainer: {
-		alignItems: "center",
-		marginBottom: 32,
-	},
-	avatarPreview: {
-		width: 120,
-		height: 120,
-		borderRadius: 60,
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: 16,
-	},
-	avatarPreviewText: {
-		fontSize: 42,
-		fontWeight: "bold",
-	},
-	fieldContainer: {
-		marginBottom: 32,
-	},
-	labelContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		marginBottom: 12,
-		paddingLeft: 8,
-	},
-	label: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#9CA3AF",
-		textTransform: "uppercase",
-		letterSpacing: 1,
-	},
-	colorPickerContainer: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		gap: 12,
-		paddingHorizontal: 8,
-	},
-	colorOption: {
-		width: 48,
-		height: 48,
-		borderRadius: 24,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-});

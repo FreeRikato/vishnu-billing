@@ -483,4 +483,28 @@ export const invoiceStyles = StyleSheet.create({
 		color: "#102217",
 		letterSpacing: 0.5,
 	},
+	// Invoice List Styles
+	listContainer: {
+		flex: 1,
+		backgroundColor: "#000000",
+	},
+	listSearchContainer: {
+		paddingHorizontal: 16,
+		paddingBottom: 8,
+	},
+	listLightContainer: {
+		flex: 1,
+		backgroundColor: "#f6f8f7",
+	},
+	listLightSearchContainer: {
+		paddingHorizontal: 16,
+		paddingBottom: 8,
+	},
+	// Invoice List specific styles
+	invoiceList: {
+		flex: 1,
+	},
+	invoiceListContent: {
+		paddingBottom: 120,
+	},
 });

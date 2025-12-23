@@ -1,8 +1,8 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
+import { ProductDeleteSection } from "@/components/product/ProductDeleteSection";
 import { getProductById } from "@/services/productService";
 import { useProductStore } from "@/store/productStore";
 import type { Product } from "@/types";
@@ -195,47 +195,8 @@ export default function ProductDetailScreen() {
 				/>
 
 				{/* Delete Button */}
-				<View style={styles.deleteSection}>
-					<TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-						<MaterialIcons name="delete-forever" size={24} color="#EF4444" />
-						<Text style={styles.deleteButtonText}>Delete Product</Text>
-					</TouchableOpacity>
-					<Text style={styles.deleteWarning}>
-						This action cannot be undone.
-					</Text>
-				</View>
+				<ProductDeleteSection onDelete={handleDelete} />
 			</ScreenLayout>
 		</>
 	);
 }
-
-const styles = StyleSheet.create({
-	deleteSection: {
-		paddingTop: 32,
-		paddingBottom: 16,
-	},
-	deleteButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 12,
-		paddingVertical: 20,
-		borderRadius: 50,
-		borderWidth: 2,
-		borderColor: "rgba(239, 68, 68, 0.3)",
-		backgroundColor: "rgba(239, 68, 68, 0.05)",
-		marginBottom: 16,
-	},
-	deleteButtonText: {
-		color: "#EF4444",
-		fontSize: 20,
-		fontWeight: "bold",
-		letterSpacing: 0.5,
-	},
-	deleteWarning: {
-		textAlign: "center",
-		color: "#6B7280",
-		fontSize: 14,
-		fontWeight: "500",
-	},
-});

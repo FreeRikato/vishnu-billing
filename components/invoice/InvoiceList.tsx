@@ -1,5 +1,6 @@
 import { FlatList, View } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
+import { invoiceStyles } from "@/styles/invoice";
 import type { Invoice } from "@/types";
 import InvoiceItem from "./InvoiceItem";
 
@@ -35,8 +36,12 @@ export default function InvoiceList({
 			renderItem={renderInvoiceItem}
 			keyExtractor={(item) => String(item.id)}
 			showsVerticalScrollIndicator={false}
-			contentContainerStyle={contactsStyles.contactListContent}
+			contentContainerStyle={invoiceStyles.invoiceListContent}
 			ListFooterComponent={<View style={contactsStyles.bottomSpacer} />}
+			maintainVisibleContentPosition={{
+				minIndexForVisible: 0,
+				autoscrollToTopThreshold: 10,
+			}}
 		/>
 	);
 }

@@ -1,30 +1,29 @@
-import EvilIcons from "@expo/vector-icons/EvilIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
-	ActivityIndicator,
 	Alert,
 	Platform,
 	ScrollView,
 	StatusBar,
 	StyleSheet,
-	Text,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import {
-	Gesture,
 	GestureDetector,
 	GestureHandlerRootView,
 } from "react-native-gesture-handler";
-import Animated, {
-	useAnimatedStyle,
-	useSharedValue,
-	withSpring,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { InvoicePreviewCard } from "@/components/invoice/InvoicePreviewCard";
+import {
+	InvoiceActionBar,
+	InvoiceErrorState,
+	InvoiceLoadingOverlay,
+	InvoicePreviewCard,
+	InvoicePreviewHeader,
+	PageIndicator,
+	ZoomHint,
+} from "@/components";
+import { usePinchToZoom } from "@/hooks/usePinchToZoom";
 import PdfService from "@/services/pdfService";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
@@ -41,46 +40,14 @@ export default function InvoicePreviewScreen() {
 	const [capturing, setCapturing] = useState(false);
 
 	// Zoom Logic for Android (Pinch to Inspect)
-	const scale = useSharedValue(1);
-	const savedScale = useSharedValue(1);
-
-	const pinchGesture = useMemo(
-		() =>
-			Gesture.Pinch()
-				.onUpdate((e) => {
-					scale.value = savedScale.value * e.scale;
-				})
-				.onEnd(() => {
-					// Snap back to 1 on release for Android to ensure usability
-					scale.value = withSpring(1);
-					savedScale.value = 1;
-				}),
-		[scale, savedScale],
-	);
-
-	const animatedStyle = useAnimatedStyle(() => ({
-		transform: [{ scale: scale.value }],
-		zIndex: 10, // Ensure it sits on top when zooming
-	}));
+	const { pinchGesture, animatedStyle } = usePinchToZoom();
 
 	if (!invoice) {
 		return (
 			<SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
-				<View style={styles.header}>
-					<TouchableOpacity
-						onPress={() => router.back()}
-						style={styles.backButton}
-					>
-						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
-					</TouchableOpacity>
-					<Text style={styles.headerTitle}>Invoice Preview</Text>
-					<View style={styles.placeholder} />
-				</View>
-				<View style={styles.errorContainer}>
-					<MaterialIcons name="error-outline" size={48} color="#9ca3af" />
-					<Text style={styles.errorText}>Invoice not found</Text>
-				</View>
+				<InvoicePreviewHeader onBack={() => router.back()} />
+				<InvoiceErrorState />
 			</SafeAreaView>
 		);
 	}
@@ -163,20 +130,9 @@ export default function InvoicePreviewScreen() {
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 
 				{/* Header */}
-				<View style={styles.header}>
-					<TouchableOpacity onPress={handleBack} style={styles.backButton}>
-						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
-					</TouchableOpacity>
-					<Text style={styles.headerTitle}>Invoice Preview</Text>
-					<View style={styles.placeholder} />
-				</View>
+				<InvoicePreviewHeader onBack={handleBack} />
 
-				{capturing && (
-					<View style={styles.loadingOverlay}>
-						<ActivityIndicator size="large" color="#13ec6a" />
-						<Text style={styles.loadingText}>Generating PDF...</Text>
-					</View>
-				)}
+				{capturing && <InvoiceLoadingOverlay />}
 
 				{/* Main Content */}
 				<ScrollView
@@ -187,10 +143,7 @@ export default function InvoicePreviewScreen() {
 					maximumZoomScale={3}
 				>
 					{/* Zoom Hint */}
-					<View style={styles.zoomHint}>
-						<MaterialIcons name="zoom-in" size={16} color="#9CA3AF" />
-						<Text style={styles.zoomHintText}>Pinch to zoom invoice</Text>
-					</View>
+					<ZoomHint />
 
 					{/* Invoice Preview Card */}
 					<View style={styles.previewContainer}>
@@ -206,33 +159,18 @@ export default function InvoicePreviewScreen() {
 					</View>
 
 					{/* Page Count */}
-					<View style={styles.pageIndicator}>
-						<Text style={styles.pageIndicatorText}>Page 1 of 1</Text>
-					</View>
+					<PageIndicator />
 
 					{/* Spacer for bottom elements */}
 					<View style={styles.spacer} />
 				</ScrollView>
 
 				{/* Floating Bottom Action Bar */}
-				<View style={styles.actionBar}>
-					<TouchableOpacity
-						onPress={handleSave}
-						style={styles.saveButton}
-						disabled={capturing}
-					>
-						<MaterialIcons name="save-alt" size={24} color="#ffffff" />
-						<Text style={styles.saveButtonText}>Save</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						onPress={handleShare}
-						style={styles.shareButton}
-						disabled={capturing}
-					>
-						<MaterialIcons name="share" size={24} color="#000000" />
-						<Text style={styles.shareButtonText}>Share</Text>
-					</TouchableOpacity>
-				</View>
+				<InvoiceActionBar
+					onSave={handleSave}
+					onShare={handleShare}
+					disabled={capturing}
+				/>
 			</GestureHandlerRootView>
 		</SafeAreaView>
 	);
@@ -243,60 +181,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#000000",
 	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingHorizontal: 16,
-		paddingVertical: 12,
-		height: 64,
-		backgroundColor: "#000000",
-		borderBottomWidth: 1,
-		borderBottomColor: "rgba(255, 255, 255, 0.1)",
-	},
-	backButton: {
-		width: 48,
-		height: 48,
-		justifyContent: "center",
-		alignItems: "flex-start",
-	},
-	headerTitle: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#FFFFFF",
-		textAlign: "center",
-	},
-	placeholder: {
-		width: 64,
-	},
-	errorContainer: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		gap: 16,
-	},
-	errorText: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#9ca3af",
-	},
-	loadingOverlay: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		backgroundColor: "rgba(0, 0, 0, 0.8)",
-		justifyContent: "center",
-		alignItems: "center",
-		gap: 12,
-		zIndex: 50,
-	},
-	loadingText: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#ffffff",
-	},
 	scrollView: {
 		flex: 1,
 	},
@@ -304,23 +188,6 @@ const styles = StyleSheet.create({
 		paddingTop: 24,
 		paddingBottom: 200,
 		paddingHorizontal: 16,
-	},
-	zoomHint: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 8,
-		alignSelf: "center",
-		backgroundColor: "rgba(255, 255, 255, 0.1)",
-		borderRadius: 9999,
-		paddingHorizontal: 16,
-		paddingVertical: 6,
-		marginBottom: 24,
-	},
-	zoomHintText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#9CA3AF",
 	},
 	previewContainer: {
 		alignSelf: "center",
@@ -334,67 +201,7 @@ const styles = StyleSheet.create({
 		elevation: 5,
 		// overflow: "hidden", // Removed to allow zoom to spill over if needed
 	},
-	pageIndicator: {
-		marginTop: 24,
-		alignSelf: "center",
-		backgroundColor: "#1C1C1E",
-		borderRadius: 9999,
-		borderWidth: 1,
-		borderColor: "rgba(255, 255, 255, 0.1)",
-		paddingHorizontal: 12,
-		paddingVertical: 4,
-	},
-	pageIndicatorText: {
-		fontSize: 12,
-		fontWeight: "600",
-		color: "#9CA3AF",
-	},
 	spacer: {
 		height: 96,
-	},
-	actionBar: {
-		position: "absolute",
-		bottom: 30,
-		left: 20,
-		right: 20,
-		flexDirection: "row",
-		gap: 16,
-	},
-	saveButton: {
-		flex: 1,
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 8,
-		height: 64,
-		backgroundColor: "#1C1C1E",
-		borderRadius: 32,
-		borderWidth: 1,
-		borderColor: "rgba(255, 255, 255, 0.1)",
-	},
-	saveButtonText: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#ffffff",
-	},
-	shareButton: {
-		flex: 1.5,
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 8,
-		height: 64,
-		backgroundColor: "#13ec6a",
-		borderRadius: 32,
-		shadowColor: "#13ec6a",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 8,
-		elevation: 8,
-	},
-	shareButtonText: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#000000",
 	},
 });

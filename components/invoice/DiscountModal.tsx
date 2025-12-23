@@ -127,8 +127,14 @@ export function DiscountModal({
 	const handleApply = () => {
 		const rawValue = parseFloat(discountValue);
 
-		if (Number.isNaN(rawValue) || rawValue <= 0) {
-			handleClose(); // Just close if invalid
+		// If value is empty, NaN, or 0, remove the discount by passing 0
+		if (
+			discountValue.trim() === "" ||
+			Number.isNaN(rawValue) ||
+			rawValue <= 0
+		) {
+			onApply(0, discountType); // Pass 0 to signal discount removal
+			handleClose();
 			return;
 		}
 

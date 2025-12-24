@@ -1,9 +1,7 @@
-import { router } from "expo-router";
-import { ActivityIndicator, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	CreateInvoiceButton,
 	HomeHeader,
+	InvoiceStatsChart,
 	RecoverButton,
 	SyncStatusIndicator,
 } from "@/components";
@@ -11,6 +9,9 @@ import { HOME_CONSTANTS } from "@/constants/home";
 import { useSync } from "@/hooks/useSync";
 import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
+import { router } from "expo-router";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
 	const { user, isLoading, error } = useUser();
@@ -54,23 +55,28 @@ export default function HomeScreen() {
 
 	return (
 		<SafeAreaView style={homeStyles.container} edges={["top", "left", "right"]}>
-			{/* Header Section */}
-			<HomeHeader user={user} onSyncCloud={handleBackupToCloud} />
+			<ScrollView showsVerticalScrollIndicator={false}>
+				{/* Header Section */}
+				<HomeHeader user={user} onSyncCloud={handleBackupToCloud} />
 
-			{/* Sync Status Indicator */}
-			<SyncStatusIndicator isSyncing={isSyncing} />
+				{/* Sync Status Indicator */}
+				<SyncStatusIndicator isSyncing={isSyncing} />
 
-			{/* Content Area */}
-			<View style={{ flex: 1, paddingHorizontal: 24, gap: 20 }}>
-				{/* Create Invoice Button */}
-				<CreateInvoiceButton onPress={handleCreateInvoice} />
+				{/* Content Area */}
+				<View style={{ flex: 1, paddingHorizontal: 24, gap: 20, paddingBottom: 40 }}>
+					{/* Create Invoice Button */}
+					<CreateInvoiceButton onPress={handleCreateInvoice} />
 
-				{/* Developer Only Recover Button - Hidden by default */}
-				<RecoverButton
-					onRecover={handleRecoverFromCloud}
-					enabled={isRecoveryEnabled}
-				/>
-			</View>
+					{/* Invoice Statistics Chart */}
+					<InvoiceStatsChart />
+
+					{/* Developer Only Recover Button - Hidden by default */}
+					<RecoverButton
+						onRecover={handleRecoverFromCloud}
+						enabled={isRecoveryEnabled}
+					/>
+				</View>
+			</ScrollView>
 		</SafeAreaView>
 	);
 }

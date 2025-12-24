@@ -1,3 +1,7 @@
+// Polyfills for React Native Skia/Victory Native - MUST be first
+import "react-native-url-polyfill/auto";
+import "text-encoding";
+
 import NetInfo from "@react-native-community/netinfo";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";

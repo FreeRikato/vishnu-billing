@@ -19,6 +19,7 @@ export { CreateInvoiceButton } from "./home/CreateInvoiceButton";
 export { HomeHeader } from "./home/HomeHeader";
 export { RecoverButton } from "./home/RecoverButton";
 export { SyncStatusIndicator } from "./home/SyncStatusIndicator";
+export { InvoiceStatsChart } from "./home/InvoiceStatsChart";
 
 // Invoice components
 export { ContactPickerModal } from "./invoice/ContactPickerModal";

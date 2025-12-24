@@ -79,10 +79,24 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	// Convert contacts to customers
 	const customers: Customer[] = useMemo(
 		() =>
-			contacts.map((contact) => ({
-				id: contact.id,
-				name: contact.name,
-			})),
+			contacts.map((contact) => {
+				const customer = {
+					id: contact.id,
+					name: contact.name,
+					phone: contact.phone,
+					address: contact.address ?? "",
+					gstin: contact.gstin ?? null,
+					dlNo: contact.dlNo ?? null,
+				};
+				// Debug: Log conversion
+				console.log(`[useCreateInvoice] Converting contact "${contact.name}":`, {
+					contactGstin: contact.gstin,
+					contactDlNo: contact.dlNo,
+					customerGstin: customer.gstin,
+					customerDlNo: customer.dlNo,
+				});
+				return customer;
+			}),
 		[contacts],
 	);
 

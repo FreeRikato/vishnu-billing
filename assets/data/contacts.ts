@@ -7,6 +7,9 @@ export const mockContacts: Contact[] = [
 		phone: "(555) 123-4567",
 		initials: "JD",
 		color: "#3B82F6",
+		address: "",
+		gstin: null,
+		dlNo: null,
 	},
 	{
 		id: 2,
@@ -14,6 +17,9 @@ export const mockContacts: Contact[] = [
 		phone: "(555) 987-6543",
 		initials: "AS",
 		color: "#8B5CF6",
+		address: "",
+		gstin: null,
+		dlNo: null,
 	},
 	{
 		id: 3,
@@ -21,6 +27,9 @@ export const mockContacts: Contact[] = [
 		phone: "(555) 555-5555",
 		initials: "BH",
 		color: "#F97316",
+		address: "",
+		gstin: null,
+		dlNo: null,
 	},
 	{
 		id: 4,
@@ -28,6 +37,9 @@ export const mockContacts: Contact[] = [
 		phone: "(555) 234-8765",
 		initials: "MM",
 		color: "#10B981",
+		address: "",
+		gstin: null,
+		dlNo: null,
 	},
 	{
 		id: 5,
@@ -35,5 +47,8 @@ export const mockContacts: Contact[] = [
 		phone: "(555) 999-0000",
 		initials: "SW",
 		color: "#14B8A6",
+		address: "",
+		gstin: null,
+		dlNo: null,
 	},
 ];

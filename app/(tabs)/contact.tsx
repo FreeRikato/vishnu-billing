@@ -24,10 +24,17 @@ export default function ContactScreen() {
 	};
 
 	const handlePressContact = (contact: Contact) => {
-		Alert.alert(
-			"Contact Details",
-			`Selected ${contact.name}\n${contact.phone}`,
-		);
+		const details = [
+			`Name: ${contact.name}`,
+			`Phone: ${contact.phone}`,
+			contact.address ? `Address: ${contact.address}` : null,
+			contact.gstin ? `GSTIN: ${contact.gstin}` : null,
+			contact.dlNo ? `DL No: ${contact.dlNo}` : null,
+		]
+			.filter(Boolean)
+			.join("\n\n");
+
+		Alert.alert("Contact Details", details);
 	};
 
 	const handleAddContact = () => {

@@ -18,6 +18,9 @@ export const Contact = sqliteTable("contact", {
 	phone: text().notNull(),
 	initials: text().notNull(),
 	color: text().notNull(),
+	address: text().notNull(),
+	gstin: text(),
+	dlNo: text(),
 });
 
 export const Invoice = sqliteTable("invoice", {
@@ -28,6 +31,9 @@ export const Invoice = sqliteTable("invoice", {
 		.references(() => Contact.id),
 	customerName: text().notNull(),
 	customerPhone: text().notNull(),
+	customerAddress: text().notNull(),
+	customerGstin: text(),
+	customerDlNo: text(),
 	subtotal: int().notNull(), // Stored in cents
 	totalDiscount: int().notNull(), // Stored in cents
 	tax: int().notNull(), // Stored in cents

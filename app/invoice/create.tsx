@@ -4,7 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getLocalDateString, useCreateInvoice } from "@/hooks/useCreateInvoice";
 import { generateInvoiceNumber } from "@/services/invoiceService";
 import PdfService from "@/services/pdfService";
-import { useContactStore } from "@/store/contactStore";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { invoiceStyles } from "@/styles";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
@@ -19,7 +18,6 @@ import { ProductPickerModal } from "../../components/invoice/ProductPickerModal"
 
 export default function CreateInvoiceScreen() {
 	const addInvoice = useInvoiceStore((state) => state.addInvoice);
-	const contacts = useContactStore((state) => state.contacts);
 
 	// Use the custom hook to manage state and handlers
 	const {
@@ -63,12 +61,14 @@ export default function CreateInvoiceScreen() {
 			return;
 		}
 
-		// Find the full contact object to get phone number
-		const contact = contacts.find((c) => c.name === selectedCustomer.name);
-		if (!contact) {
-			Alert.alert("Error", "Contact not found");
-			return;
-		}
+		// Debug: Log selected customer data
+		console.log("[InvoiceCreate] Selected customer:", {
+			name: selectedCustomer.name,
+			phone: selectedCustomer.phone,
+			address: selectedCustomer.address,
+			gstin: selectedCustomer.gstin,
+			dlNo: selectedCustomer.dlNo,
+		});
 
 		try {
 			// Generate invoice number once using the service
@@ -80,8 +80,11 @@ export default function CreateInvoiceScreen() {
 				invoiceNumber, // Invoice number
 				getLocalDateString(), // Date (local time)
 				{
-					name: contact.name,
-					phone: contact.phone,
+					name: selectedCustomer.name,
+					phone: selectedCustomer.phone,
+					address: selectedCustomer.address,
+					gstin: selectedCustomer.gstin,
+					dlNo: selectedCustomer.dlNo,
 				},
 				invoiceItems,
 				summary,
@@ -99,9 +102,12 @@ export default function CreateInvoiceScreen() {
 			// Create invoice in database
 			const newInvoice = await addInvoice({
 				invoiceNumber,
-				customerId: contact.id,
-				customerName: contact.name,
-				customerPhone: contact.phone,
+				customerId: selectedCustomer.id,
+				customerName: selectedCustomer.name,
+				customerPhone: selectedCustomer.phone,
+				customerAddress: selectedCustomer.address,
+				customerGstin: selectedCustomer.gstin,
+				customerDlNo: selectedCustomer.dlNo,
 				items: invoiceItems,
 				summary,
 				date: getLocalDateString(),

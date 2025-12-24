@@ -81,7 +81,13 @@ export default function InvoicePreviewScreen() {
 			"Vishnu Billing",
 			invoice.invoiceNumber,
 			invoice.date,
-			{ name: invoice.customerName, phone: invoice.customerPhone },
+			{
+				name: invoice.customerName,
+				phone: invoice.customerPhone,
+				address: invoice.customerAddress,
+				gstin: invoice.customerGstin,
+				dlNo: invoice.customerDlNo,
+			},
 			invoice.items,
 			{
 				subtotal: invoice.subtotal,

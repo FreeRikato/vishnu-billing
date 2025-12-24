@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import { AvatarPreview, ColorPicker, DeleteContactButton } from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
 import { getContactById } from "@/services/contactService";
@@ -20,6 +20,9 @@ export default function ContactDetailScreen() {
 	const [formData, setFormData] = useState({
 		name: "",
 		phone: "",
+		address: "",
+		gstin: "",
+		dlNo: "",
 		initials: "",
 		color: "#3B82F6",
 	});
@@ -38,6 +41,9 @@ export default function ContactDetailScreen() {
 					setFormData({
 						name: contactData.name,
 						phone: contactData.phone,
+						address: contactData.address ?? "",
+						gstin: contactData.gstin ?? "",
+						dlNo: contactData.dlNo ?? "",
 						initials: contactData.initials,
 						color: contactData.color,
 					});
@@ -85,6 +91,11 @@ export default function ContactDetailScreen() {
 			return;
 		}
 
+		if (!formData.address.trim()) {
+			Alert.alert("Error", "Address is required");
+			return;
+		}
+
 		try {
 			// Use store method which wraps service and updates state
 			const updatedContact = await useContactStore
@@ -92,6 +103,9 @@ export default function ContactDetailScreen() {
 				.updateContact(contact.id, {
 					name: formData.name,
 					phone: formData.phone,
+					address: formData.address,
+					gstin: formData.gstin.trim() || null,
+					dlNo: formData.dlNo.trim() || null,
 					initials: formData.initials,
 					color: formData.color,
 				});
@@ -165,48 +179,92 @@ export default function ContactDetailScreen() {
 				isLoading={loading}
 				loadingMessage="Loading contact..."
 			>
-				{/* Contact Avatar Preview */}
-				<AvatarPreview initials={formData.initials} color={formData.color} />
+				<ScrollView showsVerticalScrollIndicator={false}>
+					{/* Contact Avatar Preview */}
+					<View style={{ alignItems: "center", marginBottom: 20 }}>
+						<AvatarPreview
+							initials={formData.initials}
+							color={formData.color}
+						/>
+					</View>
 
-				<FormField
-					label="Full Name"
-					icon="person"
-					required
-					placeholder="e.g. John Smith"
-					value={formData.name}
-					onChangeText={handleNameChange}
-				/>
+					<FormField
+						label="Full Name"
+						icon="person"
+						required
+						placeholder="e.g. John Smith"
+						value={formData.name}
+						onChangeText={handleNameChange}
+					/>
 
-				<FormField
-					label="Phone Number"
-					icon="call"
-					required
-					placeholder="(555) 123-4567"
-					value={formData.phone}
-					onChangeText={(text) =>
-						setFormData((prev) => ({ ...prev, phone: text }))
-					}
-					keyboardType="phone-pad"
-				/>
+					<FormField
+						label="Phone Number"
+						icon="call"
+						required
+						placeholder="(555) 123-4567"
+						value={formData.phone}
+						onChangeText={(text) =>
+							setFormData((prev) => ({ ...prev, phone: text }))
+						}
+						keyboardType="phone-pad"
+					/>
 
-				{/* Initials Field (Auto-generated) */}
-				<FormField
-					label="Initials"
-					icon="text-format"
-					value={formData.initials}
-					editable={false}
-					placeholder="Auto-generated"
-					rightIcon={undefined}
-				/>
+					<FormField
+						label="Address"
+						icon="location-on"
+						required
+						placeholder="Enter address"
+						value={formData.address}
+						onChangeText={(text) =>
+							setFormData((prev) => ({ ...prev, address: text }))
+						}
+						multiline
+						numberOfLines={3}
+					/>
 
-				{/* Color Selection */}
-				<ColorPicker
-					selectedColor={formData.color}
-					onColorChange={(color) => setFormData((prev) => ({ ...prev, color }))}
-				/>
+					<FormField
+						label="GSTIN No"
+						icon="info"
+						placeholder="Enter GSTIN number"
+						value={formData.gstin}
+						onChangeText={(text) =>
+							setFormData((prev) => ({ ...prev, gstin: text }))
+						}
+						autoCapitalize="characters"
+					/>
 
-				{/* Delete Button */}
-				<DeleteContactButton onPress={handleDelete} />
+					<FormField
+						label="DL No"
+						icon="badge"
+						placeholder="Enter DL number"
+						value={formData.dlNo}
+						onChangeText={(text) =>
+							setFormData((prev) => ({ ...prev, dlNo: text }))
+						}
+						autoCapitalize="characters"
+					/>
+
+					{/* Initials Field (Auto-generated) */}
+					<FormField
+						label="Initials"
+						icon="text-format"
+						value={formData.initials}
+						editable={false}
+						placeholder="Auto-generated"
+						rightIcon={undefined}
+					/>
+
+					{/* Color Selection */}
+					<ColorPicker
+						selectedColor={formData.color}
+						onColorChange={(color) =>
+							setFormData((prev) => ({ ...prev, color }))
+						}
+					/>
+
+					{/* Delete Button */}
+					<DeleteContactButton onPress={handleDelete} />
+				</ScrollView>
 			</ScreenLayout>
 		</>
 	);

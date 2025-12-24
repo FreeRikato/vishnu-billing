@@ -13,6 +13,9 @@ export type CreateInvoiceInput = {
 	customerId: number;
 	customerName: string;
 	customerPhone: string;
+	customerAddress: string;
+	customerGstin?: string | null;
+	customerDlNo?: string | null;
 	items: InvoiceProduct[];
 	summary: InvoiceSummary;
 	date: string;
@@ -146,6 +149,9 @@ export async function createInvoice(
 				customerId: input.customerId,
 				customerName: input.customerName,
 				customerPhone: input.customerPhone,
+				customerAddress: input.customerAddress,
+				customerGstin: input.customerGstin ?? null,
+				customerDlNo: input.customerDlNo ?? null,
 				subtotal: input.summary.subtotal, // Already in cents
 				totalDiscount: input.summary.totalDiscount, // Already in cents
 				tax: input.summary.tax, // Already in cents

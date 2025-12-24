@@ -17,6 +17,9 @@ export const ContactSchema = z.object({
 		.min(1, "Phone number is required")
 		.min(10, "Phone number must be at least 10 digits")
 		.max(15, "Phone number is too long"),
+	address: z.string().min(1, "Address is required"),
+	gstin: z.string().optional(),
+	dlNo: z.string().optional(),
 });
 
 export type ContactInput = z.infer<typeof ContactSchema>;
@@ -147,12 +150,8 @@ const FirebaseEnvSchema = z.object({
 	EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z
 		.string()
 		.min(1, "FIREBASE_MESSAGING_SENDER_ID is required"),
-	EXPO_PUBLIC_FIREBASE_APP_ID: z
-		.string()
-		.min(1, "FIREBASE_APP_ID is required"),
-	EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID: z
-		.string()
-		.optional(),
+	EXPO_PUBLIC_FIREBASE_APP_ID: z.string().min(1, "FIREBASE_APP_ID is required"),
+	EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
 });
 
 // Type for validated Firebase config
@@ -165,8 +164,7 @@ export type FirebaseEnvConfig = z.infer<typeof FirebaseEnvSchema>;
  */
 function validateEnv(): FirebaseEnvConfig {
 	const envVars = {
-		EXPO_PUBLIC_FIREBASE_API_KEY:
-			process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+		EXPO_PUBLIC_FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
 		EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN:
 			process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
 		EXPO_PUBLIC_FIREBASE_PROJECT_ID:
@@ -175,8 +173,7 @@ function validateEnv(): FirebaseEnvConfig {
 			process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
 		EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
 			process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-		EXPO_PUBLIC_FIREBASE_APP_ID:
-			process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+		EXPO_PUBLIC_FIREBASE_APP_ID: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 		EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID:
 			process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 	};

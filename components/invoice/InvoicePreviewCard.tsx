@@ -7,6 +7,15 @@ interface InvoicePreviewCardProps {
 }
 
 export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
+	// Debug: Log invoice customer data
+	console.log("[InvoicePreviewCard] Invoice customer data:", {
+		customerName: invoice.customerName,
+		customerPhone: invoice.customerPhone,
+		customerAddress: invoice.customerAddress,
+		customerGstin: invoice.customerGstin,
+		customerDlNo: invoice.customerDlNo,
+	});
+
 	// Calculate formatted date
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
@@ -42,6 +51,21 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 						<Text style={cardStyles.customerPhone}>
 							{invoice.customerPhone}
 						</Text>
+						{invoice.customerAddress && (
+							<Text style={cardStyles.customerDetail}>
+								{invoice.customerAddress}
+							</Text>
+						)}
+						{invoice.customerGstin && (
+							<Text style={cardStyles.customerDetail}>
+								GSTIN: {invoice.customerGstin}
+							</Text>
+						)}
+						{invoice.customerDlNo && (
+							<Text style={cardStyles.customerDetail}>
+								DL No: {invoice.customerDlNo}
+							</Text>
+						)}
 					</View>
 					<View style={cardStyles.billToRight}>
 						<Text style={cardStyles.sectionLabel}>Date Issued</Text>
@@ -218,6 +242,12 @@ const cardStyles = StyleSheet.create({
 		fontSize: 14,
 		color: "#64748b",
 		marginTop: 4,
+	},
+	customerDetail: {
+		fontSize: 13,
+		color: "#64748b",
+		marginTop: 2,
+		lineHeight: 18,
 	},
 	dateText: {
 		fontSize: 16,

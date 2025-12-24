@@ -14,6 +14,9 @@ export interface InvoicePdfData {
 	customer: {
 		name: string;
 		phone: string;
+		address: string;
+		gstin?: string | null;
+		dlNo?: string | null;
 	};
 	items: Array<{
 		id: number;

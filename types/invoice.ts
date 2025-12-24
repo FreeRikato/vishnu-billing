@@ -11,6 +11,10 @@ export interface Invoice {
 export interface Customer {
 	id: number;
 	name: string;
+	phone: string;
+	address: string;
+	gstin?: string | null;
+	dlNo?: string | null;
 }
 
 export type InvoiceStatus = "unpaid" | "partial" | "paid";
@@ -44,6 +48,9 @@ export type InvoiceWithItems = {
 	customerId: number;
 	customerName: string;
 	customerPhone: string;
+	customerAddress: string;
+	customerGstin: string | null;
+	customerDlNo: string | null;
 	subtotal: number;
 	totalDiscount: number;
 	tax: number;

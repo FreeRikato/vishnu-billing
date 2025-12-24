@@ -58,6 +58,9 @@ export function useInvoiceShare() {
 									}),
 									customerName: inv.customerName,
 									customerPhone: inv.customerPhone,
+									customerAddress: inv.customerAddress,
+									customerGstin: inv.customerGstin,
+									customerDlNo: inv.customerDlNo,
 									items: inv.items,
 									summary: {
 										subtotal: inv.subtotal,

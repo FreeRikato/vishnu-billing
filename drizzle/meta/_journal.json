@@ -57,6 +57,20 @@
 			"when": 1766490018982,
 			"tag": "0007_daffy_calypso",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "6",
+			"when": 1766565000000,
+			"tag": "0008_amused_lila_cheney",
+			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "6",
+			"when": 1766565175170,
+			"tag": "0009_handy_skrulls",
+			"breakpoints": true
 		}
 	]
 }

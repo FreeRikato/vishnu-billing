@@ -90,6 +90,9 @@ export async function createContact(
 				phone: contact.phone,
 				initials,
 				color,
+				address: contact.address ?? "",
+				gstin: contact.gstin ?? null,
+				dlNo: contact.dlNo ?? null,
 			})
 			.returning();
 
@@ -109,6 +112,9 @@ export async function updateContact(
 			name?: string;
 			initials?: string;
 			phone?: string;
+			address?: string;
+			gstin?: string | null;
+			dlNo?: string | null;
 			color?: string;
 		} = {
 			...(contact.name && {
@@ -116,6 +122,9 @@ export async function updateContact(
 				initials: generateInitials(contact.name),
 			}),
 			...(contact.phone && { phone: contact.phone }),
+			...(contact.address !== undefined && { address: contact.address }),
+			...(contact.gstin !== undefined && { gstin: contact.gstin }),
+			...(contact.dlNo !== undefined && { dlNo: contact.dlNo }),
 			...(contact.color && { color: contact.color }),
 		};
 

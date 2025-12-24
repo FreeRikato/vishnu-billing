@@ -1,4 +1,3 @@
-import "react-native-reanimated";
 import NetInfo from "@react-native-community/netinfo";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
@@ -7,7 +6,6 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { db, expoDb } from "@/db/client"; // Import expoDb
 import migrations from "@/drizzle/migrations";
 import { useColorScheme } from "@/hooks";
@@ -16,6 +14,8 @@ import { useContactStore } from "@/store/contactStore";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { useProductStore } from "@/store/productStore";
 import { useUserStore } from "@/store/userStore";
+import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export const unstable_settings = {
 	anchor: "(tabs)",
@@ -63,7 +63,7 @@ export default function RootLayout() {
 	if (error) {
 		return (
 			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-				<Text>Migration Error: {error.message}</Text>
+				<Text style={{ color: "red" }}>Migration Error: {error.message}</Text>
 			</View>
 		);
 	}

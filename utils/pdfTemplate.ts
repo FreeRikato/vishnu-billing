@@ -57,10 +57,18 @@ const STYLES = `
       font-size: 18px;
       font-weight: bold;
     }
-    .customer-phone {
+    .customer-details {
       font-size: 14px;
       color: #666;
       margin-top: 4px;
+      line-height: 1.5;
+    }
+    .customer-info-row {
+      margin-top: 4px;
+    }
+    .customer-info-label {
+      font-weight: 500;
+      color: #333;
     }
     table {
       width: 100%;
@@ -147,7 +155,12 @@ const INVOICE_BODY_TEMPLATE = `
   <div class="section">
     <div class="bill-to-title">Bill To:</div>
     <div class="customer-name">{{customerName}}</div>
-    <div class="customer-phone">{{customerPhone}}</div>
+    <div class="customer-details">
+      <div>{{customerPhone}}</div>
+      <div class="customer-info-row">{{customerAddress}}</div>
+      {{customerGstSection}}
+      {{customerDlSection}}
+    </div>
   </div>
 
   <table>
@@ -198,6 +211,9 @@ type InvoiceData = {
 	date: string;
 	customerName: string;
 	customerPhone: string;
+	customerAddress: string;
+	customerGstin?: string | null;
+	customerDlNo?: string | null;
 	items: InvoiceProduct[];
 	summary: InvoiceSummary;
 };
@@ -225,9 +241,23 @@ function generateRows(items: InvoiceProduct[]) {
 		.join("");
 }
 
+// Helper to generate GST section
+function generateGstSection(gstin?: string | null): string {
+	if (!gstin || gstin.trim() === "") return "";
+	return `<div class="customer-info-row"><span class="customer-info-label">GSTIN:</span> ${gstin}</div>`;
+}
+
+// Helper to generate DL section
+function generateDlSection(dlNo?: string | null): string {
+	if (!dlNo || dlNo.trim() === "") return "";
+	return `<div class="customer-info-row"><span class="customer-info-label">DL No:</span> ${dlNo}</div>`;
+}
+
 // Helper to fill the template with data
 function fillInvoiceTemplate(template: string, data: InvoiceData) {
 	const rows = generateRows(data.items);
+	const gstSection = generateGstSection(data.customerGstin);
+	const dlSection = generateDlSection(data.customerDlNo);
 	// Convert summary values from cents to decimals
 	return template
 		.replace("{{senderName}}", data.senderName)
@@ -235,6 +265,9 @@ function fillInvoiceTemplate(template: string, data: InvoiceData) {
 		.replace("{{date}}", data.date)
 		.replace("{{customerName}}", data.customerName)
 		.replace("{{customerPhone}}", data.customerPhone)
+		.replace("{{customerAddress}}", data.customerAddress)
+		.replace("{{customerGstSection}}", gstSection)
+		.replace("{{customerDlSection}}", dlSection)
 		.replace("{{tableRows}}", rows)
 		.replace(
 			"{{subtotal}}",
@@ -269,7 +302,13 @@ export function generateInvoiceHtml(
 	senderName: string,
 	invoiceNumber: string,
 	date: string,
-	customer: { name: string; phone: string },
+	customer: {
+		name: string;
+		phone: string;
+		address: string;
+		gstin?: string | null;
+		dlNo?: string | null;
+	},
 	items: InvoiceProduct[],
 	summary: InvoiceSummary,
 ) {
@@ -279,6 +318,9 @@ export function generateInvoiceHtml(
 		date,
 		customerName: customer.name,
 		customerPhone: customer.phone,
+		customerAddress: customer.address,
+		customerGstin: customer.gstin,
+		customerDlNo: customer.dlNo,
 		items,
 		summary,
 	};

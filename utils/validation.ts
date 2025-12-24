@@ -127,3 +127,111 @@ export function validateProduct(
 	}
 	return { success: true, data: result.data };
 }
+
+// ============ Environment Variables Validation ============
+
+// Firebase Environment Variables Schema
+const FirebaseEnvSchema = z.object({
+	EXPO_PUBLIC_FIREBASE_API_KEY: z
+		.string()
+		.min(1, "FIREBASE_API_KEY is required"),
+	EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: z
+		.string()
+		.min(1, "FIREBASE_AUTH_DOMAIN is required"),
+	EXPO_PUBLIC_FIREBASE_PROJECT_ID: z
+		.string()
+		.min(1, "FIREBASE_PROJECT_ID is required"),
+	EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: z
+		.string()
+		.min(1, "FIREBASE_STORAGE_BUCKET is required"),
+	EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z
+		.string()
+		.min(1, "FIREBASE_MESSAGING_SENDER_ID is required"),
+	EXPO_PUBLIC_FIREBASE_APP_ID: z
+		.string()
+		.min(1, "FIREBASE_APP_ID is required"),
+	EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID: z
+		.string()
+		.optional(),
+});
+
+// Type for validated Firebase config
+export type FirebaseEnvConfig = z.infer<typeof FirebaseEnvSchema>;
+
+/**
+ * Validates and returns environment variables
+ * Throws an error if validation fails during development
+ * Returns validated config object
+ */
+function validateEnv(): FirebaseEnvConfig {
+	const envVars = {
+		EXPO_PUBLIC_FIREBASE_API_KEY:
+			process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+		EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN:
+			process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+		EXPO_PUBLIC_FIREBASE_PROJECT_ID:
+			process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+		EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET:
+			process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+		EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
+			process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+		EXPO_PUBLIC_FIREBASE_APP_ID:
+			process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+		EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID:
+			process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+	};
+
+	const result = FirebaseEnvSchema.safeParse(envVars);
+
+	if (!result.success) {
+		const errorMessages = result.error.issues
+			.map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+			.join("\n");
+		throw new Error(
+			`Environment validation failed:\n${errorMessages}\n\nPlease check your .env file.`,
+		);
+	}
+
+	return result.data;
+}
+
+// Singleton instance of validated env
+let _cachedEnv: FirebaseEnvConfig | null = null;
+
+/**
+ * Get validated environment variables
+ * This should be imported and used throughout the app
+ *
+ * @example
+ * import { env } from '@/utils/validation';
+ *
+ * const firebaseConfig = {
+ *   apiKey: env.FIREBASE_API_KEY,
+ *   authDomain: env.FIREBASE_AUTH_DOMAIN,
+ *   // ...
+ * };
+ */
+export const env = new Proxy({} as FirebaseEnvConfig, {
+	get(_target, prop: keyof FirebaseEnvConfig) {
+		if (!_cachedEnv) {
+			_cachedEnv = validateEnv();
+		}
+		return _cachedEnv[prop];
+	},
+});
+
+/**
+ * Utility to get Firebase config object for initialization
+ * This formats the env vars into the structure expected by Firebase
+ */
+export function getFirebaseConfig() {
+	return {
+		apiKey: env.EXPO_PUBLIC_FIREBASE_API_KEY,
+		authDomain: env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+		projectId: env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+		storageBucket: env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+		messagingSenderId: env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+		appId: env.EXPO_PUBLIC_FIREBASE_APP_ID,
+		measurementId: env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+	};
+}

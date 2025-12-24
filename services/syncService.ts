@@ -21,6 +21,15 @@ import {
 	User,
 } from "@/db/schema";
 
+// Types for Firebase data (may include additional fields like Timestamps)
+type FirebaseData<T> = Record<string, unknown> & Partial<T>;
+
+interface FirebaseUser extends FirebaseData<User> {}
+interface FirebaseContact extends FirebaseData<Contact> {}
+interface FirebaseProduct extends FirebaseData<Product> {}
+interface FirebaseInvoice extends FirebaseData<Invoice> {}
+interface FirebaseInvoiceItem extends FirebaseData<InvoiceItem> {}
+
 // Hardcoded ID for this example since there is no Auth system.
 // In production, this should be derived from the authenticated user ID
 const DEVICE_BACKUP_ID = "user_device_backup";
@@ -285,11 +294,19 @@ export const SyncService = {
 			),
 		]);
 
-		const users = usersSnap.docs.map((doc) => doc.data() as any);
-		const contacts = contactsSnap.docs.map((doc) => doc.data() as any);
-		const products = productsSnap.docs.map((doc) => doc.data() as any);
-		const invoices = invoicesSnap.docs.map((doc) => doc.data() as any);
-		const invoiceItems = invoiceItemsSnap.docs.map((doc) => doc.data() as any);
+		const users = usersSnap.docs.map((doc) => doc.data() as FirebaseUser);
+		const contacts = contactsSnap.docs.map(
+			(doc) => doc.data() as FirebaseContact,
+		);
+		const products = productsSnap.docs.map(
+			(doc) => doc.data() as FirebaseProduct,
+		);
+		const invoices = invoicesSnap.docs.map(
+			(doc) => doc.data() as FirebaseInvoice,
+		);
+		const invoiceItems = invoiceItemsSnap.docs.map(
+			(doc) => doc.data() as FirebaseInvoiceItem,
+		);
 
 		await db.transaction(async (tx) => {
 			await tx.delete(InvoiceItem);
@@ -298,12 +315,15 @@ export const SyncService = {
 			await tx.delete(Product);
 			await tx.delete(User);
 
-			if (users.length > 0) await tx.insert(User).values(users);
-			if (contacts.length > 0) await tx.insert(Contact).values(contacts as any);
-			if (products.length > 0) await tx.insert(Product).values(products as any);
-			if (invoices.length > 0) await tx.insert(Invoice).values(invoices as any);
+			if (users.length > 0) await tx.insert(User).values(users as User[]);
+			if (contacts.length > 0)
+				await tx.insert(Contact).values(contacts as Contact[]);
+			if (products.length > 0)
+				await tx.insert(Product).values(products as Product[]);
+			if (invoices.length > 0)
+				await tx.insert(Invoice).values(invoices as Invoice[]);
 			if (invoiceItems.length > 0)
-				await tx.insert(InvoiceItem).values(invoiceItems as any);
+				await tx.insert(InvoiceItem).values(invoiceItems as InvoiceItem[]);
 		});
 
 		console.log("Recovery Complete.");

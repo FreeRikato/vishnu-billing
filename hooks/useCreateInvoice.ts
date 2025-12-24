@@ -89,12 +89,15 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 					dlNo: contact.dlNo ?? null,
 				};
 				// Debug: Log conversion
-				console.log(`[useCreateInvoice] Converting contact "${contact.name}":`, {
-					contactGstin: contact.gstin,
-					contactDlNo: contact.dlNo,
-					customerGstin: customer.gstin,
-					customerDlNo: customer.dlNo,
-				});
+				console.log(
+					`[useCreateInvoice] Converting contact "${contact.name}":`,
+					{
+						contactGstin: contact.gstin,
+						contactDlNo: contact.dlNo,
+						customerGstin: customer.gstin,
+						customerDlNo: customer.dlNo,
+					},
+				);
 				return customer;
 			}),
 		[contacts],

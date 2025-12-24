@@ -105,14 +105,18 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
 	updatePayment: async (id: number, amountPaid: number) => {
 		try {
 			const result = await updateInvoicePayment(id, amountPaid);
-			if (result.success && result.newStatus !== undefined) {
+			if (
+				result.success &&
+				result.newStatus !== undefined &&
+				result.newAmountPaid !== undefined
+			) {
 				set((state) => ({
 					invoices: state.invoices.map((invoice) =>
 						invoice.id === id
 							? {
 									...invoice,
-									amountPaid: result.newAmountPaid!,
-									status: result.newStatus!,
+									amountPaid: result.newAmountPaid,
+									status: result.newStatus,
 								}
 							: invoice,
 					),

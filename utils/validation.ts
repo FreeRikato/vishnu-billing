@@ -78,7 +78,35 @@ export const CustomerSchema = z.object({
 
 export type CustomerInput = z.infer<typeof CustomerSchema>;
 
-// Helper function to get first error message from ZodError
+// Invoice Summary Schema (for create invoice flow)
+export const InvoiceSummarySchema = z.object({
+	subtotal: z.number().min(0),
+	totalDiscount: z.number().min(0),
+	tax: z.number().min(0),
+	total: z.number().min(0),
+});
+
+export type InvoiceSummaryInput = z.infer<typeof InvoiceSummarySchema>;
+
+// Create Invoice Schema (complete validation for invoice creation)
+export const CreateInvoiceSchema = z.object({
+	invoiceNumber: z.string().min(1, "Invoice number is required"),
+	customerId: z.number().int().positive(),
+	customerName: z.string().min(1, "Customer name is required"),
+	customerPhone: z.string().min(10, "Phone number must be at least 10 digits"),
+	customerAddress: z.string().min(1, "Address is required"),
+	customerGstin: z.string().optional(),
+	customerDlNo: z.string().optional(),
+	items: z.array(InvoiceProductSchema).min(1, "At least one item is required"),
+	summary: InvoiceSummarySchema,
+	date: z.string().min(1, "Date is required"),
+	amountPaid: z.number().min(0).optional(),
+	pdfPath: z.string().optional(),
+});
+
+export type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>;
+
+// Helper function to validate Invoice form
 function getFirstErrorMessage(error: z.ZodError): string {
 	const firstIssue = error.issues[0];
 	if (!firstIssue) {
@@ -122,6 +150,22 @@ export function validateProduct(
 	data: unknown,
 ): { success: true; data: ProductInput } | { success: false; error: string } {
 	const result = ProductSchema.safeParse(data);
+	if (!result.success) {
+		return {
+			success: false,
+			error: getFirstErrorMessage(result.error),
+		};
+	}
+	return { success: true, data: result.data };
+}
+
+// Helper function to validate Invoice form
+export function validateInvoice(
+	data: unknown,
+):
+	| { success: true; data: CreateInvoiceInput }
+	| { success: false; error: string } {
+	const result = CreateInvoiceSchema.safeParse(data);
 	if (!result.success) {
 		return {
 			success: false,

@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const User = sqliteTable("user", {
@@ -63,3 +64,31 @@ export const SystemMeta = sqliteTable("system_meta", {
 	key: text().primaryKey(),
 	value: text().notNull(),
 });
+
+// ============================================================================
+// Drizzle Relations
+// Enables the Relational Query API for efficient nested queries
+// ============================================================================
+
+export const contactRelations = relations(Contact, ({ many }) => ({
+	invoices: many(Invoice),
+}));
+
+export const invoiceRelations = relations(Invoice, ({ one, many }) => ({
+	customer: one(Contact, {
+		fields: [Invoice.customerId],
+		references: [Contact.id],
+	}),
+	items: many(InvoiceItem),
+}));
+
+export const invoiceItemRelations = relations(InvoiceItem, ({ one }) => ({
+	invoice: one(Invoice, {
+		fields: [InvoiceItem.invoiceId],
+		references: [Invoice.id],
+	}),
+	product: one(Product, {
+		fields: [InvoiceItem.productId],
+		references: [Product.id],
+	}),
+}));

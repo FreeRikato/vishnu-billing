@@ -1,27 +1,11 @@
 import { eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { Invoice, InvoiceItem } from "@/db/schema";
+import { type InvoiceWithItems, isDiscountType } from "@/types/invoice";
 import {
-	type InvoiceProduct,
-	type InvoiceSummary,
-	type InvoiceWithItems,
-	isDiscountType,
-} from "@/types/invoice";
-
-export type CreateInvoiceInput = {
-	invoiceNumber: string;
-	customerId: number;
-	customerName: string;
-	customerPhone: string;
-	customerAddress: string;
-	customerGstin?: string | null;
-	customerDlNo?: string | null;
-	items: InvoiceProduct[];
-	summary: InvoiceSummary;
-	date: string;
-	amountPaid?: number;
-	pdfPath?: string;
-};
+	type CreateInvoiceInput,
+	CreateInvoiceSchema,
+} from "@/utils/validation";
 
 /**
  * Generate a unique invoice number
@@ -38,47 +22,40 @@ export function generateInvoiceNumber(): string {
 /**
  * Get all invoices with their items
  * All currency values are returned in cents (integers)
+ * Uses Drizzle relational query API to fetch invoices and items in a single query
  */
 export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 	try {
-		const invoices = await db
-			.select()
-			.from(Invoice)
-			.where(isNull(Invoice.deletedAt));
+		// Use relational query API to fetch invoices with items in one query
+		const invoices = await db.query.Invoice.findMany({
+			where: isNull(Invoice.deletedAt),
+			with: {
+				items: true,
+			},
+		});
 
-		const result: InvoiceWithItems[] = [];
-
-		for (const invoice of invoices) {
-			const items = await db
-				.select()
-				.from(InvoiceItem)
-				.where(eq(InvoiceItem.invoiceId, invoice.id));
-
-			result.push({
-				...invoice,
-				subtotal: invoice.subtotal, // Already in cents (integer)
-				totalDiscount: invoice.totalDiscount, // Already in cents
-				tax: invoice.tax, // Already in cents
-				total: invoice.total, // Already in cents
-				amountPaid: invoice.amountPaid, // Already in cents
-				items: items.map((item) => ({
-					id: item.id,
-					name: item.name,
-					description: item.description,
-					price: item.price, // Already in cents
-					quantity: item.quantity,
-					discount:
-						item.discountValue !== null && isDiscountType(item.discountType)
-							? {
-									value: item.discountValue, // Already in cents/basis points
-									type: item.discountType,
-								}
-							: undefined,
-				})),
-			});
-		}
-
-		return result;
+		return invoices.map((invoice) => ({
+			...invoice,
+			subtotal: invoice.subtotal, // Already in cents (integer)
+			totalDiscount: invoice.totalDiscount, // Already in cents
+			tax: invoice.tax, // Already in cents
+			total: invoice.total, // Already in cents
+			amountPaid: invoice.amountPaid, // Already in cents
+			items: invoice.items.map((item) => ({
+				id: item.id,
+				name: item.name,
+				description: item.description,
+				price: item.price, // Already in cents
+				quantity: item.quantity,
+				discount:
+					item.discountValue !== null && isDiscountType(item.discountType)
+						? {
+								value: item.discountValue, // Already in cents/basis points
+								type: item.discountType,
+							}
+						: undefined,
+			})),
+		}));
 	} catch (error) {
 		console.error("Error fetching invoices:", error);
 		return [];
@@ -88,22 +65,23 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 /**
  * Get invoice by ID
  * All currency values are returned in cents (integers)
+ * Uses Drizzle relational query API to fetch invoice with items in a single query
  */
 export async function getInvoiceById(
 	id: number,
 ): Promise<InvoiceWithItems | null> {
 	try {
-		const invoices = await db.select().from(Invoice).where(eq(Invoice.id, id));
+		// Use relational query API to fetch invoice with items in one query
+		const invoice = await db.query.Invoice.findFirst({
+			where: eq(Invoice.id, id),
+			with: {
+				items: true,
+			},
+		});
 
-		if (invoices.length === 0) {
+		if (!invoice) {
 			return null;
 		}
-
-		const invoice = invoices[0];
-		const items = await db
-			.select()
-			.from(InvoiceItem)
-			.where(eq(InvoiceItem.invoiceId, invoice.id));
 
 		return {
 			...invoice,
@@ -112,7 +90,7 @@ export async function getInvoiceById(
 			tax: invoice.tax, // Already in cents
 			total: invoice.total, // Already in cents
 			amountPaid: invoice.amountPaid, // Already in cents
-			items: items.map((item) => ({
+			items: invoice.items.map((item) => ({
 				id: item.id,
 				name: item.name,
 				description: item.description,
@@ -136,11 +114,19 @@ export async function getInvoiceById(
 /**
  * Create a new invoice with its items
  * All currency values should be provided in cents (integers)
+ * Validates input using Zod schema before insertion
  */
 export async function createInvoice(
 	input: CreateInvoiceInput,
 ): Promise<InvoiceWithItems | null> {
 	try {
+		// Validate input using Zod schema before proceeding
+		const validationResult = CreateInvoiceSchema.safeParse(input);
+		if (!validationResult.success) {
+			console.error("Invalid invoice input:", validationResult.error.issues);
+			return null;
+		}
+
 		// Create the invoice - values should already be in cents
 		const invoiceResult = await db
 			.insert(Invoice)

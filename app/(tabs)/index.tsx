@@ -1,3 +1,6 @@
+import { router } from "expo-router";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	CreateInvoiceButton,
 	HomeHeader,
@@ -9,9 +12,6 @@ import { HOME_CONSTANTS } from "@/constants/home";
 import { useSync } from "@/hooks/useSync";
 import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
-import { router } from "expo-router";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
 	const { user, isLoading, error } = useUser();
@@ -63,7 +63,9 @@ export default function HomeScreen() {
 				<SyncStatusIndicator isSyncing={isSyncing} />
 
 				{/* Content Area */}
-				<View style={{ flex: 1, paddingHorizontal: 24, gap: 20, paddingBottom: 40 }}>
+				<View
+					style={{ flex: 1, paddingHorizontal: 24, gap: 20, paddingBottom: 40 }}
+				>
 					{/* Create Invoice Button */}
 					<CreateInvoiceButton onPress={handleCreateInvoice} />
 

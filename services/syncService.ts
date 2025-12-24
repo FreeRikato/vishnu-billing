@@ -30,10 +30,44 @@ interface FirebaseProduct extends FirebaseData<Product> {}
 interface FirebaseInvoice extends FirebaseData<Invoice> {}
 interface FirebaseInvoiceItem extends FirebaseData<InvoiceItem> {}
 
+// Maximum operations per Firestore batch (500 is the hard limit)
+const MAX_BATCH_SIZE = 450; // Use 450 to provide safety margin
+
 // Hardcoded ID for this example since there is no Auth system.
 // In production, this should be derived from the authenticated user ID
 const DEVICE_BACKUP_ID = "user_device_backup";
 const BACKGROUND_BACKUP_TASK = "BACKGROUND_AUTO_BACKUP";
+
+/**
+ * Helper function to execute batched writes to Firestore
+ * Splits operations into chunks to respect the 500 operation limit per batch
+ */
+async function executeBatchedWrites<T>(
+	collectionName: string,
+	data: T[],
+	docIdSelector: (item: T) => string,
+): Promise<void> {
+	const totalOperations = data.length;
+	if (totalOperations === 0) return;
+
+	for (let i = 0; i < totalOperations; i += MAX_BATCH_SIZE) {
+		const batch = writeBatch(firestore);
+		const chunk = data.slice(i, Math.min(i + MAX_BATCH_SIZE, totalOperations));
+
+		chunk.forEach((item) => {
+			const docRef = doc(
+				collection(firestore, "backups", DEVICE_BACKUP_ID, collectionName),
+				docIdSelector(item),
+			);
+			batch.set(docRef, item);
+		});
+
+		await batch.commit();
+		console.log(
+			`Wrote ${chunk.length} records to ${collectionName} (${i + 1}-${Math.min(i + MAX_BATCH_SIZE, totalOperations)}/${totalOperations})`,
+		);
+	}
+}
 
 export const SyncService = {
 	/**
@@ -158,22 +192,7 @@ export const SyncService = {
 		const invoices = await db.select().from(Invoice);
 		const invoiceItems = await db.select().from(InvoiceItem);
 
-		// 2. Create a batch write for efficiency
-		// Firestore allows up to 500 operations per batch
-		const batch = writeBatch(firestore);
-
-		// Metadata document with timestamp
-		const metaRef = doc(
-			collection(firestore, "backups", DEVICE_BACKUP_ID, "meta"),
-		);
-		batch.set(metaRef, {
-			lastUpdated: Timestamp.now(),
-			backupType: type,
-			version: "2.0",
-			timestamp: Date.now(),
-		});
-
-		// Clear existing collections first
+		// 2. Clear existing collections first (chunked deletes)
 		const existingCollections = [
 			"users",
 			"contacts",
@@ -186,60 +205,52 @@ export const SyncService = {
 			const snapshot = await getDocs(
 				collection(firestore, "backups", DEVICE_BACKUP_ID, collectionName),
 			);
-			snapshot.forEach((doc) => {
-				batch.delete(doc.ref);
-			});
+
+			// Delete in chunks to respect batch size limit
+			const docsToDelete = snapshot.docs;
+			for (let i = 0; i < docsToDelete.length; i += MAX_BATCH_SIZE) {
+				const batch = writeBatch(firestore);
+				const chunk = docsToDelete.slice(
+					i,
+					Math.min(i + MAX_BATCH_SIZE, docsToDelete.length),
+				);
+				chunk.forEach((docSnapshot) => {
+					batch.delete(docSnapshot.ref);
+				});
+				await batch.commit();
+				console.log(`Deleted ${chunk.length} records from ${collectionName}`);
+			}
 		}
 
-		// Add users
-		users.forEach((user) => {
-			const docRef = doc(
-				collection(firestore, "backups", DEVICE_BACKUP_ID, "users"),
-				user.id.toString(),
-			);
-			batch.set(docRef, user);
+		// 3. Write all data using batched writes
+		await executeBatchedWrites("users", users, (user) => user.id.toString());
+		await executeBatchedWrites("contacts", contacts, (contact) =>
+			contact.id.toString(),
+		);
+		await executeBatchedWrites("products", products, (product) =>
+			product.id.toString(),
+		);
+		await executeBatchedWrites("invoices", invoices, (invoice) =>
+			invoice.id.toString(),
+		);
+		await executeBatchedWrites("invoice_items", invoiceItems, (item) =>
+			item.id.toString(),
+		);
+
+		// 4. Write metadata document
+		const metaRef = doc(
+			collection(firestore, "backups", DEVICE_BACKUP_ID, "meta"),
+		);
+		const metaBatch = writeBatch(firestore);
+		metaBatch.set(metaRef, {
+			lastUpdated: Timestamp.now(),
+			backupType: type,
+			version: "2.0",
+			timestamp: Date.now(),
 		});
+		await metaBatch.commit();
 
-		// Add contacts
-		contacts.forEach((contact) => {
-			const docRef = doc(
-				collection(firestore, "backups", DEVICE_BACKUP_ID, "contacts"),
-				contact.id.toString(),
-			);
-			batch.set(docRef, contact);
-		});
-
-		// Add products
-		products.forEach((product) => {
-			const docRef = doc(
-				collection(firestore, "backups", DEVICE_BACKUP_ID, "products"),
-				product.id.toString(),
-			);
-			batch.set(docRef, product);
-		});
-
-		// Add invoices
-		invoices.forEach((invoice) => {
-			const docRef = doc(
-				collection(firestore, "backups", DEVICE_BACKUP_ID, "invoices"),
-				invoice.id.toString(),
-			);
-			batch.set(docRef, invoice);
-		});
-
-		// Add invoice items
-		invoiceItems.forEach((item) => {
-			const docRef = doc(
-				collection(firestore, "backups", DEVICE_BACKUP_ID, "invoice_items"),
-				item.id.toString(),
-			);
-			batch.set(docRef, item);
-		});
-
-		// Commit the batch
-		await batch.commit();
-
-		// 3. Update Metadata
+		// 5. Update Metadata
 		if (type === "auto") {
 			await this.setMeta("last_auto_backup_date", today);
 			return BackgroundFetch.BackgroundFetchResult.NewData;

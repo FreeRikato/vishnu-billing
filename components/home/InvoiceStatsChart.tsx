@@ -1,8 +1,8 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Pie, PolarChart } from "victory-native";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { formatCurrency } from "@/utils/currency";
-import { useMemo } from "react";
 
 export function InvoiceStatsChart() {
 	const invoices = useInvoiceStore((state) => state.invoices);

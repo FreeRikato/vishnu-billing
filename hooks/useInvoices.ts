@@ -23,6 +23,7 @@ export function useInvoices() {
 			customerName: inv.customerName,
 			invoiceNumber: inv.invoiceNumber,
 			amount: formatCurrency(amountToDisplay),
+			total: formatCurrency(inv.total),
 			date: new Date(inv.date).toLocaleDateString("en-US", {
 				month: "short",
 				day: "numeric",

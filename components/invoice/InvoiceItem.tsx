@@ -170,6 +170,7 @@ export default function InvoiceItem({
 				<View style={styles.invoiceDetails}>
 					<Text style={styles.detailText}>{item.invoiceNumber}</Text>
 					<Text style={styles.detailText}>{item.date}</Text>
+					<Text style={styles.detailText}>Total: {item.total}</Text>
 				</View>
 				<View
 					style={[

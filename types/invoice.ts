@@ -3,6 +3,7 @@ export interface Invoice {
 	customerName: string;
 	invoiceNumber: string;
 	amount: string;
+	total: string;
 	date: string;
 	status: "unpaid" | "partial" | "paid";
 	checked: boolean;

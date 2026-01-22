@@ -1,8 +1,8 @@
 import type { InvoiceProduct, InvoiceSummary } from "@/types/invoice";
 
-// Helper to convert cents to decimal for display
-function centsToDecimal(cents: number): number {
-	return cents / 100;
+// Helper to convert paise to decimal for display
+function paiseToDecimal(paise: number): number {
+	return paise / 100;
 }
 
 // Helper to convert basis points to percent for display
@@ -222,8 +222,8 @@ type InvoiceData = {
 function generateRows(items: InvoiceProduct[]) {
 	return items
 		.map((item) => {
-			// Convert price from cents to decimal
-			const priceInRupees = centsToDecimal(item.price);
+			// Convert price from paise to decimal
+			const priceInRupees = paiseToDecimal(item.price);
 			const lineTotal = (priceInRupees * item.quantity).toFixed(2);
 			return `
       <tr>
@@ -258,7 +258,7 @@ function fillInvoiceTemplate(template: string, data: InvoiceData) {
 	const rows = generateRows(data.items);
 	const gstSection = generateGstSection(data.customerGstin);
 	const dlSection = generateDlSection(data.customerDlNo);
-	// Convert summary values from cents to decimals
+	// Convert summary values from paise to decimals
 	return template
 		.replace("{{senderName}}", data.senderName)
 		.replace("{{invoiceNumber}}", data.invoiceNumber)
@@ -271,14 +271,14 @@ function fillInvoiceTemplate(template: string, data: InvoiceData) {
 		.replace("{{tableRows}}", rows)
 		.replace(
 			"{{subtotal}}",
-			`₹${centsToDecimal(data.summary.subtotal).toFixed(2)}`,
+			`₹${paiseToDecimal(data.summary.subtotal).toFixed(2)}`,
 		)
 		.replace(
 			"{{discount}}",
-			`₹${centsToDecimal(data.summary.totalDiscount).toFixed(2)}`,
+			`₹${paiseToDecimal(data.summary.totalDiscount).toFixed(2)}`,
 		)
-		.replace("{{tax}}", `₹${centsToDecimal(data.summary.tax).toFixed(2)}`)
-		.replace("{{total}}", `₹${centsToDecimal(data.summary.total).toFixed(2)}`);
+		.replace("{{tax}}", `₹${paiseToDecimal(data.summary.tax).toFixed(2)}`)
+		.replace("{{total}}", `₹${paiseToDecimal(data.summary.total).toFixed(2)}`);
 }
 
 // Wrap content in HTML shell

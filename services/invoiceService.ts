@@ -21,7 +21,7 @@ export function generateInvoiceNumber(): string {
 
 /**
  * Get all invoices with their items
- * All currency values are returned in cents (integers)
+ * All currency values are returned in paise (integers)
  * Uses Drizzle relational query API to fetch invoices and items in a single query
  */
 export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
@@ -36,21 +36,21 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 
 		return invoices.map((invoice) => ({
 			...invoice,
-			subtotal: invoice.subtotal, // Already in cents (integer)
-			totalDiscount: invoice.totalDiscount, // Already in cents
-			tax: invoice.tax, // Already in cents
-			total: invoice.total, // Already in cents
-			amountPaid: invoice.amountPaid, // Already in cents
+			subtotal: invoice.subtotal, // Already in paise (integer)
+			totalDiscount: invoice.totalDiscount, // Already in paise
+			tax: invoice.tax, // Already in paise
+			total: invoice.total, // Already in paise
+			amountPaid: invoice.amountPaid, // Already in paise
 			items: invoice.items.map((item) => ({
 				id: item.id,
 				name: item.name,
 				description: item.description,
-				price: item.price, // Already in cents
+				price: item.price, // Already in paise
 				quantity: item.quantity,
 				discount:
 					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
-								value: item.discountValue, // Already in cents/basis points
+								value: item.discountValue, // Already in paise/basis points
 								type: item.discountType,
 							}
 						: undefined,
@@ -64,7 +64,7 @@ export async function getAllInvoices(): Promise<InvoiceWithItems[]> {
 
 /**
  * Get invoice by ID
- * All currency values are returned in cents (integers)
+ * All currency values are returned in paise (integers)
  * Uses Drizzle relational query API to fetch invoice with items in a single query
  */
 export async function getInvoiceById(
@@ -85,21 +85,21 @@ export async function getInvoiceById(
 
 		return {
 			...invoice,
-			subtotal: invoice.subtotal, // Already in cents
-			totalDiscount: invoice.totalDiscount, // Already in cents
-			tax: invoice.tax, // Already in cents
-			total: invoice.total, // Already in cents
-			amountPaid: invoice.amountPaid, // Already in cents
+			subtotal: invoice.subtotal, // Already in paise
+			totalDiscount: invoice.totalDiscount, // Already in paise
+			tax: invoice.tax, // Already in paise
+			total: invoice.total, // Already in paise
+			amountPaid: invoice.amountPaid, // Already in paise
 			items: invoice.items.map((item) => ({
 				id: item.id,
 				name: item.name,
 				description: item.description,
-				price: item.price, // Already in cents
+				price: item.price, // Already in paise
 				quantity: item.quantity,
 				discount:
 					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
-								value: item.discountValue, // Already in cents/basis points
+								value: item.discountValue, // Already in paise/basis points
 								type: item.discountType,
 							}
 						: undefined,
@@ -113,7 +113,7 @@ export async function getInvoiceById(
 
 /**
  * Create a new invoice with its items
- * All currency values should be provided in cents (integers)
+ * All currency values should be provided in paise (integers)
  * Validates input using Zod schema before insertion
  */
 export async function createInvoice(
@@ -127,7 +127,7 @@ export async function createInvoice(
 			return null;
 		}
 
-		// Create the invoice - values should already be in cents
+		// Create the invoice - values should already be in paise
 		const invoiceResult = await db
 			.insert(Invoice)
 			.values({
@@ -138,11 +138,11 @@ export async function createInvoice(
 				customerAddress: input.customerAddress,
 				customerGstin: input.customerGstin ?? null,
 				customerDlNo: input.customerDlNo ?? null,
-				subtotal: input.summary.subtotal, // Already in cents
-				totalDiscount: input.summary.totalDiscount, // Already in cents
-				tax: input.summary.tax, // Already in cents
-				total: input.summary.total, // Already in cents
-				amountPaid: input.amountPaid ?? 0, // Already in cents
+				subtotal: input.summary.subtotal, // Already in paise
+				totalDiscount: input.summary.totalDiscount, // Already in paise
+				tax: input.summary.tax, // Already in paise
+				total: input.summary.total, // Already in paise
+				amountPaid: input.amountPaid ?? 0, // Already in paise
 				date: input.date,
 				status: "unpaid",
 				pdfPath: input.pdfPath ?? null,
@@ -160,9 +160,9 @@ export async function createInvoice(
 			productId: item.id,
 			name: item.name,
 			description: item.description,
-			price: item.price, // Already in cents
+			price: item.price, // Already in paise
 			quantity: item.quantity,
-			discountValue: item.discount?.value ?? null, // Already in cents/basis points
+			discountValue: item.discount?.value ?? null, // Already in paise/basis points
 			discountType: item.discount?.type ?? null,
 		}));
 
@@ -176,21 +176,21 @@ export async function createInvoice(
 
 		return {
 			...newInvoice,
-			subtotal: newInvoice.subtotal, // Already in cents
-			totalDiscount: newInvoice.totalDiscount, // Already in cents
-			tax: newInvoice.tax, // Already in cents
-			total: newInvoice.total, // Already in cents
-			amountPaid: newInvoice.amountPaid, // Already in cents
+			subtotal: newInvoice.subtotal, // Already in paise
+			totalDiscount: newInvoice.totalDiscount, // Already in paise
+			tax: newInvoice.tax, // Already in paise
+			total: newInvoice.total, // Already in paise
+			amountPaid: newInvoice.amountPaid, // Already in paise
 			items: createdItems.map((item) => ({
 				id: item.id,
 				name: item.name,
 				description: item.description,
-				price: item.price, // Already in cents
+				price: item.price, // Already in paise
 				quantity: item.quantity,
 				discount:
 					item.discountValue !== null && isDiscountType(item.discountType)
 						? {
-								value: item.discountValue, // Already in cents/basis points
+								value: item.discountValue, // Already in paise/basis points
 								type: item.discountType,
 							}
 						: undefined,
@@ -252,11 +252,11 @@ export async function deleteInvoice(id: number): Promise<boolean> {
 /**
  * Update invoice payment and automatically calculate status
  * @param id - Invoice ID
- * @param amountPaidInCents - Payment amount in cents (integer)
+ * @param amountPaidInPaise - Payment amount in paise (integer)
  */
 export async function updateInvoicePayment(
 	id: number,
-	amountPaidInCents: number,
+	amountPaidInPaise: number,
 ): Promise<{
 	success: boolean;
 	newStatus?: "unpaid" | "partial" | "paid";
@@ -268,14 +268,14 @@ export async function updateInvoicePayment(
 		if (!currentInvoice) return { success: false };
 
 		// Ensure amountPaid is not negative
-		const cleanAmountPaid = Math.max(0, amountPaidInCents);
+		const cleanAmountPaid = Math.max(0, amountPaidInPaise);
 
-		// Determine new status (both values are in cents)
+		// Determine new status (both values are in paise)
 		let newStatus: "unpaid" | "partial" | "paid" = "unpaid";
-		const totalInCents = currentInvoice.total;
+		const totalInPaise = currentInvoice.total;
 
 		// Direct integer comparison - no floating point issues
-		if (cleanAmountPaid >= totalInCents) {
+		if (cleanAmountPaid >= totalInPaise) {
 			newStatus = "paid";
 		} else if (cleanAmountPaid > 0) {
 			newStatus = "partial";

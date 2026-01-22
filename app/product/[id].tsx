@@ -6,6 +6,7 @@ import { ProductDeleteSection } from "@/components/product/ProductDeleteSection"
 import { getProductById } from "@/services/productService";
 import { useProductStore } from "@/store/productStore";
 import type { Product } from "@/types";
+import { decimalToPaise, paiseToDecimal } from "@/utils/currency";
 
 export default function ProductDetailScreen() {
 	const router = useRouter();
@@ -35,7 +36,7 @@ export default function ProductDetailScreen() {
 					setProduct(productData);
 					setFormData({
 						name: productData.name,
-						price: productData.price.toString(),
+						price: paiseToDecimal(productData.price).toString(),
 						unit: productData.unit,
 					});
 				} else {
@@ -84,12 +85,15 @@ export default function ProductDetailScreen() {
 		}
 
 		try {
+			// Convert rupees to paise before storing
+			const priceInPaise = decimalToPaise(priceValue);
+
 			// Use store method which wraps service and updates state
 			const updatedProduct = await useProductStore
 				.getState()
 				.updateProduct(product.id, {
 					name: formData.name,
-					price: priceValue,
+					price: priceInPaise,
 					unit: formData.unit,
 				});
 
@@ -173,7 +177,7 @@ export default function ProductDetailScreen() {
 
 				<FormField
 					label="Price"
-					icon="attach-money"
+					icon="currency-rupee"
 					required
 					placeholder="0.00"
 					value={formData.price}

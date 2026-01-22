@@ -18,8 +18,8 @@ import { invoiceStyles } from "../../styles/invoice";
 import type { Discount, DiscountType } from "../../types/invoice";
 import {
 	basisPointsToPercent,
-	centsToDecimal,
 	formatCurrency,
+	paiseToDecimal,
 } from "../../utils/currency";
 import { calculateDiscountAmount as coreCalculateDiscountAmount } from "../../utils/invoiceUtils";
 
@@ -27,9 +27,9 @@ interface DiscountModalProps {
 	visible: boolean;
 	onClose: () => void;
 	onApply: (value: number, type: DiscountType) => void;
-	initialValue?: number; // In basis points for percent, or cents for fixed
+	initialValue?: number; // In basis points for percent, or paise for fixed
 	initialType?: DiscountType;
-	productPrice?: number; // In cents
+	productPrice?: number; // In paise
 	productQuantity?: number;
 }
 
@@ -50,13 +50,13 @@ export function DiscountModal({
 
 	// Convert initial value from storage format to display format
 	// For percent: basis points -> percent (e.g., 1000 -> 10)
-	// For fixed: cents -> rupees (e.g., 1000 -> 10.00)
+	// For fixed: paise -> rupees (e.g., 1000 -> 10.00)
 	const getDisplayValue = useCallback(
 		(val: number, type: DiscountType): string => {
 			if (val === 0) return "";
 			return type === "percent"
 				? basisPointsToPercent(val).toString()
-				: centsToDecimal(val).toString();
+				: paiseToDecimal(val).toString();
 		},
 		[],
 	);
@@ -68,7 +68,7 @@ export function DiscountModal({
 	const slideAnim = useRef(new Animated.Value(600)).current; // Start off-screen (bottom)
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 
-	const subtotal = productPrice * productQuantity; // In cents
+	const subtotal = productPrice * productQuantity; // In paise
 
 	const animateIn = useCallback(() => {
 		// Reset values just in case
@@ -122,7 +122,7 @@ export function DiscountModal({
 
 	// 3. Validation & Preview Logic
 	const calculateDiscountAmount = (
-		totalInCents: number,
+		totalInPaise: number,
 		val: string,
 		type: DiscountType,
 	): number => {
@@ -131,15 +131,15 @@ export function DiscountModal({
 
 		// Build a Discount object and use the shared calculation
 		// For percent: convert display value to basis points
-		// For fixed: convert display value to cents
+		// For fixed: convert display value to paise
 		const discount: Discount = {
 			value:
 				type === "percent"
 					? Math.min(numValue, 100) * 100 // Convert percent to basis points
-					: Math.round(numValue * 100), // Convert rupees to cents
+					: Math.round(numValue * 100), // Convert rupees to paise
 			type,
 		};
-		return coreCalculateDiscountAmount(totalInCents, discount);
+		return coreCalculateDiscountAmount(totalInPaise, discount);
 	};
 
 	const discountAmount = calculateDiscountAmount(
@@ -169,11 +169,11 @@ export function DiscountModal({
 			if (rawValue > 100) finalValue = 100;
 		} else {
 			// For fixed discounts, compare with the subtotal in rupees
-			const subtotalInRupees = centsToDecimal(subtotal);
+			const subtotalInRupees = paiseToDecimal(subtotal);
 			if (rawValue > subtotalInRupees) finalValue = subtotalInRupees;
 		}
 
-		onApply(finalValue, discountType); // Parent handles conversion to cents/basis points
+		onApply(finalValue, discountType); // Parent handles conversion to paise/basis points
 		handleClose();
 	};
 
@@ -274,7 +274,7 @@ export function DiscountModal({
 							{/* Toggle Switch */}
 							<View style={invoiceStyles.toggleContainer}>
 								{renderToggleOption("percent", "percent", "Percent")}
-								{renderToggleOption("fixed", "attach-money", "Fixed")}
+								{renderToggleOption("flat", "attach-money", "Flat")}
 							</View>
 
 							{/* Input Field */}

@@ -12,19 +12,26 @@ export function useInvoices() {
 	// Convert store invoices to UI format with checked state
 	const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
 
-	const invoices: Invoice[] = storeInvoices.map((inv) => ({
-		id: inv.id,
-		customerName: inv.customerName,
-		invoiceNumber: inv.invoiceNumber,
-		amount: formatCurrency(inv.total), // inv.total is now in cents
-		date: new Date(inv.date).toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-		}),
-		status: isInvoiceStatus(inv.status) ? inv.status : "unpaid",
-		checked: checkedIds.has(inv.id),
-	}));
+	const invoices: Invoice[] = storeInvoices.map((inv) => {
+		// For partial payments, show remaining amount
+		const remainingAmount = inv.total - (inv.amountPaid || 0);
+		const amountToDisplay =
+			inv.status === "partial" ? remainingAmount : inv.total;
+
+		return {
+			id: inv.id,
+			customerName: inv.customerName,
+			invoiceNumber: inv.invoiceNumber,
+			amount: formatCurrency(amountToDisplay),
+			date: new Date(inv.date).toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			}),
+			status: isInvoiceStatus(inv.status) ? inv.status : "unpaid",
+			checked: checkedIds.has(inv.id),
+		};
+	});
 
 	const toggleInvoice = (id: number) => {
 		setCheckedIds((prev) => {

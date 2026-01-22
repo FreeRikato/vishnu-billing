@@ -6,7 +6,6 @@ import {
 	KeyboardAvoidingView,
 	Modal,
 	Platform,
-	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -16,30 +15,30 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { invoiceStyles } from "@/styles";
 import {
-	centsToDecimal,
-	decimalToCents,
+	decimalToPaise,
 	formatCurrency,
+	paiseToDecimal,
 } from "@/utils/currency";
 
 interface PaymentModalProps {
 	visible: boolean;
 	onClose: () => void;
-	onSave: (amountInCents: number) => void;
-	totalAmountInCents: number;
-	currentPaidAmountInCents: number;
+	onSave: (amountInPaise: number) => void;
+	totalAmountInPaise: number;
+	currentPaidAmountInPaise: number;
 }
 
 export function PaymentModal({
 	visible,
 	onClose,
 	onSave,
-	totalAmountInCents,
-	currentPaidAmountInCents,
+	totalAmountInPaise,
+	currentPaidAmountInPaise,
 }: PaymentModalProps) {
 	const [showModal, setShowModal] = useState(visible);
 	const [amount, setAmount] = useState(
-		currentPaidAmountInCents > 0
-			? centsToDecimal(currentPaidAmountInCents).toString()
+		currentPaidAmountInPaise > 0
+			? paiseToDecimal(currentPaidAmountInPaise).toString()
 			: "",
 	);
 
@@ -70,13 +69,13 @@ export function PaymentModal({
 		if (visible) {
 			setShowModal(true);
 			setAmount(
-				currentPaidAmountInCents > 0
-					? centsToDecimal(currentPaidAmountInCents).toString()
+				currentPaidAmountInPaise > 0
+					? paiseToDecimal(currentPaidAmountInPaise).toString()
 					: "",
 			);
 			animateIn();
 		}
-	}, [visible, currentPaidAmountInCents, animateIn]);
+	}, [visible, currentPaidAmountInPaise, animateIn]);
 
 	const handleClose = () => {
 		Keyboard.dismiss();
@@ -102,14 +101,14 @@ export function PaymentModal({
 		if (Number.isNaN(numAmount) || numAmount < 0) {
 			onSave(0);
 		} else {
-			// Convert rupees to cents
-			onSave(decimalToCents(numAmount));
+			// Convert rupees to paise
+			onSave(decimalToPaise(numAmount));
 		}
 		handleClose();
 	};
 
 	const handleFullPayment = () => {
-		setAmount(centsToDecimal(totalAmountInCents).toString());
+		setAmount(paiseToDecimal(totalAmountInPaise).toString());
 	};
 
 	const handleClear = () => {
@@ -117,10 +116,10 @@ export function PaymentModal({
 	};
 
 	// Calculate remaining balance dynamically for display
-	const currentInputAmountInCents = decimalToCents(parseFloat(amount) || 0);
-	const remainingInCents = Math.max(
+	const currentInputAmountInPaise = decimalToPaise(parseFloat(amount) || 0);
+	const remainingInPaise = Math.max(
 		0,
-		totalAmountInCents - currentInputAmountInCents,
+		totalAmountInPaise - currentInputAmountInPaise,
 	);
 
 	return (
@@ -156,14 +155,14 @@ export function PaymentModal({
 								{/* Header */}
 								<View style={invoiceStyles.modalHeader}>
 									<Text style={invoiceStyles.modalTitle}>Record Payment</Text>
-									<Text style={styles.subtitle}>
-										Total Due: {formatCurrency(totalAmountInCents)}
+									<Text style={invoiceStyles.subtitle}>
+										Total Due: {formatCurrency(totalAmountInPaise)}
 									</Text>
 								</View>
 
 								{/* Input Field */}
 								<View style={invoiceStyles.inputContainer}>
-									<Text style={styles.currencyPrefix}>₹</Text>
+									<Text style={invoiceStyles.currencyPrefix}>₹</Text>
 									<TextInput
 										ref={inputRef}
 										style={[invoiceStyles.input, { textAlign: "left" }]}
@@ -178,7 +177,7 @@ export function PaymentModal({
 									{amount.length > 0 && (
 										<TouchableOpacity
 											onPress={handleClear}
-											style={styles.clearButton}
+											style={invoiceStyles.clearButton}
 										>
 											<MaterialIcons name="close" size={20} color="#666" />
 										</TouchableOpacity>
@@ -186,24 +185,26 @@ export function PaymentModal({
 								</View>
 
 								{/* Quick Actions */}
-								<View style={styles.quickActions}>
+								<View style={invoiceStyles.quickActions}>
 									<TouchableOpacity
-										style={styles.quickChip}
+										style={invoiceStyles.quickChip}
 										onPress={handleFullPayment}
 									>
-										<Text style={styles.quickChipText}>Full Payment</Text>
+										<Text style={invoiceStyles.quickChipText}>
+											Full Payment
+										</Text>
 									</TouchableOpacity>
-									<View style={styles.balanceContainer}>
-										<Text style={styles.balanceLabel}>Remaining:</Text>
+									<View style={invoiceStyles.balanceContainer}>
+										<Text style={invoiceStyles.balanceLabel}>Remaining:</Text>
 										<Text
 											style={[
-												styles.balanceValue,
-												remainingInCents === 0
+												invoiceStyles.balanceValue,
+												remainingInPaise === 0
 													? { color: "#13ec6a" }
 													: { color: "#ef4444" },
 											]}
 										>
-											{formatCurrency(remainingInCents)}
+											{formatCurrency(remainingInPaise)}
 										</Text>
 									</View>
 								</View>
@@ -239,60 +240,3 @@ export function PaymentModal({
 		</Modal>
 	);
 }
-
-const styles = StyleSheet.create({
-	subtitle: {
-		fontSize: 16,
-		color: "#9CA3AF",
-		marginTop: 4,
-		fontWeight: "500",
-	},
-	currencyPrefix: {
-		fontSize: 64,
-		fontWeight: "800",
-		color: "#13ec6a",
-		marginRight: 4,
-	},
-	clearButton: {
-		position: "absolute",
-		right: 0,
-		top: "50%",
-		marginTop: -12,
-		backgroundColor: "#2a2a2a",
-		borderRadius: 12,
-		padding: 2,
-	},
-	quickActions: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 32,
-		paddingHorizontal: 8,
-	},
-	quickChip: {
-		backgroundColor: "rgba(19, 236, 106, 0.1)",
-		paddingHorizontal: 16,
-		paddingVertical: 8,
-		borderRadius: 20,
-		borderWidth: 1,
-		borderColor: "rgba(19, 236, 106, 0.3)",
-	},
-	quickChipText: {
-		color: "#13ec6a",
-		fontWeight: "700",
-		fontSize: 14,
-	},
-	balanceContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-	},
-	balanceLabel: {
-		color: "#9CA3AF",
-		fontSize: 14,
-	},
-	balanceValue: {
-		fontSize: 16,
-		fontWeight: "700",
-	},
-});

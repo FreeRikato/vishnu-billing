@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Pie, PolarChart } from "victory-native";
 import { useInvoiceStore } from "@/store/invoiceStore";
+import { homeStyles } from "@/styles/home";
 import { formatCurrency } from "@/utils/currency";
 
 export function InvoiceStatsChart() {
@@ -38,12 +39,12 @@ export function InvoiceStatsChart() {
 	if (total === 0) return null;
 
 	return (
-		<View style={styles.card}>
-			<Text style={styles.title}>Payment Overview</Text>
+		<View style={homeStyles.chartCard}>
+			<Text style={homeStyles.chartTitle}>Payment Overview</Text>
 
-			<View style={styles.contentContainer}>
+			<View style={homeStyles.chartContentContainer}>
 				{/* Chart Section */}
-				<View style={styles.chartContainer}>
+				<View style={homeStyles.chartContainer}>
 					<PolarChart
 						data={chartData}
 						labelKey="label"
@@ -54,10 +55,10 @@ export function InvoiceStatsChart() {
 					</PolarChart>
 
 					{/* Center Text (Donut Hole) */}
-					<View style={styles.centerTextContainer}>
-						<Text style={styles.centerLabel}>Total</Text>
+					<View style={homeStyles.centerTextContainer}>
+						<Text style={homeStyles.centerLabel}>Total</Text>
 						<Text
-							style={styles.centerValue}
+							style={homeStyles.centerValue}
 							numberOfLines={1}
 							adjustsFontSizeToFit
 						>
@@ -67,22 +68,28 @@ export function InvoiceStatsChart() {
 				</View>
 
 				{/* Legend Section */}
-				<View style={styles.legendContainer}>
+				<View style={homeStyles.legendContainer}>
 					{/* Paid Legend */}
-					<View style={styles.legendItem}>
-						<View style={[styles.dot, { backgroundColor: "#13EC6A" }]} />
+					<View style={homeStyles.legendItem}>
+						<View
+							style={[homeStyles.legendDot, { backgroundColor: "#13EC6A" }]}
+						/>
 						<View>
-							<Text style={styles.legendLabel}>Paid</Text>
-							<Text style={styles.legendValuePaid}>{formatCurrency(paid)}</Text>
+							<Text style={homeStyles.legendLabel}>Paid</Text>
+							<Text style={homeStyles.legendValuePaid}>
+								{formatCurrency(paid)}
+							</Text>
 						</View>
 					</View>
 
 					{/* Unpaid Legend */}
-					<View style={styles.legendItem}>
-						<View style={[styles.dot, { backgroundColor: "#EF4444" }]} />
+					<View style={homeStyles.legendItem}>
+						<View
+							style={[homeStyles.legendDot, { backgroundColor: "#EF4444" }]}
+						/>
 						<View>
-							<Text style={styles.legendLabel}>Due</Text>
-							<Text style={styles.legendValueUnpaid}>
+							<Text style={homeStyles.legendLabel}>Due</Text>
+							<Text style={homeStyles.legendValueUnpaid}>
 								{formatCurrency(unpaid)}
 							</Text>
 						</View>
@@ -92,81 +99,3 @@ export function InvoiceStatsChart() {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	card: {
-		backgroundColor: "#1C1C1E", // Matches app card style
-		borderRadius: 24,
-		padding: 24,
-		marginBottom: 8, // Spacing above the create button
-	},
-	title: {
-		color: "#FFFFFF",
-		fontSize: 20,
-		fontWeight: "bold",
-		marginBottom: 24,
-	},
-	contentContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		gap: 20,
-	},
-	chartContainer: {
-		width: 140,
-		height: 140,
-		position: "relative",
-	},
-	centerTextContainer: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		justifyContent: "center",
-		alignItems: "center",
-		padding: 10,
-	},
-	centerLabel: {
-		color: "#9CA3AF",
-		fontSize: 12,
-		fontWeight: "500",
-		marginBottom: 2,
-	},
-	centerValue: {
-		color: "#FFFFFF",
-		fontSize: 14,
-		fontWeight: "bold",
-	},
-	legendContainer: {
-		flex: 1,
-		gap: 20,
-	},
-	legendItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 12,
-	},
-	dot: {
-		width: 10,
-		height: 10,
-		borderRadius: 5,
-		marginTop: 2,
-	},
-	legendLabel: {
-		color: "#9CA3AF",
-		fontSize: 13,
-		fontWeight: "500",
-		marginBottom: 2,
-	},
-	legendValuePaid: {
-		color: "#13EC6A",
-		fontSize: 18,
-		fontWeight: "bold",
-	},
-	legendValueUnpaid: {
-		color: "#EF4444",
-		fontSize: 18,
-		fontWeight: "bold",
-	},
-});

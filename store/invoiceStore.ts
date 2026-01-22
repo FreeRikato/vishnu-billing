@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import {
-	type CreateInvoiceInput,
 	createInvoice,
 	deleteInvoice,
 	getAllInvoices,
@@ -8,6 +7,7 @@ import {
 	updateInvoiceStatus,
 } from "@/services/invoiceService";
 import type { InvoiceWithItems } from "@/types/invoice";
+import type { CreateInvoiceInput } from "@/utils/validation";
 
 interface InvoiceStore {
 	invoices: InvoiceWithItems[];
@@ -110,14 +110,13 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
 				result.newStatus !== undefined &&
 				result.newAmountPaid !== undefined
 			) {
+				// Capture values into non-nullable variables for type narrowing
+				const newStatus = result.newStatus;
+				const newAmountPaid = result.newAmountPaid;
 				set((state) => ({
 					invoices: state.invoices.map((invoice) =>
 						invoice.id === id
-							? {
-									...invoice,
-									amountPaid: result.newAmountPaid,
-									status: result.newStatus,
-								}
+							? { ...invoice, amountPaid: newAmountPaid, status: newStatus }
 							: invoice,
 					),
 				}));

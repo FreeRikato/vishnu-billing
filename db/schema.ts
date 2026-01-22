@@ -9,7 +9,7 @@ export const User = sqliteTable("user", {
 export const Product = sqliteTable("product", {
 	id: int().primaryKey({ autoIncrement: true }),
 	name: text().notNull(),
-	price: int().notNull(), // Stored in cents (e.g., $10.50 = 1050)
+	price: int().notNull(), // Stored in paise (e.g., ₹10.50 = 1050)
 	unit: text().notNull(),
 });
 
@@ -35,11 +35,11 @@ export const Invoice = sqliteTable("invoice", {
 	customerAddress: text().notNull(),
 	customerGstin: text(),
 	customerDlNo: text(),
-	subtotal: int().notNull(), // Stored in cents
-	totalDiscount: int().notNull(), // Stored in cents
-	tax: int().notNull(), // Stored in cents
-	total: int().notNull(), // Stored in cents
-	amountPaid: int().notNull().default(0), // Stored in cents
+	subtotal: int().notNull(), // Stored in paise
+	totalDiscount: int().notNull(), // Stored in paise
+	tax: int().notNull(), // Stored in paise
+	total: int().notNull(), // Stored in paise
+	amountPaid: int().notNull().default(0), // Stored in paise
 	date: text().notNull(),
 	status: text().notNull().default("unpaid"),
 	pdfPath: text(),
@@ -54,9 +54,9 @@ export const InvoiceItem = sqliteTable("invoice_item", {
 	productId: int().references(() => Product.id),
 	name: text().notNull(),
 	description: text().notNull(),
-	price: int().notNull(), // Stored in cents
+	price: int().notNull(), // Stored in paise
 	quantity: int().notNull(),
-	discountValue: int(), // Stored in cents for fixed, or basis points for percent (e.g., 10% = 1000)
+	discountValue: int(), // Stored in paise for fixed, or basis points for percent (e.g., 10% = 1000)
 	discountType: text(),
 });
 

@@ -255,14 +255,6 @@ export const invoiceStyles = StyleSheet.create({
 		justifyContent: "space-between",
 		alignItems: "center",
 	},
-	summaryLabel: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: "#9ca3af",
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-	},
 	addDiscountBadge: {
 		borderWidth: 1,
 		borderColor: "rgba(19, 236, 106, 0.3)",
@@ -999,5 +991,245 @@ export const invoiceStyles = StyleSheet.create({
 		fontWeight: "600",
 		color: "#ffffff",
 		lineHeight: 24,
+	},
+
+	// InvoicePreviewCard styles
+	previewCardContainer: {
+		width: 360,
+		backgroundColor: "#ffffff",
+	},
+	previewCardPaper: {
+		padding: 32,
+		backgroundColor: "#ffffff",
+	},
+	previewCardHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+		paddingBottom: 16,
+		borderBottomWidth: 2,
+		borderBottomColor: "#1e293b",
+		marginBottom: 24,
+	},
+	previewCardHeaderLeft: {
+		flexDirection: "column",
+	},
+	invoiceTitle: {
+		fontSize: 28,
+		fontWeight: "900",
+		textTransform: "uppercase",
+		letterSpacing: -0.5,
+		color: "#1e293b",
+	},
+	invoiceNumber: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#64748b",
+		marginTop: 4,
+	},
+	logo: {
+		width: 48,
+		height: 48,
+		backgroundColor: "#1e293b",
+		borderRadius: 8,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	logoText: {
+		fontSize: 24,
+		fontWeight: "700",
+		color: "#ffffff",
+	},
+	billToSection: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginBottom: 32,
+	},
+	billToLeft: {
+		flex: 1,
+	},
+	billToRight: {
+		alignItems: "flex-end",
+	},
+	sectionLabel: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		color: "#94a3b8",
+		marginBottom: 4,
+	},
+	previewCardCustomerName: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#1e293b",
+		lineHeight: 20,
+	},
+	customerPhone: {
+		fontSize: 14,
+		color: "#64748b",
+		marginTop: 4,
+	},
+	customerDetail: {
+		fontSize: 13,
+		color: "#64748b",
+		marginTop: 2,
+		lineHeight: 18,
+	},
+	dateText: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#1e293b",
+	},
+	mt2: {
+		marginTop: 12,
+	},
+	totalAmount: {
+		fontSize: 20,
+		fontWeight: "900",
+		color: "#1e293b",
+	},
+	itemsSection: {
+		flex: 1,
+		marginBottom: 24,
+	},
+	tableHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		paddingBottom: 12,
+		borderBottomWidth: 1,
+		borderBottomColor: "#e2e8f0",
+	},
+	tableHeaderLabel: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		color: "#94a3b8",
+	},
+	tableRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+		paddingVertical: 16,
+	},
+	borderBottom: {
+		borderBottomWidth: 1,
+		borderBottomColor: "#f1f5f9",
+	},
+	itemDetails: {
+		flex: 1,
+	},
+	itemName: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#1e293b",
+		marginBottom: 4,
+	},
+	itemMeta: {
+		fontSize: 13,
+		color: "#64748b",
+		marginBottom: 2,
+	},
+	discount: {
+		marginTop: 4,
+	},
+	previewCardDiscountText: {
+		fontSize: 12,
+		color: "#13ec6a",
+		fontWeight: "600",
+	},
+	itemAmount: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#1e293b",
+	},
+	textRight: {
+		textAlign: "right",
+	},
+	previewCardSummarySection: {
+		borderTopWidth: 2,
+		borderTopColor: "#1e293b",
+		paddingTop: 20,
+	},
+	previewCardSummaryRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 12,
+	},
+	previewCardSummaryLabel: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#64748b",
+	},
+	previewCardSummaryValue: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#1e293b",
+	},
+	discountValue: {
+		color: "#ef4444",
+	},
+	previewCardTotalRow: {
+		marginTop: 8,
+		marginBottom: 0,
+	},
+	previewCardTotalLabel: {
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#1e293b",
+	},
+	previewCardTotalValue: {
+		fontSize: 32,
+		fontWeight: "900",
+		color: "#1e293b",
+		letterSpacing: -1,
+	},
+	previewCardFooter: {
+		marginTop: 24,
+		paddingTop: 24,
+		borderTopWidth: 1,
+		borderTopColor: "#e2e8f0",
+		alignItems: "center",
+	},
+	previewCardFooterText: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#1e293b",
+	},
+	previewCardFooterSubtext: {
+		fontSize: 12,
+		color: "#94a3b8",
+		marginTop: 4,
+	},
+
+	// Invoice detail page styles
+	invoiceDetailPageScrollView: {
+		flex: 1,
+	},
+	invoiceDetailPageScrollContent: {
+		paddingTop: 16,
+		paddingBottom: 200,
+		paddingHorizontal: 16,
+	},
+
+	// Additional styles needed by components
+	summaryLabel: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#64748b",
+	},
+	paper: {
+		padding: 32,
+		backgroundColor: "#ffffff",
+	},
+	headerLeft: {
+		flexDirection: "column",
+	},
+	summarySection: {
+		borderTopWidth: 2,
+		borderTopColor: "#1e293b",
+		paddingTop: 20,
 	},
 });

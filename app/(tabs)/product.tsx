@@ -9,6 +9,7 @@ import {
 } from "@/components";
 import { useProducts } from "@/hooks/useProducts";
 import type { Product } from "@/types";
+import { formatCurrency } from "@/utils/currency";
 import { contactsStyles } from "../../styles/contacts";
 
 export default function ProductScreen() {
@@ -26,7 +27,7 @@ export default function ProductScreen() {
 	const handleProductPress = (product: Product) => {
 		Alert.alert(
 			"Product Details",
-			`Name: ${product.name}\nPrice: $${product.price.toFixed(2)}\nUnit: ${product.unit}`,
+			`Name: ${product.name}\nPrice: ${formatCurrency(product.price)}\nUnit: ${product.unit}`,
 			[{ text: "OK", style: "default" }],
 		);
 	};

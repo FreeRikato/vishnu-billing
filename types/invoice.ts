@@ -18,7 +18,7 @@ export interface Customer {
 }
 
 export type InvoiceStatus = "unpaid" | "partial" | "paid";
-export type DiscountType = "percent" | "fixed";
+export type DiscountType = "percent" | "flat";
 
 export interface Discount {
 	value: number;
@@ -78,5 +78,5 @@ export function isInvoiceStatus(value: string): value is InvoiceStatus {
  * Safely narrows a string to DiscountType type
  */
 export function isDiscountType(value: string | null): value is DiscountType {
-	return value === "percent" || value === "fixed";
+	return value === "percent" || value === "flat";
 }

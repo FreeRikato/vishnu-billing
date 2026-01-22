@@ -120,4 +120,81 @@ export const homeStyles = StyleSheet.create({
 		fontSize: 14,
 		fontWeight: "600",
 	},
+
+	// InvoiceStatsChart styles
+	chartCard: {
+		backgroundColor: "#1C1C1E", // Matches app card style
+		borderRadius: 24,
+		padding: 24,
+		marginBottom: 8, // Spacing above the create button
+	},
+	chartTitle: {
+		color: "#FFFFFF",
+		fontSize: 20,
+		fontWeight: "bold",
+		marginBottom: 24,
+	},
+	chartContentContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: 20,
+	},
+	chartContainer: {
+		width: 140,
+		height: 140,
+		position: "relative",
+	},
+	centerTextContainer: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 10,
+	},
+	centerLabel: {
+		color: "#9CA3AF",
+		fontSize: 12,
+		fontWeight: "500",
+		marginBottom: 2,
+	},
+	centerValue: {
+		color: "#FFFFFF",
+		fontSize: 14,
+		fontWeight: "bold",
+	},
+	legendContainer: {
+		flex: 1,
+		gap: 20,
+	},
+	legendItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 12,
+	},
+	legendDot: {
+		width: 10,
+		height: 10,
+		borderRadius: 5,
+		marginTop: 2,
+	},
+	legendLabel: {
+		color: "#9CA3AF",
+		fontSize: 13,
+		fontWeight: "500",
+		marginBottom: 2,
+	},
+	legendValuePaid: {
+		color: "#13EC6A",
+		fontSize: 18,
+		fontWeight: "bold",
+	},
+	legendValueUnpaid: {
+		color: "#EF4444",
+		fontSize: 18,
+		fontWeight: "bold",
+	},
 });

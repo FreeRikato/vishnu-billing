@@ -22,13 +22,20 @@ import {
 } from "@/db/schema";
 
 // Types for Firebase data (may include additional fields like Timestamps)
-type FirebaseData<T> = Record<string, unknown> & Partial<T>;
+type FirebaseData<_T> = Record<string, unknown>;
 
-interface FirebaseUser extends FirebaseData<User> {}
-interface FirebaseContact extends FirebaseData<Contact> {}
-interface FirebaseProduct extends FirebaseData<Product> {}
-interface FirebaseInvoice extends FirebaseData<Invoice> {}
-interface FirebaseInvoiceItem extends FirebaseData<InvoiceItem> {}
+// Extract the model types from Drizzle schema
+type UserModel = typeof User.$inferInsert;
+type ContactModel = typeof Contact.$inferInsert;
+type ProductModel = typeof Product.$inferInsert;
+type InvoiceModel = typeof Invoice.$inferInsert;
+type InvoiceItemModel = typeof InvoiceItem.$inferInsert;
+
+interface FirebaseUser extends FirebaseData<UserModel> {}
+interface FirebaseContact extends FirebaseData<ContactModel> {}
+interface FirebaseProduct extends FirebaseData<ProductModel> {}
+interface FirebaseInvoice extends FirebaseData<InvoiceModel> {}
+interface FirebaseInvoiceItem extends FirebaseData<InvoiceItemModel> {}
 
 // Maximum operations per Firestore batch (500 is the hard limit)
 const MAX_BATCH_SIZE = 450; // Use 450 to provide safety margin
@@ -59,7 +66,7 @@ async function executeBatchedWrites<T>(
 				collection(firestore, "backups", DEVICE_BACKUP_ID, collectionName),
 				docIdSelector(item),
 			);
-			batch.set(docRef, item);
+			batch.set(docRef, item as Record<string, unknown>);
 		});
 
 		await batch.commit();
@@ -326,15 +333,20 @@ export const SyncService = {
 			await tx.delete(Product);
 			await tx.delete(User);
 
-			if (users.length > 0) await tx.insert(User).values(users as User[]);
+			// Type assertion needed because Firebase data may have extra fields
+			// Cast through unknown to bypass type checking since we trust the backup data
+			if (users.length > 0)
+				await tx.insert(User).values(users as unknown as UserModel[]);
 			if (contacts.length > 0)
-				await tx.insert(Contact).values(contacts as Contact[]);
+				await tx.insert(Contact).values(contacts as unknown as ContactModel[]);
 			if (products.length > 0)
-				await tx.insert(Product).values(products as Product[]);
+				await tx.insert(Product).values(products as unknown as ProductModel[]);
 			if (invoices.length > 0)
-				await tx.insert(Invoice).values(invoices as Invoice[]);
+				await tx.insert(Invoice).values(invoices as unknown as InvoiceModel[]);
 			if (invoiceItems.length > 0)
-				await tx.insert(InvoiceItem).values(invoiceItems as InvoiceItem[]);
+				await tx
+					.insert(InvoiceItem)
+					.values(invoiceItems as unknown as InvoiceItemModel[]);
 		});
 
 		console.log("Recovery Complete.");

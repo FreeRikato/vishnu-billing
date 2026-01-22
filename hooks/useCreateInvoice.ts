@@ -26,13 +26,13 @@ function getLocalDateString(): string {
 }
 
 // Helper to convert ProductType to InvoiceProduct
-// Product prices are now stored in cents
+// Product prices are now stored in paise
 function toInvoiceProduct(product: ProductType): InvoiceProduct {
 	return {
 		id: product.id,
 		name: product.name,
 		description: product.unit,
-		price: product.price, // Already in cents
+		price: product.price, // Already in paise
 		quantity: 1,
 	};
 }
@@ -123,28 +123,28 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	);
 
 	// Derived state (Calculations)
-	// All calculations are done in cents (integers) to avoid floating-point errors
+	// All calculations are done in paise (integers) to avoid floating-point errors
 	const summary = useMemo(() => {
-		// 1. Calculate Item-level Subtotal (Net of item discounts) - in cents
+		// 1. Calculate Item-level Subtotal (Net of item discounts) - in paise
 		const subtotal = invoiceItems.reduce((sum, product) => {
-			const itemTotal = product.price * product.quantity; // price is in cents
+			const itemTotal = product.price * product.quantity; // price is in paise
 			const discount = calculateDiscountAmount(itemTotal, product.discount);
 			return sum + itemTotal - discount;
 		}, 0);
 
-		// 2. Calculate Total Item Discounts (Informational) - in cents
+		// 2. Calculate Total Item Discounts (Informational) - in paise
 		const itemDiscounts = invoiceItems.reduce((sum, product) => {
 			const itemTotal = product.price * product.quantity;
 			return sum + calculateDiscountAmount(itemTotal, product.discount);
 		}, 0);
 
-		// 3. Calculate Global Discount - in cents
+		// 3. Calculate Global Discount - in paise
 		const globalDiscountAmount = calculateDiscountAmount(
 			subtotal,
 			globalDiscount,
 		);
 
-		// 4. Calculate Final Totals - all in cents
+		// 4. Calculate Final Totals - all in paise
 		const netSubtotal = subtotal - globalDiscountAmount;
 
 		// Calculate tax using basis points (e.g., 5% = 500 basis points)
@@ -152,10 +152,10 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		const total = netSubtotal + tax;
 
 		return {
-			subtotal, // Already in cents
-			totalDiscount: itemDiscounts + globalDiscountAmount, // Already in cents
-			tax, // Already in cents
-			total, // Already in cents
+			subtotal, // Already in paise
+			totalDiscount: itemDiscounts + globalDiscountAmount, // Already in paise
+			tax, // Already in paise
+			total, // Already in paise
 		};
 	}, [invoiceItems, globalDiscount]);
 
@@ -257,7 +257,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 					setGlobalDiscount(undefined);
 				} else {
 					// Convert percent to basis points for percent discounts
-					// For fixed discounts, convert rupees to cents
+					// For fixed discounts, convert rupees to paise
 					const discountValue =
 						type === "percent"
 							? percentToBasisPoints(value)
@@ -275,7 +275,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 								return rest;
 							}
 							// Convert percent to basis points for percent discounts
-							// For fixed discounts, convert rupees to cents
+							// For fixed discounts, convert rupees to paise
 							const discountValue =
 								type === "percent"
 									? percentToBasisPoints(value)

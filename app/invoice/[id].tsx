@@ -6,7 +6,6 @@ import {
 	Platform,
 	ScrollView,
 	StatusBar,
-	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
@@ -205,8 +204,8 @@ export default function InvoicePreviewScreen() {
 
 				{/* Main Content */}
 				<ScrollView
-					style={styles.scrollView}
-					contentContainerStyle={styles.scrollContent}
+					style={invoiceStyles.invoiceDetailPageScrollView}
+					contentContainerStyle={invoiceStyles.invoiceDetailPageScrollContent}
 					showsVerticalScrollIndicator={false}
 					minimumZoomScale={1}
 					maximumZoomScale={3}
@@ -245,21 +244,10 @@ export default function InvoicePreviewScreen() {
 					visible={isPaymentModalVisible}
 					onClose={() => setPaymentModalVisible(false)}
 					onSave={handlePaymentUpdate}
-					totalAmountInCents={invoice.total}
-					currentPaidAmountInCents={invoice.amountPaid || 0}
+					totalAmountInPaise={invoice.total}
+					currentPaidAmountInPaise={invoice.amountPaid || 0}
 				/>
 			</GestureHandlerRootView>
 		</SafeAreaView>
 	);
 }
-
-const styles = StyleSheet.create({
-	scrollView: {
-		flex: 1,
-	},
-	scrollContent: {
-		paddingTop: 16,
-		paddingBottom: 200,
-		paddingHorizontal: 16,
-	},
-});

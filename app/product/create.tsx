@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
 import { useProductStore } from "@/store/productStore";
+import { decimalToPaise } from "@/utils/currency";
 import { validateProduct } from "@/utils/validation";
 
 export default function CreateProductScreen() {
@@ -32,10 +33,13 @@ export default function CreateProductScreen() {
 		}
 
 		try {
+			// Convert rupees to paise before storing
+			const priceInPaise = decimalToPaise(validation.data.price);
+
 			// Use store method which wraps service and updates state
 			const newProduct = await useProductStore.getState().createProduct({
 				name: validation.data.name,
-				price: validation.data.price,
+				price: priceInPaise,
 				unit: validation.data.unit,
 			});
 
@@ -76,7 +80,7 @@ export default function CreateProductScreen() {
 
 				<FormField
 					label="Price"
-					icon="attach-money"
+					icon="currency-rupee"
 					required
 					placeholder="0.00"
 					value={formData.price}

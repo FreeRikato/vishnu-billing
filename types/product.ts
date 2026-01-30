@@ -1,11 +1,10 @@
-// Product type from Convex (with _id)
-export type Product = {
-	_id: string; // Convex ID
-	_creationTime: number;
-	name: string;
-	price: number; // Paise
-	unit: string;
-};
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+
+// Type alias for Convex Product document
+export type Product = Doc<"products">;
+
+// Type alias for Product ID
+export type ProductId = Id<"products">;
 
 // Product type for UI components (with id instead of _id)
 export type ProductUI = Omit<Product, "_id" | "_creationTime"> & {

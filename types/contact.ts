@@ -1,15 +1,10 @@
-// Contact type from Convex (with _id)
-export type Contact = {
-	_id: string; // Convex ID
-	_creationTime: number;
-	name: string;
-	phone: string;
-	initials: string;
-	color: string;
-	address: string;
-	gstin?: string;
-	dlNo?: string;
-};
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+
+// Type alias for Convex Contact document
+export type Contact = Doc<"contacts">;
+
+// Type alias for Contact ID
+export type ContactId = Id<"contacts">;
 
 // Contact type for UI components (with id instead of _id)
 export type ContactUI = Omit<Contact, "_id" | "_creationTime"> & {

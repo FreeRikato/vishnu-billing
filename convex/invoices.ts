@@ -14,7 +14,9 @@ function calculateStatus(
 // Invoice number generation
 function generateInvoiceNumber(): string {
 	const timestamp = Date.now();
-	const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+	const random = Math.floor(Math.random() * 10000)
+		.toString()
+		.padStart(4, "0");
 	return `INV-${timestamp}-${random}`;
 }
 
@@ -67,6 +69,7 @@ export const create = mutation({
 		date: v.string(), // ISO date string
 		items: v.array(
 			v.object({
+				id: v.optional(v.string()), // Optional line item ID
 				productId: v.optional(v.id("products")),
 				name: v.string(),
 				description: v.string(),
@@ -85,6 +88,12 @@ export const create = mutation({
 		const invoiceNumber = generateInvoiceNumber();
 		const status = calculateStatus(args.amountPaid, args.total);
 
+		// Add id field to items if not present
+		const itemsWithIds = args.items.map((item, index) => ({
+			...item,
+			id: item.id || `item-${Date.now()}-${index}`,
+		}));
+
 		const id = await ctx.db.insert("invoices", {
 			invoiceNumber,
 			customerId: args.customerId,
@@ -100,7 +109,7 @@ export const create = mutation({
 			amountPaid: args.amountPaid,
 			date: args.date,
 			status,
-			items: args.items,
+			items: itemsWithIds,
 		});
 
 		return await ctx.db.get(id);
@@ -110,7 +119,11 @@ export const create = mutation({
 export const updateStatus = mutation({
 	args: {
 		id: v.id("invoices"),
-		status: v.union(v.literal("unpaid"), v.literal("partial"), v.literal("paid")),
+		status: v.union(
+			v.literal("unpaid"),
+			v.literal("partial"),
+			v.literal("paid"),
+		),
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.patch(args.id, { status: args.status });

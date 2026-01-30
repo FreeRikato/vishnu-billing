@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 // Shared validator for invoice items (embedded in Invoice)
 const invoiceItemValidator = v.object({
+	id: v.string(), // Unique identifier for the line item (used as key in UI)
 	productId: v.optional(v.id("products")),
 	name: v.string(),
 	description: v.string(),

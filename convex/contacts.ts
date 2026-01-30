@@ -47,9 +47,7 @@ export const search = query({
 		// Use the search index
 		const results = await ctx.db
 			.query("contacts")
-			.withSearchIndex("search_name", (q) =>
-				q.search("name", args.query),
-			)
+			.withSearchIndex("search_name", (q) => q.search("name", args.query))
 			.collect();
 
 		return results;

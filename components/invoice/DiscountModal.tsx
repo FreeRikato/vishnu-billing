@@ -14,6 +14,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SCREEN_DIMENSIONS, scale } from "@/utils/responsive";
 import { invoiceStyles } from "../../styles/invoice";
 import type { Discount, DiscountType } from "../../types/invoice";
 import {
@@ -65,14 +66,16 @@ export function DiscountModal({
 		getDisplayValue(initialValue, initialType),
 	);
 
-	const slideAnim = useRef(new Animated.Value(600)).current; // Start off-screen (bottom)
+	const slideAnim = useRef(
+		new Animated.Value(SCREEN_DIMENSIONS.height),
+	).current; // Start off-screen (bottom)
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 
 	const subtotal = productPrice * productQuantity; // In paise
 
 	const animateIn = useCallback(() => {
 		// Reset values just in case
-		slideAnim.setValue(600);
+		slideAnim.setValue(SCREEN_DIMENSIONS.height);
 		fadeAnim.setValue(0);
 
 		Animated.parallel([
@@ -104,7 +107,7 @@ export function DiscountModal({
 	const handleClose = () => {
 		Animated.parallel([
 			Animated.timing(slideAnim, {
-				toValue: 600, // Slide back down
+				toValue: SCREEN_DIMENSIONS.height, // Slide back down
 				duration: 200,
 				useNativeDriver: true,
 			}),
@@ -213,7 +216,7 @@ export function DiscountModal({
 			>
 				<MaterialIcons
 					name={icon}
-					size={20}
+					size={scale(20)}
 					color={isActive ? "#000000" : "#777777"}
 				/>
 				<Text
@@ -300,7 +303,11 @@ export function DiscountModal({
 								]}
 							>
 								<View style={invoiceStyles.mathFeedbackContainer}>
-									<MaterialIcons name="calculate" size={18} color="#13ec6a" />
+									<MaterialIcons
+										name="calculate"
+										size={scale(18)}
+										color="#13ec6a"
+									/>
 									<Text style={invoiceStyles.mathFeedbackText}>
 										Reduces price by{" "}
 										<Text style={invoiceStyles.mathFeedbackValue}>

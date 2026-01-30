@@ -19,6 +19,7 @@ import {
 	formatCurrency,
 	paiseToDecimal,
 } from "@/utils/currency";
+import { SCREEN_DIMENSIONS, scale, verticalScale } from "@/utils/responsive";
 
 interface PaymentModalProps {
 	visible: boolean;
@@ -42,12 +43,14 @@ export function PaymentModal({
 			: "",
 	);
 
-	const slideAnim = useRef(new Animated.Value(600)).current;
+	const slideAnim = useRef(
+		new Animated.Value(SCREEN_DIMENSIONS.height),
+	).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const inputRef = useRef<TextInput>(null);
 
 	const animateIn = useCallback(() => {
-		slideAnim.setValue(600);
+		slideAnim.setValue(SCREEN_DIMENSIONS.height);
 		fadeAnim.setValue(0);
 
 		Animated.parallel([
@@ -81,7 +84,7 @@ export function PaymentModal({
 		Keyboard.dismiss();
 		Animated.parallel([
 			Animated.timing(slideAnim, {
-				toValue: 600,
+				toValue: SCREEN_DIMENSIONS.height,
 				duration: 200,
 				useNativeDriver: true,
 			}),
@@ -138,7 +141,7 @@ export function PaymentModal({
 							flex: 1,
 							width: "100%",
 							justifyContent: "flex-end", // Bottom sheet style often looks better for numpads
-							paddingBottom: Platform.OS === "ios" ? 0 : 20,
+							paddingBottom: Platform.OS === "ios" ? 0 : verticalScale(20),
 						}}
 					>
 						<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -179,7 +182,11 @@ export function PaymentModal({
 											onPress={handleClear}
 											style={invoiceStyles.clearButton}
 										>
-											<MaterialIcons name="close" size={20} color="#666" />
+											<MaterialIcons
+												name="close"
+												size={scale(20)}
+												color="#666"
+											/>
 										</TouchableOpacity>
 									)}
 								</View>

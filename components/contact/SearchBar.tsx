@@ -6,6 +6,7 @@ import {
 	View,
 } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
+import { scale } from "@/utils/responsive";
 
 interface SearchBarProps {
 	value: string;
@@ -23,7 +24,7 @@ export default function SearchBar({
 			<View style={contactsStyles.searchContainer}>
 				<MaterialIcons
 					name="search"
-					size={28}
+					size={scale(28)}
 					color="#9CA3AF"
 					style={contactsStyles.searchIcon}
 				/>

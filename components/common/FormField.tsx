@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TextInput, type TextInputProps, View } from "react-native";
 import { commonStyles } from "@/styles";
+import { scale } from "@/utils/responsive";
 
 interface FormFieldProps extends TextInputProps {
 	label: string;
@@ -20,7 +21,7 @@ export function FormField({
 	return (
 		<View style={commonStyles.fieldContainer}>
 			<View style={commonStyles.labelContainer}>
-				{icon && <MaterialIcons name={icon} size={20} color="#9CA3AF" />}
+				{icon && <MaterialIcons name={icon} size={scale(20)} color="#9CA3AF" />}
 				<Text style={commonStyles.label}>{label}</Text>
 				{required && <Text style={commonStyles.required}>*</Text>}
 			</View>
@@ -38,7 +39,7 @@ export function FormField({
 				{rightIcon && !props.multiline && (
 					<MaterialIcons
 						name={rightIcon}
-						size={20}
+						size={scale(20)}
 						color="#13EC6A"
 						style={commonStyles.inputIcon}
 					/>

@@ -1,6 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
+import { scale } from "@/utils/responsive";
 
 interface InvoiceActionBarProps {
 	onSave: () => void;
@@ -25,7 +26,11 @@ export function InvoiceActionBar({
 					style={invoiceStyles.paymentButton}
 					disabled={disabled}
 				>
-					<MaterialIcons name="currency-rupee" size={24} color="#ffffff" />
+					<MaterialIcons
+						name="currency-rupee"
+						size={scale(24)}
+						color="#ffffff"
+					/>
 				</TouchableOpacity>
 			)}
 			<TouchableOpacity
@@ -33,14 +38,14 @@ export function InvoiceActionBar({
 				style={invoiceStyles.saveButton}
 				disabled={disabled}
 			>
-				<MaterialIcons name="save-alt" size={24} color="#ffffff" />
+				<MaterialIcons name="save-alt" size={scale(24)} color="#ffffff" />
 			</TouchableOpacity>
 			<TouchableOpacity
 				onPress={onShare}
 				style={invoiceStyles.shareButton}
 				disabled={disabled}
 			>
-				<MaterialIcons name="share" size={24} color="#000000" />
+				<MaterialIcons name="share" size={scale(24)} color="#000000" />
 			</TouchableOpacity>
 		</View>
 	);

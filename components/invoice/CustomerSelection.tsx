@@ -1,6 +1,7 @@
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles/invoice";
+import { scale } from "@/utils/responsive";
 
 interface CustomerSelectionProps {
 	onSelectCustomer: () => void;
@@ -20,13 +21,13 @@ export function CustomerSelection({
 					style={invoiceStyles.customerSelect}
 				>
 					<Text style={invoiceStyles.customerSelectText}>Select Customer</Text>
-					<MaterialIcons name="expand-more" size={24} color="#13ec6a" />
+					<MaterialIcons name="expand-more" size={scale(24)} color="#13ec6a" />
 				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={onCreateNewCustomer}
 					style={invoiceStyles.createCustomerButton}
 				>
-					<AntDesign name="user-add" size={24} color="#13ec6a" />
+					<AntDesign name="user-add" size={scale(24)} color="#13ec6a" />
 					<Text style={invoiceStyles.createCustomerText}>
 						Create New Customer
 					</Text>

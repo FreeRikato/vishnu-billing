@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { modalStyles } from "@/styles";
+import { scale } from "@/utils/responsive";
 
 interface BaseSelectionModalProps {
 	visible: boolean;
@@ -41,7 +42,7 @@ export function BaseSelectionModal({
 					<View style={modalStyles.modalHeader}>
 						<Text style={modalStyles.modalTitle}>{title}</Text>
 						<TouchableOpacity onPress={onClose} style={modalStyles.closeButton}>
-							<Ionicons name="close" size={28} color="#9ca3af" />
+							<Ionicons name="close" size={scale(28)} color="#9ca3af" />
 						</TouchableOpacity>
 					</View>
 
@@ -50,7 +51,7 @@ export function BaseSelectionModal({
 						<View style={modalStyles.searchBar}>
 							<Ionicons
 								name="search"
-								size={20}
+								size={scale(20)}
 								color="#9ca3af"
 								style={modalStyles.searchIcon}
 							/>

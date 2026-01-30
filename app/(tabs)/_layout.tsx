@@ -4,6 +4,7 @@ import { Tabs } from "expo-router";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks";
+import { scale, verticalScale } from "@/utils/responsive";
 
 export default function TabLayout() {
 	const colorScheme = useColorScheme();
@@ -14,8 +15,8 @@ export default function TabLayout() {
 				tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
 				headerShown: false,
 				tabBarStyle: {
-					paddingBottom: 8,
-					height: 80,
+					paddingBottom: scale(8),
+					height: verticalScale(80),
 				},
 			}}
 		>
@@ -24,7 +25,7 @@ export default function TabLayout() {
 				options={{
 					title: "Home",
 					tabBarIcon: ({ color }) => (
-						<MaterialIcons name="home" size={24} color={color} />
+						<MaterialIcons name="home" size={scale(24)} color={color} />
 					),
 				}}
 			/>
@@ -35,7 +36,7 @@ export default function TabLayout() {
 					tabBarIcon: ({ color }) => (
 						<MaterialCommunityIcons
 							name="invoice-text-multiple"
-							size={24}
+							size={scale(24)}
 							color={color}
 						/>
 					),
@@ -46,7 +47,7 @@ export default function TabLayout() {
 				options={{
 					title: "Contact",
 					tabBarIcon: ({ color }) => (
-						<MaterialIcons name="contacts" size={24} color={color} />
+						<MaterialIcons name="contacts" size={scale(24)} color={color} />
 					),
 				}}
 			/>
@@ -56,7 +57,11 @@ export default function TabLayout() {
 				options={{
 					title: "Product",
 					tabBarIcon: ({ color }) => (
-						<MaterialIcons name="shopping-cart" size={24} color={color} />
+						<MaterialIcons
+							name="shopping-cart"
+							size={scale(24)}
+							color={color}
+						/>
 					),
 				}}
 			/>

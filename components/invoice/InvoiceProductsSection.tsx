@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
 import type { InvoiceProduct, Product } from "@/types";
+import { scale } from "@/utils/responsive";
 import { InvoiceProductCard } from "./InvoiceProductCard";
 
 interface InvoiceProductsSectionProps {
@@ -43,7 +44,7 @@ export function InvoiceProductsSection({
 						style={invoiceStyles.addProductButton}
 					>
 						<View style={invoiceStyles.addProductIcon}>
-							<Ionicons name="add-circle" size={28} color="#13ec6a" />
+							<Ionicons name="add-circle" size={scale(28)} color="#13ec6a" />
 						</View>
 						<Text style={invoiceStyles.addProductText}>Add Product</Text>
 					</TouchableOpacity>

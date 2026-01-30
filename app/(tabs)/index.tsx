@@ -9,6 +9,7 @@ import {
 import { HOME_CONSTANTS } from "@/constants/home";
 import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
+import { scale, verticalScale } from "@/utils/responsive";
 
 export default function HomeScreen() {
 	const { user, isLoading, error } = useUser();
@@ -52,7 +53,12 @@ export default function HomeScreen() {
 
 				{/* Content Area */}
 				<View
-					style={{ flex: 1, paddingHorizontal: 24, gap: 20, paddingBottom: 40 }}
+					style={{
+						flex: 1,
+						paddingHorizontal: scale(24),
+						gap: scale(20),
+						paddingBottom: verticalScale(40),
+					}}
 				>
 					{/* Create Invoice Button */}
 					<CreateInvoiceButton onPress={handleCreateInvoice} />

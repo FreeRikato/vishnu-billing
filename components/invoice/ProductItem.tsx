@@ -2,6 +2,7 @@ import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles/invoice";
 import type { InvoiceProduct } from "@/types/invoice";
+import { scale } from "@/utils/responsive";
 
 interface ProductItemProps {
 	product: InvoiceProduct;
@@ -29,7 +30,7 @@ export function ProductItem({
 					onPress={() => onRemoveProduct(product.id)}
 					style={invoiceStyles.removeButton}
 				>
-					<AntDesign name="close-circle" size={20} color="#9ca3af" />
+					<AntDesign name="close-circle" size={scale(20)} color="#9ca3af" />
 				</TouchableOpacity>
 			</View>
 			<View style={invoiceStyles.productFooter}>
@@ -41,14 +42,14 @@ export function ProductItem({
 						onPress={() => onQuantityChange(product.id, -1)}
 						style={invoiceStyles.stepperButton}
 					>
-						<Ionicons name="remove-circle" size={20} />
+						<Ionicons name="remove-circle" size={scale(20)} />
 					</TouchableOpacity>
 					<Text style={invoiceStyles.stepperValue}>{product.quantity}</Text>
 					<TouchableOpacity
 						onPress={() => onQuantityChange(product.id, 1)}
 						style={invoiceStyles.stepperButtonPrimary}
 					>
-						<Ionicons name="add-circle" size={20} />
+						<Ionicons name="add-circle" size={scale(20)} />
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -57,7 +58,7 @@ export function ProductItem({
 					onPress={() => onAddDiscount(product.id)}
 					style={invoiceStyles.addDiscountButton}
 				>
-					<MaterialIcons name="discount" size={16} color="#13ec6a" />
+					<MaterialIcons name="discount" size={scale(16)} color="#13ec6a" />
 					<Text style={invoiceStyles.addDiscountText}>Add Discount</Text>
 				</TouchableOpacity>
 			) : (

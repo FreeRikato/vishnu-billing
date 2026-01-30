@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { productsStyles } from "@/styles/products";
 import type { Product } from "@/types";
 import { formatCurrency } from "@/utils/currency";
+import { scale } from "@/utils/responsive";
 
 interface ProductItemProps {
 	product: Product;
@@ -38,11 +39,11 @@ export default function ProductItem({
 							onEdit(product);
 						}}
 					>
-						<MaterialIcons name="chevron-right" size={24} color="#666" />
+						<MaterialIcons name="chevron-right" size={scale(24)} color="#666" />
 					</TouchableOpacity>
 				)}
 				{!onEdit && (
-					<MaterialIcons name="chevron-right" size={24} color="#666" />
+					<MaterialIcons name="chevron-right" size={scale(24)} color="#666" />
 				)}
 			</View>
 		</TouchableOpacity>

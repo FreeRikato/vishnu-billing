@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
+import { scale } from "@/utils/responsive";
 
 interface ContactItemProps {
 	contact: Contact;
@@ -43,7 +44,7 @@ export default function ContactItem({
 					onEdit?.(contact);
 				}}
 			>
-				<MaterialIcons name="edit" size={28} color="#13EC6A" />
+				<MaterialIcons name="edit" size={scale(28)} color="#13EC6A" />
 			</TouchableOpacity>
 		</TouchableOpacity>
 	);

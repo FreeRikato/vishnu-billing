@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { commonStyles } from "@/styles";
+import { verticalScale } from "@/utils/responsive";
 
 interface ScreenLayoutProps {
 	title: string;
@@ -87,7 +88,7 @@ export function ScreenLayout({
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={commonStyles.content}
-				keyboardVerticalOffset={100} // Adjust for header height
+				keyboardVerticalOffset={verticalScale(100)} // Adjust for header height
 			>
 				<ScrollView
 					contentContainerStyle={commonStyles.contentContainer}

@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
 import type { Discount, InvoiceSummary } from "@/types";
 import { basisPointsToPercent, formatCurrency } from "@/utils/currency";
+import { scale } from "@/utils/responsive";
 
 interface InvoiceCreateSummaryProps {
 	summary: InvoiceSummary;
@@ -33,7 +34,7 @@ export function InvoiceCreateSummary({
 						onPress={onAddGlobalDiscount}
 						style={invoiceStyles.addDiscountButton}
 					>
-						<MaterialIcons name="discount" size={16} color="#13ec6a" />
+						<MaterialIcons name="discount" size={scale(16)} color="#13ec6a" />
 						<Text style={invoiceStyles.addDiscountText}>Add Discount</Text>
 					</TouchableOpacity>
 				) : (

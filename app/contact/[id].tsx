@@ -7,6 +7,7 @@ import { getContactById } from "@/services/contactService";
 import { useContactStore } from "@/store/contactStore";
 import type { Contact } from "@/types";
 import { generateInitials } from "@/utils/contactUtils";
+import { verticalScale } from "@/utils/responsive";
 
 export default function ContactDetailScreen() {
 	const router = useRouter();
@@ -181,7 +182,7 @@ export default function ContactDetailScreen() {
 			>
 				<ScrollView showsVerticalScrollIndicator={false}>
 					{/* Contact Avatar Preview */}
-					<View style={{ alignItems: "center", marginBottom: 20 }}>
+					<View style={{ alignItems: "center", marginBottom: verticalScale(20) }}>
 						<AvatarPreview
 							initials={formData.initials}
 							color={formData.color}

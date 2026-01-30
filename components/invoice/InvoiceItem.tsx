@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import type { Invoice } from "@/types";
+import { moderateScale, scale } from "@/utils/responsive";
 
 interface InvoiceItemProps {
 	item: Invoice;
@@ -24,10 +25,10 @@ export default function InvoiceItem({
 		invoiceItem: {
 			flexDirection: "row" as const,
 			alignItems: "flex-start" as const,
-			gap: 16,
-			padding: 20,
-			marginBottom: 16,
-			borderRadius: 24,
+			gap: scale(16),
+			padding: scale(20),
+			marginBottom: scale(16),
+			borderRadius: scale(24),
 			backgroundColor: isDark ? "#161b18" : "#ffffff",
 			shadowColor: "#000",
 			shadowOffset: { width: 0, height: 1 },
@@ -38,14 +39,14 @@ export default function InvoiceItem({
 			borderColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
 		},
 		checkboxWrapper: {
-			marginLeft: -8,
-			padding: 4,
+			marginLeft: scale(-8),
+			padding: scale(4),
 			opacity: 1,
 		},
 		checkbox: {
-			width: 32,
-			height: 32,
-			borderRadius: 16,
+			width: scale(32),
+			height: scale(32),
+			borderRadius: scale(16),
 			borderWidth: 2,
 			borderColor: isDark ? "rgba(255, 255, 255, 0.3)" : "#d1d5db",
 			backgroundColor: "transparent",
@@ -58,11 +59,11 @@ export default function InvoiceItem({
 		},
 		checkIcon: {
 			color: "#000000",
-			fontSize: 20,
+			fontSize: moderateScale(20),
 		},
 		invoiceContent: {
 			flex: 1,
-			gap: 4,
+			gap: scale(4),
 		},
 		invoiceHeader: {
 			flexDirection: "row" as const,
@@ -70,13 +71,13 @@ export default function InvoiceItem({
 			alignItems: "flex-start" as const,
 		},
 		customerName: {
-			fontSize: 20,
+			fontSize: moderateScale(20),
 			fontWeight: "700" as const,
 			color: isDark ? "#ffffff" : "#1f2937",
 			flex: 1,
 		},
 		amount: {
-			fontSize: 20,
+			fontSize: moderateScale(20),
 			fontWeight: "700" as const,
 		},
 		amountPaid: {
@@ -89,22 +90,22 @@ export default function InvoiceItem({
 			color: isDark ? "#ef4444" : "#dc2626",
 		},
 		invoiceDetails: {
-			gap: 2,
+			gap: scale(2),
 		},
 		detailText: {
-			fontSize: 14,
+			fontSize: moderateScale(14),
 			color: isDark ? "#9ca3af" : "#6b7280",
 			fontWeight: "500" as const,
 		},
 		statusBadge: {
 			alignSelf: "flex-start" as const,
-			marginTop: 8,
+			marginTop: scale(8),
 			flexDirection: "row" as const,
 			alignItems: "center" as const,
-			gap: 6,
-			paddingHorizontal: 12,
-			paddingVertical: 4,
-			borderRadius: 12,
+			gap: scale(6),
+			paddingHorizontal: scale(12),
+			paddingVertical: scale(4),
+			borderRadius: scale(12),
 		},
 		statusBadgePaid: {
 			backgroundColor: "rgba(19, 236, 106, 0.2)",
@@ -116,7 +117,7 @@ export default function InvoiceItem({
 			backgroundColor: "rgba(239, 68, 68, 0.2)",
 		},
 		statusText: {
-			fontSize: 12,
+			fontSize: moderateScale(12),
 			fontWeight: "700" as const,
 			textTransform: "uppercase" as const,
 			letterSpacing: 0.5,
@@ -190,7 +191,7 @@ export default function InvoiceItem({
 									? "remove-circle"
 									: "close-circle"
 						}
-						size={14}
+						size={scale(14)}
 						color={
 							item.status === "paid"
 								? "#13ec6a"

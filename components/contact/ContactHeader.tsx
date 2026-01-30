@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { contactsStyles } from "@/styles/contacts";
+import { scale } from "@/utils/responsive";
 
 interface ContactHeaderProps {
 	onSettingsPress?: () => void;
@@ -22,7 +23,7 @@ export default function ContactHeader({
 						style={contactsStyles.settingsButton}
 						onPress={onSettingsPress}
 					>
-						<MaterialIcons name="settings" size={32} color="#FFFFFF" />
+						<MaterialIcons name="settings" size={scale(32)} color="#FFFFFF" />
 					</TouchableOpacity>
 				)}
 			</View>

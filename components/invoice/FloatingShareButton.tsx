@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
+import { moderateScale, scale, verticalScale } from "@/utils/responsive";
 
 interface FloatingShareButtonProps {
 	visible: boolean;
@@ -19,17 +20,17 @@ export default function FloatingShareButton({
 	const styles = {
 		floatingAction: {
 			position: "absolute" as const,
-			bottom: 30,
-			right: 20,
+			bottom: verticalScale(30),
+			right: scale(20),
 			zIndex: 50,
 			alignItems: "center" as const,
-			gap: 16,
+			gap: scale(16),
 		},
 		cancelButton: {
-			width: 48,
-			height: 48,
+			width: scale(48),
+			height: scale(48),
 			backgroundColor: "#1C1C1E",
-			borderRadius: 24,
+			borderRadius: scale(24),
 			justifyContent: "center" as const,
 			alignItems: "center" as const,
 			borderWidth: 1,
@@ -41,10 +42,10 @@ export default function FloatingShareButton({
 			elevation: 8,
 		},
 		floatingButton: {
-			width: 56,
-			height: 56,
+			width: scale(56),
+			height: scale(56),
 			backgroundColor: "#13ec6a",
-			borderRadius: 28,
+			borderRadius: scale(28),
 			justifyContent: "center" as const,
 			alignItems: "center" as const,
 			shadowColor: "#000",
@@ -55,18 +56,18 @@ export default function FloatingShareButton({
 		},
 		selectedCount: {
 			position: "absolute" as const,
-			top: -8,
-			right: -8,
+			top: scale(-8),
+			right: scale(-8),
 			backgroundColor: "#ef4444",
-			borderRadius: 10,
-			minWidth: 20,
-			height: 20,
+			borderRadius: scale(10),
+			minWidth: scale(20),
+			height: scale(20),
 			justifyContent: "center" as const,
 			alignItems: "center" as const,
-			paddingHorizontal: 6,
+			paddingHorizontal: scale(6),
 		},
 		selectedCountText: {
-			fontSize: 12,
+			fontSize: moderateScale(12),
 			fontWeight: "700" as const,
 			color: "#ffffff",
 		},
@@ -76,11 +77,11 @@ export default function FloatingShareButton({
 		<View style={styles.floatingAction}>
 			{onCancel && (
 				<TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-					<Ionicons name="close" size={24} color="#ffffff" />
+					<Ionicons name="close" size={scale(24)} color="#ffffff" />
 				</TouchableOpacity>
 			)}
 			<TouchableOpacity style={styles.floatingButton} onPress={onPress}>
-				<Ionicons name="share" size={24} color="#000000" />
+				<Ionicons name="share" size={scale(24)} color="#000000" />
 				<View style={styles.selectedCount}>
 					<Text style={styles.selectedCountText}>{selectedCount}</Text>
 				</View>

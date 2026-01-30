@@ -8,6 +8,7 @@ import {
 	View,
 } from "react-native";
 import { invoiceStyles } from "@/styles";
+import { scale } from "@/utils/responsive";
 import { useSearch } from "../../hooks/useSearch";
 import type { Customer } from "../../types/invoice";
 import { BaseSelectionModal } from "../common/BaseSelectionModal";
@@ -75,7 +76,7 @@ export function ContactPickerModal({
 					>
 						{isSelected ? (
 							<View style={invoiceStyles.selectedButtonContent}>
-								<Ionicons name="checkmark" size={16} color="#000000" />
+								<Ionicons name="checkmark" size={scale(16)} color="#000000" />
 								<Text style={invoiceStyles.selectedButtonText}>SELECTED</Text>
 							</View>
 						) : (

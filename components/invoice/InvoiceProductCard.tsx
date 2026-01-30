@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
 import type { InvoiceProduct } from "@/types";
 import { basisPointsToPercent, formatCurrency } from "@/utils/currency";
+import { scale } from "@/utils/responsive";
 
 interface InvoiceProductCardProps {
 	product: InvoiceProduct;
@@ -34,7 +35,7 @@ export function InvoiceProductCard({
 					onPress={() => onRemove(product.id)}
 					style={invoiceStyles.removeButton}
 				>
-					<AntDesign name="close-circle" size={20} color="#9ca3af" />
+					<AntDesign name="close-circle" size={scale(20)} color="#9ca3af" />
 				</TouchableOpacity>
 			</View>
 			<View style={invoiceStyles.productFooter}>
@@ -46,14 +47,14 @@ export function InvoiceProductCard({
 						onPress={() => onQuantityChange(product.id, -1)}
 						style={invoiceStyles.stepperButton}
 					>
-						<Ionicons name="remove-circle" size={20} color="#ffffff" />
+						<Ionicons name="remove-circle" size={scale(20)} color="#ffffff" />
 					</TouchableOpacity>
 					<Text style={invoiceStyles.stepperValue}>{product.quantity}</Text>
 					<TouchableOpacity
 						onPress={() => onQuantityChange(product.id, 1)}
 						style={invoiceStyles.stepperButtonPrimary}
 					>
-						<Ionicons name="add-circle" size={20} />
+						<Ionicons name="add-circle" size={scale(20)} />
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -62,7 +63,7 @@ export function InvoiceProductCard({
 					onPress={() => onAddDiscount(product.id)}
 					style={invoiceStyles.addDiscountButton}
 				>
-					<MaterialIcons name="discount" size={16} color="#13ec6a" />
+					<MaterialIcons name="discount" size={scale(16)} color="#13ec6a" />
 					<Text style={invoiceStyles.addDiscountText}>Add Discount</Text>
 				</TouchableOpacity>
 			) : (

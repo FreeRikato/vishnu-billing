@@ -1,6 +1,7 @@
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
+import { scale } from "@/utils/responsive";
 
 interface InvoicePreviewHeaderProps {
 	title?: string;
@@ -14,7 +15,7 @@ export function InvoicePreviewHeader({
 	return (
 		<View style={invoiceStyles.header}>
 			<TouchableOpacity onPress={onBack} style={invoiceStyles.backButton}>
-				<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
+				<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
 			</TouchableOpacity>
 			<Text style={invoiceStyles.headerTitle}>{title}</Text>
 			<View style={invoiceStyles.placeholder} />

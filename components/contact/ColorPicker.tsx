@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { commonStyles, contactsStyles } from "@/styles";
 import { COLORS } from "@/utils/contactUtils";
+import { scale } from "@/utils/responsive";
 
 interface ColorPickerProps {
 	selectedColor: string;
@@ -15,7 +16,7 @@ export default function ColorPicker({
 	return (
 		<View style={commonStyles.fieldContainer}>
 			<View style={commonStyles.labelContainer}>
-				<MaterialIcons name="palette" size={20} color="#9CA3AF" />
+				<MaterialIcons name="palette" size={scale(20)} color="#9CA3AF" />
 				<Text style={commonStyles.label}>Color</Text>
 			</View>
 			<View style={contactsStyles.colorPickerContainer}>
@@ -34,7 +35,7 @@ export default function ColorPicker({
 						onPress={() => onColorChange(color)}
 					>
 						{selectedColor === color && (
-							<MaterialIcons name="check" size={16} color="#FFFFFF" />
+							<MaterialIcons name="check" size={scale(16)} color="#FFFFFF" />
 						)}
 					</TouchableOpacity>
 				))}

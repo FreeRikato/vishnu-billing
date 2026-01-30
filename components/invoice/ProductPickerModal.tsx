@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { invoiceStyles } from "@/styles";
 import { formatCurrency } from "@/utils/currency";
+import { scale } from "@/utils/responsive";
 import { useSearch } from "../../hooks/useSearch";
 import type { InvoiceProduct } from "../../types/invoice";
 import { BaseSelectionModal } from "../common/BaseSelectionModal";
@@ -95,7 +96,7 @@ export function ProductPickerModal({
 						>
 							{isSelected ? (
 								<View style={invoiceStyles.addedButtonContent}>
-									<Ionicons name="checkmark" size={16} color="#000000" />
+									<Ionicons name="checkmark" size={scale(16)} color="#000000" />
 									<Text style={invoiceStyles.addedButtonText}>ADDED</Text>
 								</View>
 							) : (

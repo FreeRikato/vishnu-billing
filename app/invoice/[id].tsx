@@ -30,6 +30,7 @@ import PdfService from "@/services/pdfService";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { invoiceStyles } from "@/styles";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
+import { scale } from "@/utils/responsive";
 
 export default function InvoicePreviewScreen() {
 	const { id } = useLocalSearchParams();
@@ -61,7 +62,7 @@ export default function InvoicePreviewScreen() {
 						onPress={() => router.back()}
 						style={invoiceStyles.backButton}
 					>
-						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
+						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
 					</TouchableOpacity>
 				</View>
 				<InvoiceErrorState />
@@ -189,14 +190,18 @@ export default function InvoicePreviewScreen() {
 						onPress={handleBack}
 						style={invoiceStyles.backButton}
 					>
-						<EvilIcons name="arrow-left" size={32} color="#FFFFFF" />
+						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
 					</TouchableOpacity>
 					<Text style={invoiceStyles.headerTitle}>Invoice Preview</Text>
 					<TouchableOpacity
 						onPress={handleDelete}
 						style={invoiceStyles.deleteButton}
 					>
-						<MaterialIcons name="delete-outline" size={28} color="#EF4444" />
+						<MaterialIcons
+							name="delete-outline"
+							size={scale(28)}
+							color="#EF4444"
+						/>
 					</TouchableOpacity>
 				</View>
 

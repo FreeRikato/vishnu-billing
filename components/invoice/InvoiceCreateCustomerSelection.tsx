@@ -3,6 +3,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
 import type { Customer } from "@/types";
+import { scale } from "@/utils/responsive";
 
 interface InvoiceCreateCustomerSelectionProps {
 	selectedCustomer?: Customer | null;
@@ -32,13 +33,13 @@ export function InvoiceCreateCustomerSelection({
 					>
 						{selectedCustomer ? selectedCustomer.name : "Select Customer"}
 					</Text>
-					<MaterialIcons name="expand-more" size={24} color="#13ec6a" />
+					<MaterialIcons name="expand-more" size={scale(24)} color="#13ec6a" />
 				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={onCreateNewCustomer}
 					style={invoiceStyles.createCustomerButton}
 				>
-					<AntDesign name="user-add" size={24} color="#13ec6a" />
+					<AntDesign name="user-add" size={scale(24)} color="#13ec6a" />
 					<Text style={invoiceStyles.createCustomerText}>
 						Create New Customer
 					</Text>

@@ -3,13 +3,14 @@ import { useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import { AvatarPreview, ColorPicker } from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
-import { useContactStore } from "@/store/contactStore";
+import { useContacts } from "@/hooks/useContacts";
 import { generateInitials, generateRandomColor } from "@/utils/contactUtils";
-import { validateContact } from "@/utils/validation";
 import { verticalScale } from "@/utils/responsive";
+import { validateContact } from "@/utils/validation";
 
 export default function CreateContactScreen() {
 	const router = useRouter();
+	const { createContact } = useContacts();
 
 	// State for form data
 	const [formData, setFormData] = useState({
@@ -48,16 +49,16 @@ export default function CreateContactScreen() {
 		}
 
 		try {
-			// Use store method which wraps service and updates state
-			const newContact = await useContactStore.getState().createContact({
+			// Use Convex mutation
+			const result = await createContact({
 				name: validation.data.name,
 				phone: validation.data.phone,
 				address: validation.data.address,
-				gstin: validation.data.gstin ?? null,
-				dlNo: validation.data.dlNo ?? null,
+				gstin: validation.data.gstin,
+				dlNo: validation.data.dlNo,
 			});
 
-			if (newContact) {
+			if (result) {
 				Alert.alert("Success", "Contact created successfully");
 				router.back();
 			} else {
@@ -82,8 +83,10 @@ export default function CreateContactScreen() {
 				onSave={handleSave}
 			>
 				<ScrollView showsVerticalScrollIndicator={false}>
-					{/* Contact Avatar Preview */}
-					<View style={{ alignItems: "center", marginBottom: verticalScale(20) }}>
+					{/* Contact Avatar Preview - for visual feedback only */}
+					<View
+						style={{ alignItems: "center", marginBottom: verticalScale(20) }}
+					>
 						<AvatarPreview
 							initials={formData.initials || "?"}
 							color={formData.color}
@@ -146,7 +149,7 @@ export default function CreateContactScreen() {
 						autoCapitalize="characters"
 					/>
 
-					{/* Initials Field (Auto-generated) */}
+					{/* Initials Field (Auto-generated) - visual feedback only */}
 					<FormField
 						label="Initials"
 						icon="text-format"
@@ -156,7 +159,7 @@ export default function CreateContactScreen() {
 						rightIcon={undefined}
 					/>
 
-					{/* Color Selection */}
+					{/* Color Selection - visual feedback only, server-side will generate random color */}
 					<ColorPicker
 						selectedColor={formData.color}
 						onColorChange={(color) =>

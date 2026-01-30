@@ -358,7 +358,7 @@ export const invoiceStyles = StyleSheet.create({
 	},
 	modalContainer: {
 		width: "100%",
-		maxWidth: 400,
+		maxWidth: scale(400),
 		alignSelf: "center",
 		backgroundColor: "#121212",
 		borderRadius: scale(16),
@@ -998,7 +998,7 @@ export const invoiceStyles = StyleSheet.create({
 	// InvoicePreviewCard styles
 	previewCardContainer: {
 		width: "100%",
-		maxWidth: 400,
+		maxWidth: scale(400),
 		alignSelf: "center",
 		backgroundColor: "#ffffff",
 	},

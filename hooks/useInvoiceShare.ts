@@ -1,27 +1,22 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import PdfService from "@/services/pdfService";
-import { useInvoiceStore } from "@/store/invoiceStore";
-import type { Invoice } from "@/types";
+import type { InvoiceWithItems } from "@/types";
+import PdfService from "@/utils/pdfService";
 import { generateMergedInvoiceHtml } from "@/utils/pdfTemplate";
 
 export function useInvoiceShare() {
 	const [isSharing, setIsSharing] = useState(false);
 
-	const shareSelectedInvoices = async (invoices: Invoice[]) => {
-		const selectedCount = invoices.filter((i) => i.checked).length;
-		if (selectedCount === 0) {
-			Alert.alert(
-				"No Selection",
-				"Please select at least one invoice to share.",
-			);
+	const shareInvoices = async (invoices: InvoiceWithItems[]) => {
+		if (invoices.length === 0) {
+			Alert.alert("No Selection", "No invoices to share.");
 			return;
 		}
 
 		return new Promise<void>((resolve) => {
 			Alert.alert(
 				"Share Invoices",
-				`Generate and share ${selectedCount} selected invoice${selectedCount > 1 ? "s" : ""} as a single PDF?`,
+				`Generate and share ${invoices.length} invoice${invoices.length > 1 ? "s" : ""} as a single PDF?`,
 				[
 					{ text: "Cancel", style: "cancel", onPress: () => resolve() },
 					{
@@ -30,26 +25,9 @@ export function useInvoiceShare() {
 						onPress: async () => {
 							try {
 								setIsSharing(true);
-								// 1. Get selected IDs
-								const selectedIds = invoices
-									.filter((i) => i.checked)
-									.map((i) => i.id);
 
-								// 2. Fetch full invoice details from store
-								const fullInvoices = selectedIds
-									.map((id) => useInvoiceStore.getState().getInvoiceById(id))
-									.filter((i): i is NonNullable<typeof i> => i !== null);
-
-								if (fullInvoices.length === 0) {
-									Alert.alert(
-										"Error",
-										"Could not fetch details for selected invoices.",
-									);
-									return;
-								}
-
-								// 3. Prepare data for template
-								const invoiceData = fullInvoices.map((inv) => ({
+								// Prepare data for template
+								const invoiceData = invoices.map((inv) => ({
 									invoiceNumber: inv.invoiceNumber,
 									date: new Date(inv.date).toLocaleDateString("en-US", {
 										month: "short",
@@ -70,19 +48,19 @@ export function useInvoiceShare() {
 									},
 								}));
 
-								// 4. Generate Merged HTML
+								// Generate Merged HTML
 								const html = generateMergedInvoiceHtml(
 									invoiceData,
 									"Vishnu Billing",
 								);
 
-								// 5. Generate PDF
+								// Generate PDF
 								const uri = await PdfService.generatePdf(html);
 
-								// 6. Share
+								// Share
 								await PdfService.sharePdf(
 									uri,
-									`Share ${selectedCount} Invoices`,
+									`Share ${invoices.length} Invoices`,
 								);
 							} catch (error) {
 								console.error("Share error:", error);
@@ -100,6 +78,6 @@ export function useInvoiceShare() {
 
 	return {
 		isSharing,
-		shareSelectedInvoices,
+		shareInvoices,
 	};
 }

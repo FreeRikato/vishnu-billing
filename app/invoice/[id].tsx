@@ -1,12 +1,11 @@
-import { EvilIcons, MaterialIcons } from "@expo/vector-icons";
+import { EvilIcons } from "@expo/vector-icons";
+import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	Alert,
 	Platform,
-	ScrollView,
 	StatusBar,
-	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -21,14 +20,14 @@ import {
 	InvoiceErrorState,
 	InvoiceLoadingOverlay,
 	InvoicePreviewCard,
-	PageIndicator,
 	PaymentModal,
 	ZoomHint,
 } from "@/components";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { usePinchToZoom } from "@/hooks/usePinchToZoom";
-import PdfService from "@/services/pdfService";
-import { useInvoiceStore } from "@/store/invoiceStore";
 import { invoiceStyles } from "@/styles";
+import PdfService from "@/utils/pdfService";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 import { scale } from "@/utils/responsive";
 
@@ -36,19 +35,44 @@ export default function InvoicePreviewScreen() {
 	const { id } = useLocalSearchParams();
 	const router = useRouter();
 
-	// Safely parse ID
-	const idString = Array.isArray(id) ? id[0] : id;
-	const invoiceId = Number(idString);
+	// The ID from params is now a string (Convex ID)
+	const invoiceId = Array.isArray(id) ? id[0] : id;
 
-	const invoice = useInvoiceStore((state) => state.getInvoiceById(invoiceId));
-	const updatePayment = useInvoiceStore((state) => state.updatePayment);
-	const deleteInvoice = useInvoiceStore((state) => state.deleteInvoice);
+	// Fetch invoice using Convex query
+	const invoice = useQuery(
+		api.invoices.get,
+		invoiceId ? { id: invoiceId as Id<"invoices"> } : "skip",
+	);
+	const isLoading = invoice === undefined;
 
-	const [capturing, setCapturing] = useState(false);
+	// Mutations
+	const updatePayment = useMutation(api.invoices.updatePayment);
+	const deleteInvoice = useMutation(api.invoices.remove);
+
 	const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
 
 	// Zoom Logic for Android (Pinch to Inspect)
 	const { pinchGesture, animatedStyle } = usePinchToZoom();
+
+	if (isLoading) {
+		return (
+			<SafeAreaView
+				style={invoiceStyles.container}
+				edges={["top", "left", "right"]}
+			>
+				<StatusBar barStyle="light-content" backgroundColor="#000000" />
+				<View style={invoiceStyles.header}>
+					<TouchableOpacity
+						onPress={() => router.back()}
+						style={invoiceStyles.backButton}
+					>
+						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
+					</TouchableOpacity>
+				</View>
+				<InvoiceLoadingOverlay />
+			</SafeAreaView>
+		);
+	}
 
 	if (!invoice) {
 		return (
@@ -70,13 +94,14 @@ export default function InvoicePreviewScreen() {
 		);
 	}
 
-	// Get PDF URI - checks if saved PDF exists, otherwise generates it
+	// Get PDF URI - generates it on the fly (Convex doesn't store local PDF paths)
 	const getPdfUri = async (): Promise<string> => {
-		if (invoice.pdfPath && (await PdfService.pdfExists(invoice.pdfPath))) {
-			return invoice.pdfPath;
-		}
+		// Add id field to items if not present (for compatibility)
+		const itemsWithIds = invoice.items.map((item, index) => ({
+			...item,
+			id: item.id || `item-${index}`,
+		}));
 
-		// Fallback to generating it
 		const html = generateInvoiceHtml(
 			"Vishnu Billing",
 			invoice.invoiceNumber,
@@ -85,10 +110,10 @@ export default function InvoicePreviewScreen() {
 				name: invoice.customerName,
 				phone: invoice.customerPhone,
 				address: invoice.customerAddress,
-				gstin: invoice.customerGstin,
-				dlNo: invoice.customerDlNo,
+				gstin: invoice.customerGstin ?? undefined,
+				dlNo: invoice.customerDlNo ?? undefined,
 			},
-			invoice.items,
+			itemsWithIds,
 			{
 				subtotal: invoice.subtotal,
 				totalDiscount: invoice.totalDiscount,
@@ -114,8 +139,10 @@ export default function InvoicePreviewScreen() {
 					text: "Delete",
 					style: "destructive",
 					onPress: async () => {
-						const success = await deleteInvoice(invoiceId);
-						if (success) {
+						const result = await deleteInvoice({
+							id: invoiceId as Id<"invoices">,
+						});
+						if (result.success) {
 							router.back();
 						} else {
 							Alert.alert("Error", "Failed to delete invoice");
@@ -126,65 +153,39 @@ export default function InvoicePreviewScreen() {
 		);
 	};
 
-	const handleSave = async () => {
-		setCapturing(true);
-		try {
-			const pdfUri = await getPdfUri();
-			const result = await PdfService.sharePdf(
-				pdfUri,
-				`Save Invoice ${invoice.invoiceNumber}`,
+	const handlePayment = async (amount: number) => {
+		const result = await updatePayment({
+			id: invoiceId as Id<"invoices">,
+			amountPaid: Math.round(amount), // Amount is already in paise
+		});
+
+		if (result.success) {
+			Alert.alert(
+				"Success",
+				`Payment updated! Status: ${result.newStatus?.toUpperCase()}`,
 			);
-
-			if (!result.success && !result.cancelled) {
-				Alert.alert(
-					"Info",
-					"PDF generated but sharing is not available on this device.",
-				);
-			}
-		} catch (error) {
-			console.error("Error saving invoice:", error);
-			Alert.alert("Error", "Failed to save invoice PDF");
-		} finally {
-			setCapturing(false);
-		}
-	};
-
-	const handleShare = async () => {
-		setCapturing(true);
-		try {
-			const pdfUri = await getPdfUri();
-			const result = await PdfService.sharePdf(
-				pdfUri,
-				`Share Invoice ${invoice.invoiceNumber}`,
-			);
-
-			if (!result.success && !result.cancelled) {
-				Alert.alert("Error", "Failed to share invoice PDF");
-			}
-		} catch (error) {
-			console.error("Error sharing invoice:", error);
-			Alert.alert("Error", "Failed to share invoice PDF");
-		} finally {
-			setCapturing(false);
-		}
-	};
-
-	const handlePaymentUpdate = async (amount: number) => {
-		const success = await updatePayment(invoiceId, amount);
-		if (!success) {
+		} else {
 			Alert.alert("Error", "Failed to update payment");
 		}
 	};
 
-	return (
-		<SafeAreaView
-			style={invoiceStyles.container}
-			edges={["top", "left", "right"]}
-		>
-			<GestureHandlerRootView style={{ flex: 1 }}>
-				<StatusBar barStyle="light-content" backgroundColor="#000000" />
+	const handleShare = async () => {
+		try {
+			const pdfUri = await getPdfUri();
+			await PdfService.sharePdf(pdfUri, `Invoice ${invoice.invoiceNumber}`);
+		} catch (error) {
+			console.error("Error sharing invoice:", error);
+			Alert.alert("Error", "Failed to share invoice");
+		}
+	};
 
-				{/* Header with Delete Button */}
+	return (
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<SafeAreaView
+				style={invoiceStyles.container}
+				edges={["top", "left", "right"]}
+			>
+				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 				<View style={invoiceStyles.header}>
 					<TouchableOpacity
 						onPress={handleBack}
@@ -192,67 +193,32 @@ export default function InvoicePreviewScreen() {
 					>
 						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
 					</TouchableOpacity>
-					<Text style={invoiceStyles.headerTitle}>Invoice Preview</Text>
-					<TouchableOpacity
-						onPress={handleDelete}
-						style={invoiceStyles.deleteButton}
-					>
-						<MaterialIcons
-							name="delete-outline"
-							size={scale(28)}
-							color="#EF4444"
-						/>
-					</TouchableOpacity>
 				</View>
 
-				{capturing && <InvoiceLoadingOverlay />}
+				{Platform.OS === "android" && (
+					<GestureDetector gesture={pinchGesture}>
+						<Animated.View style={animatedStyle}>
+							<ZoomHint />
+						</Animated.View>
+					</GestureDetector>
+				)}
 
-				{/* Main Content */}
-				<ScrollView
-					style={invoiceStyles.invoiceDetailPageScrollView}
-					contentContainerStyle={invoiceStyles.invoiceDetailPageScrollContent}
-					showsVerticalScrollIndicator={false}
-					minimumZoomScale={1}
-					maximumZoomScale={3}
-				>
-					<ZoomHint />
+				<InvoicePreviewCard invoice={invoice} />
 
-					{/* Invoice Preview Card */}
-					<View style={invoiceStyles.previewContainer}>
-						{Platform.OS === "android" ? (
-							<GestureDetector gesture={pinchGesture}>
-								<Animated.View style={animatedStyle}>
-									<InvoicePreviewCard invoice={invoice} />
-								</Animated.View>
-							</GestureDetector>
-						) : (
-							<InvoicePreviewCard invoice={invoice} />
-						)}
-					</View>
-
-					<PageIndicator />
-
-					{/* Spacer for bottom elements */}
-					<View style={invoiceStyles.spacer} />
-				</ScrollView>
-
-				{/* Floating Bottom Action Bar */}
 				<InvoiceActionBar
-					onSave={handleSave}
+					onSave={handleDelete}
 					onShare={handleShare}
 					onPayment={() => setPaymentModalVisible(true)}
-					disabled={capturing}
 				/>
 
-				{/* Payment Modal */}
 				<PaymentModal
 					visible={isPaymentModalVisible}
 					onClose={() => setPaymentModalVisible(false)}
-					onSave={handlePaymentUpdate}
+					onSave={handlePayment}
 					totalAmountInPaise={invoice.total}
-					currentPaidAmountInPaise={invoice.amountPaid || 0}
+					currentPaidAmountInPaise={invoice.amountPaid}
 				/>
-			</GestureHandlerRootView>
-		</SafeAreaView>
+			</SafeAreaView>
+		</GestureHandlerRootView>
 	);
 }

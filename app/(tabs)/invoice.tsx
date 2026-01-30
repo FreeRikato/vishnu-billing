@@ -18,6 +18,7 @@ export default function InvoiceScreen() {
 
 	const {
 		invoices,
+		invoicesMap,
 		selectionMode,
 		searchText,
 		setSearchText,
@@ -26,14 +27,19 @@ export default function InvoiceScreen() {
 		cancelSelection,
 	} = useInvoices();
 
-	const { isSharing, shareSelectedInvoices } = useInvoiceShare();
+	const { isSharing, shareInvoices } = useInvoiceShare();
 
 	const handleInvoicePress = (invoice: Invoice) => {
 		router.push(`/invoice/${invoice.id}`);
 	};
 
 	const handleSharePress = async () => {
-		await shareSelectedInvoices(invoices);
+		// Filter selected invoices and get full invoice data
+		const selectedIds = invoices.filter((i) => i.checked).map((i) => i.id);
+		const selectedInvoices = selectedIds
+			.map((id) => invoicesMap[id])
+			.filter((inv): inv is (typeof invoicesMap)[string] => inv !== undefined);
+		await shareInvoices(selectedInvoices);
 	};
 
 	return (

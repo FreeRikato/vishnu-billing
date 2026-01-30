@@ -144,8 +144,8 @@ export const homeStyles = StyleSheet.create({
 	chartContainer: {
 		width: scale(140),
 		height: scale(140),
-		maxWidth: 250, // Cap size for tablets
-		maxHeight: 250,
+		maxWidth: scale(250), // Cap size for tablets
+		maxHeight: scale(250),
 		position: "relative",
 	},
 	centerTextContainer: {

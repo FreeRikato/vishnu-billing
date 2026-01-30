@@ -1,9 +1,9 @@
+import { useQuery } from "convex/react";
 import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Alert } from "react-native";
-import { useContactStore } from "@/store/contactStore";
-import { useProductStore } from "@/store/productStore";
-import type { Product as ProductType } from "@/types";
+import { api } from "@/convex/_generated/api";
+import type { Contact } from "@/types/contact";
 import type {
 	Customer,
 	Discount,
@@ -11,6 +11,7 @@ import type {
 	InvoiceProduct,
 	InvoiceSummary,
 } from "@/types/invoice";
+import type { Product, ProductId, ProductUI } from "@/types/product";
 import { percentToBasisPoints } from "@/utils/currency";
 import { calculateDiscountAmount } from "@/utils/invoiceUtils";
 
@@ -25,18 +26,6 @@ function getLocalDateString(): string {
 	return `${year}-${month}-${day}`;
 }
 
-// Helper to convert ProductType to InvoiceProduct
-// Product prices are now stored in paise
-function toInvoiceProduct(product: ProductType): InvoiceProduct {
-	return {
-		id: product.id,
-		name: product.name,
-		description: product.unit,
-		price: product.price, // Already in paise
-		quantity: 1,
-	};
-}
-
 export interface UseCreateInvoiceReturn {
 	invoiceItems: InvoiceProduct[];
 	summary: InvoiceSummary;
@@ -44,8 +33,8 @@ export interface UseCreateInvoiceReturn {
 	discountModalVisible: boolean;
 	productPickerVisible: boolean;
 	contactPickerVisible: boolean;
-	selectedProductId: number | null;
-	availableProducts: ProductType[];
+	selectedProductId: string | null;
+	availableProducts: ProductUI[];
 	customers: Customer[];
 	globalDiscount: Discount | undefined;
 	isEditingGlobalDiscount: boolean;
@@ -56,50 +45,37 @@ export interface UseCreateInvoiceReturn {
 	handleAddProduct: () => void;
 	handleContactSelect: (customer: Customer) => void;
 	handleProductSelect: (product: InvoiceProduct) => void;
-	handleQuantityChange: (productId: number, change: number) => void;
-	handleRemoveProduct: (productId: number) => void;
-	handleAddDiscount: (productId: number) => void;
+	handleQuantityChange: (productId: string, change: number) => void;
+	handleRemoveProduct: (productId: string) => void;
+	handleAddDiscount: (productId: string) => void;
 	handleAddGlobalDiscount: () => void;
 	handleRemoveGlobalDiscount: () => void;
 	handleApplyDiscount: (value: number, type: DiscountType) => void;
-	handleEditDiscount: (productId: number) => void;
+	handleEditDiscount: (productId: string) => void;
 	setDiscountModalVisible: (visible: boolean) => void;
 	setProductPickerVisible: (visible: boolean) => void;
 	setContactPickerVisible: (visible: boolean) => void;
-	setSelectedProductId: (id: number | null) => void;
+	setSelectedProductId: (id: string | null) => void;
 	// Helper
-	toInvoiceProduct: (product: ProductType) => InvoiceProduct;
+	toInvoiceProduct: (product: ProductUI) => InvoiceProduct;
 }
 
 export function useCreateInvoice(): UseCreateInvoiceReturn {
-	// Get real data from stores
-	const contacts = useContactStore((state) => state.contacts);
-	const products = useProductStore((state) => state.products);
+	// Get real data from Convex
+	const contacts = useQuery(api.contacts.list) ?? [];
+	const products = useQuery(api.products.list) ?? [];
 
 	// Convert contacts to customers
 	const customers: Customer[] = useMemo(
 		() =>
-			contacts.map((contact) => {
-				const customer = {
-					id: contact.id,
-					name: contact.name,
-					phone: contact.phone,
-					address: contact.address ?? "",
-					gstin: contact.gstin ?? null,
-					dlNo: contact.dlNo ?? null,
-				};
-				// Debug: Log conversion
-				console.log(
-					`[useCreateInvoice] Converting contact "${contact.name}":`,
-					{
-						contactGstin: contact.gstin,
-						contactDlNo: contact.dlNo,
-						customerGstin: customer.gstin,
-						customerDlNo: customer.dlNo,
-					},
-				);
-				return customer;
-			}),
+			contacts.map((contact: Contact) => ({
+				id: contact._id,
+				name: contact.name,
+				phone: contact.phone,
+				address: contact.address ?? "",
+				gstin: contact.gstin ?? null,
+				dlNo: contact.dlNo ?? null,
+			})),
 		[contacts],
 	);
 
@@ -115,7 +91,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	const [discountModalVisible, setDiscountModalVisible] = useState(false);
 	const [productPickerVisible, setProductPickerVisible] = useState(false);
 	const [contactPickerVisible, setContactPickerVisible] = useState(false);
-	const [selectedProductId, setSelectedProductId] = useState<number | null>(
+	const [selectedProductId, setSelectedProductId] = useState<string | null>(
 		null,
 	);
 	const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -160,7 +136,11 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	}, [invoiceItems, globalDiscount]);
 
 	// Get all products (filtering is handled in the modal)
-	const availableProducts = products;
+	// Map to ProductUI format for components
+	const availableProductsUI: ProductUI[] = products.map((product: Product) => ({
+		...product,
+		id: product._id,
+	}));
 
 	// Handler functions
 	const handleCancel = useCallback(() => {
@@ -193,10 +173,12 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 
 	const handleProductSelect = useCallback((product: InvoiceProduct) => {
 		setInvoiceItems((prev) => {
-			const exists = prev.some((item) => item.id === product.id);
+			const exists = prev.some(
+				(item) => item.lineItemId === product.lineItemId,
+			);
 			if (exists) {
 				// Remove if already selected (toggle behavior)
-				return prev.filter((item) => item.id !== product.id);
+				return prev.filter((item) => item.lineItemId !== product.lineItemId);
 			}
 			// Add new product
 			return [...prev, { ...product, quantity: 1 }];
@@ -204,10 +186,10 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	}, []);
 
 	const handleQuantityChange = useCallback(
-		(productId: number, change: number) => {
+		(productId: string, change: number) => {
 			setInvoiceItems((prev) =>
 				prev.map((item) => {
-					if (item.id === productId) {
+					if (item.lineItemId === productId) {
 						const newQuantity = Math.max(1, item.quantity + change);
 						return { ...item, quantity: newQuantity };
 					}
@@ -218,7 +200,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		[],
 	);
 
-	const handleRemoveProduct = useCallback((productId: number) => {
+	const handleRemoveProduct = useCallback((productId: string) => {
 		Alert.alert("Remove Product", "Remove this product from the invoice?", [
 			{ text: "Cancel", style: "cancel" },
 			{
@@ -226,14 +208,14 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 				style: "destructive",
 				onPress: () => {
 					setInvoiceItems((prev) =>
-						prev.filter((item) => item.id !== productId),
+						prev.filter((item) => item.lineItemId !== productId),
 					);
 				},
 			},
 		]);
 	}, []);
 
-	const handleAddDiscount = useCallback((productId: number) => {
+	const handleAddDiscount = useCallback((productId: string) => {
 		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
@@ -267,7 +249,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 			} else if (selectedProductId) {
 				setInvoiceItems((prev) =>
 					prev.map((item) => {
-						if (item.id === selectedProductId) {
+						if (item.lineItemId === selectedProductId) {
 							// Remove discount if value is 0, otherwise set it
 							if (value === 0) {
 								// biome-ignore lint/correctness/noUnusedVariables: We want to remove discount from the object
@@ -292,11 +274,23 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		[selectedProductId, isEditingGlobalDiscount],
 	);
 
-	const handleEditDiscount = useCallback((productId: number) => {
+	const handleEditDiscount = useCallback((productId: string) => {
 		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
 	}, []);
+
+	// Helper to convert Product to InvoiceProduct
+	function toInvoiceProduct(product: ProductUI): InvoiceProduct {
+		return {
+			lineItemId: product.id,
+			productId: product.id as ProductId, // Cast string to Convex ProductId
+			name: product.name,
+			description: product.unit,
+			price: product.price, // Already in paise
+			quantity: 1,
+		};
+	}
 
 	return {
 		invoiceItems,
@@ -306,7 +300,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		productPickerVisible,
 		contactPickerVisible,
 		selectedProductId,
-		availableProducts,
+		availableProducts: availableProductsUI,
 		customers,
 		globalDiscount,
 		isEditingGlobalDiscount,

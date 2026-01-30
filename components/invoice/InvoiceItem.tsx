@@ -5,7 +5,7 @@ import { moderateScale, scale } from "@/utils/responsive";
 
 interface InvoiceItemProps {
 	item: Invoice;
-	onToggle?: (id: number) => void;
+	onToggle?: (id: string) => void;
 	onLongPress?: () => void;
 	onPress?: () => void;
 	selectionMode: boolean;

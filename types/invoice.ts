@@ -1,22 +1,39 @@
-export interface Invoice {
-	id: number;
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+
+// Type alias for Convex Invoice document
+export type InvoiceDoc = Doc<"invoices">;
+
+// Type alias for Convex Contact ID
+export type ContactId = Id<"contacts">;
+
+// Type alias for Convex Product ID
+export type ProductId = Id<"products">;
+
+// Type alias for Invoice ID
+export type InvoiceId = Id<"invoices">;
+
+// Invoice type for UI list view components
+// Simplified type with formatted fields for display
+export type InvoiceUI = {
+	id: string; // Convex ID
 	customerName: string;
 	invoiceNumber: string;
-	amount: string;
-	total: string;
-	date: string;
+	amount: string; // Formatted currency string for display
+	total: string; // Formatted currency string for display
+	date: string; // Formatted date string for display
 	status: "unpaid" | "partial" | "paid";
-	checked: boolean;
-}
+	checked: boolean; // UI selection state for list view
+};
 
-export interface Customer {
-	id: number;
+// Customer type for invoice creation (simplified Contact representation)
+export type Customer = {
+	id: ContactId;
 	name: string;
 	phone: string;
 	address: string;
 	gstin?: string | null;
 	dlNo?: string | null;
-}
+};
 
 export type InvoiceStatus = "unpaid" | "partial" | "paid";
 export type DiscountType = "percent" | "flat";
@@ -27,42 +44,24 @@ export interface Discount {
 }
 
 export interface InvoiceProduct {
-	id: number; // Product ID (number for consistency with DB)
+	lineItemId?: string; // Line item ID for UI keys
+	productId?: ProductId; // Reference to product (Convex ID)
 	name: string;
 	description: string;
-	price: number;
+	price: number; // Paise
 	quantity: number;
 	discount?: Discount;
 }
 
 export interface InvoiceSummary {
-	subtotal: number;
-	totalDiscount: number;
-	tax: number;
-	total: number;
+	subtotal: number; // Paise
+	totalDiscount: number; // Paise
+	tax: number; // Paise
+	total: number; // Paise
 }
 
-// Type definition for invoice with items from database
-export type InvoiceWithItems = {
-	id: number;
-	invoiceNumber: string;
-	customerId: number;
-	customerName: string;
-	customerPhone: string;
-	customerAddress: string;
-	customerGstin: string | null;
-	customerDlNo: string | null;
-	subtotal: number;
-	totalDiscount: number;
-	tax: number;
-	total: number;
-	amountPaid: number;
-	date: string;
-	status: string;
-	pdfPath: string | null;
-	deletedAt: string | null;
-	items: InvoiceProduct[];
-};
+// Type alias for invoice with items (same as InvoiceDoc since items are embedded)
+export type InvoiceWithItems = InvoiceDoc;
 
 // Type Guards for safe type narrowing
 

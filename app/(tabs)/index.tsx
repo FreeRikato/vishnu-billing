@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	CreateInvoiceButton,
@@ -12,7 +12,7 @@ import { homeStyles } from "@/styles";
 import { scale, verticalScale } from "@/utils/responsive";
 
 export default function HomeScreen() {
-	const { user, isLoading, error } = useUser();
+	const { user, isLoading } = useUser();
 
 	const handleCreateInvoice = () => {
 		router.push("/invoice/create");
@@ -28,19 +28,6 @@ export default function HomeScreen() {
 					size="large"
 					color={HOME_CONSTANTS.STYLES.PRIMARY_COLOR}
 				/>
-			</SafeAreaView>
-		);
-	}
-
-	if (error) {
-		return (
-			<SafeAreaView
-				style={homeStyles.container}
-				edges={["top", "left", "right"]}
-			>
-				<Text style={homeStyles.errorText}>
-					Failed to load user data: {error.message}
-				</Text>
 			</SafeAreaView>
 		);
 	}

@@ -55,7 +55,8 @@ export type ProductInput = z.infer<typeof ProductSchema>;
 
 // Invoice Product Schema (for create invoice flow)
 export const InvoiceProductSchema = z.object({
-	id: z.number(),
+	lineItemId: z.string().optional(), // Renamed from id
+	productId: z.string().optional(), // Convex ID is a string
 	name: z.string().min(1),
 	description: z.string(),
 	price: z.number().min(0),
@@ -72,7 +73,7 @@ export type InvoiceProductInput = z.infer<typeof InvoiceProductSchema>;
 
 // Customer Schema (for invoice creation)
 export const CustomerSchema = z.object({
-	id: z.number(),
+	id: z.string(), // IDs are strings
 	name: z.string().min(1),
 });
 
@@ -91,7 +92,7 @@ export type InvoiceSummaryInput = z.infer<typeof InvoiceSummarySchema>;
 // Create Invoice Schema (complete validation for invoice creation)
 export const CreateInvoiceSchema = z.object({
 	invoiceNumber: z.string().min(1, "Invoice number is required"),
-	customerId: z.number().int().positive(),
+	customerId: z.string(), // IDs are strings
 	customerName: z.string().min(1, "Customer name is required"),
 	customerPhone: z.string().min(10, "Phone number must be at least 10 digits"),
 	customerAddress: z.string().min(1, "Address is required"),

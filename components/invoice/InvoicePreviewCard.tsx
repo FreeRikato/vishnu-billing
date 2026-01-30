@@ -103,7 +103,7 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 
 							return (
 								<View
-									key={item.id}
+									key={item.id || `item-${index}`}
 									style={[
 										invoiceStyles.tableRow,
 										!isLast && invoiceStyles.borderBottom,

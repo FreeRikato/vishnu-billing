@@ -18,7 +18,7 @@ interface ContactPickerModalProps {
 	onClose: () => void;
 	onContactSelect: (customer: Customer) => void;
 	customers: Customer[];
-	selectedCustomerId?: number;
+	selectedCustomerId?: string;
 }
 
 export function ContactPickerModal({
@@ -28,7 +28,7 @@ export function ContactPickerModal({
 	customers,
 	selectedCustomerId,
 }: ContactPickerModalProps) {
-	const [selectedId, setSelectedId] = useState<number | null>(
+	const [selectedId, setSelectedId] = useState<string | null>(
 		selectedCustomerId ?? null,
 	);
 
@@ -99,7 +99,7 @@ export function ContactPickerModal({
 		>
 			<FlatList
 				data={filteredCustomers}
-				keyExtractor={(item) => String(item.id)}
+				keyExtractor={(item) => item.id}
 				renderItem={renderContactItem}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={invoiceStyles.contactListContent}

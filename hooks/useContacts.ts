@@ -1,29 +1,28 @@
+import { useMutation, useQuery } from "convex/react";
 import { useCallback } from "react";
-import { useContactStore } from "@/store/contactStore";
-import type { Contact } from "@/types";
+import { api } from "@/convex/_generated/api";
+import type { Contact, ContactUI } from "@/types/contact";
 import { useSearch } from "./useSearch";
 
-/**
- * Hook for managing contact list UI state and search functionality.
- * Reads data from Zustand store instead of fetching on every navigation.
- * Provides debounced local search filtering for optimal UX.
- */
 export function useContacts() {
-	// Subscribe to store state for contacts and loading
-	const contacts = useContactStore((state) => state.contacts);
-	const loading = useContactStore((state) => state.loading);
+	const contacts = useQuery(api.contacts.list) ?? [];
+	const isLoading = contacts === undefined;
 
-	// Define how to filter a contact
-	const filterContact = useCallback((contact: Contact, query: string) => {
-		const lowerQuery = query.toLowerCase();
+	// Map Convex contacts to UI format
+	const contactsUI: ContactUI[] = contacts.map((contact: Contact) => ({
+		...contact,
+		id: contact._id,
+	}));
+
+	const filterContact = useCallback((contact: ContactUI, query: string) => {
 		return (
-			contact.name.toLowerCase().includes(lowerQuery) ||
+			contact.name.toLowerCase().includes(query.toLowerCase()) ||
 			contact.phone.includes(query)
 		);
 	}, []);
 
 	const { searchText, setSearchText, results } = useSearch(
-		contacts,
+		contactsUI,
 		filterContact,
 	);
 
@@ -31,6 +30,9 @@ export function useContacts() {
 		searchText,
 		setSearchText,
 		contacts: results,
-		loading,
+		loading: isLoading,
+		createContact: useMutation(api.contacts.create),
+		updateContact: useMutation(api.contacts.update),
+		deleteContact: useMutation(api.contacts.remove),
 	};
 }

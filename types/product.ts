@@ -1,8 +1,12 @@
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import type { Product as ProductSchema } from "@/db/schema";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 
-// Infer Product type from Drizzle schema
-export type Product = InferSelectModel<typeof ProductSchema>;
+// Type alias for Convex Product document
+export type Product = Doc<"products">;
 
-// Type for creating a new product (excludes auto-generated id)
-export type NewProduct = InferInsertModel<typeof ProductSchema>;
+// Type alias for Product ID
+export type ProductId = Id<"products">;
+
+// Product type for UI components (with id instead of _id)
+export type ProductUI = Omit<Product, "_id" | "_creationTime"> & {
+	id: string; // Map _id to id for UI components
+};

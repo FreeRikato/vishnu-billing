@@ -1,9 +1,8 @@
 import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Alert } from "react-native";
-import { useContactStore } from "@/store/contactStore";
-import { useProductStore } from "@/store/productStore";
-import type { Product as ProductType } from "@/types";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import type {
 	Customer,
 	Discount,
@@ -25,18 +24,6 @@ function getLocalDateString(): string {
 	return `${year}-${month}-${day}`;
 }
 
-// Helper to convert ProductType to InvoiceProduct
-// Product prices are now stored in paise
-function toInvoiceProduct(product: ProductType): InvoiceProduct {
-	return {
-		id: product.id,
-		name: product.name,
-		description: product.unit,
-		price: product.price, // Already in paise
-		quantity: 1,
-	};
-}
-
 export interface UseCreateInvoiceReturn {
 	invoiceItems: InvoiceProduct[];
 	summary: InvoiceSummary;
@@ -44,8 +31,8 @@ export interface UseCreateInvoiceReturn {
 	discountModalVisible: boolean;
 	productPickerVisible: boolean;
 	contactPickerVisible: boolean;
-	selectedProductId: number | null;
-	availableProducts: ProductType[];
+	selectedProductId: string | null;
+	availableProducts: any[];
 	customers: Customer[];
 	globalDiscount: Discount | undefined;
 	isEditingGlobalDiscount: boolean;
@@ -56,50 +43,37 @@ export interface UseCreateInvoiceReturn {
 	handleAddProduct: () => void;
 	handleContactSelect: (customer: Customer) => void;
 	handleProductSelect: (product: InvoiceProduct) => void;
-	handleQuantityChange: (productId: number, change: number) => void;
-	handleRemoveProduct: (productId: number) => void;
-	handleAddDiscount: (productId: number) => void;
+	handleQuantityChange: (productId: string, change: number) => void;
+	handleRemoveProduct: (productId: string) => void;
+	handleAddDiscount: (productId: string) => void;
 	handleAddGlobalDiscount: () => void;
 	handleRemoveGlobalDiscount: () => void;
 	handleApplyDiscount: (value: number, type: DiscountType) => void;
-	handleEditDiscount: (productId: number) => void;
+	handleEditDiscount: (productId: string) => void;
 	setDiscountModalVisible: (visible: boolean) => void;
 	setProductPickerVisible: (visible: boolean) => void;
 	setContactPickerVisible: (visible: boolean) => void;
-	setSelectedProductId: (id: number | null) => void;
+	setSelectedProductId: (id: string | null) => void;
 	// Helper
-	toInvoiceProduct: (product: ProductType) => InvoiceProduct;
+	toInvoiceProduct: (product: any) => InvoiceProduct;
 }
 
 export function useCreateInvoice(): UseCreateInvoiceReturn {
-	// Get real data from stores
-	const contacts = useContactStore((state) => state.contacts);
-	const products = useProductStore((state) => state.products);
+	// Get real data from Convex
+	const contacts = useQuery(api.contacts.list) ?? [];
+	const products = useQuery(api.products.list) ?? [];
 
 	// Convert contacts to customers
 	const customers: Customer[] = useMemo(
 		() =>
-			contacts.map((contact) => {
-				const customer = {
-					id: contact.id,
-					name: contact.name,
-					phone: contact.phone,
-					address: contact.address ?? "",
-					gstin: contact.gstin ?? null,
-					dlNo: contact.dlNo ?? null,
-				};
-				// Debug: Log conversion
-				console.log(
-					`[useCreateInvoice] Converting contact "${contact.name}":`,
-					{
-						contactGstin: contact.gstin,
-						contactDlNo: contact.dlNo,
-						customerGstin: customer.gstin,
-						customerDlNo: customer.dlNo,
-					},
-				);
-				return customer;
-			}),
+			contacts.map((contact: any) => ({
+				id: contact._id,
+				name: contact.name,
+				phone: contact.phone,
+				address: contact.address ?? "",
+				gstin: contact.gstin ?? null,
+				dlNo: contact.dlNo ?? null,
+			})),
 		[contacts],
 	);
 
@@ -115,7 +89,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	const [discountModalVisible, setDiscountModalVisible] = useState(false);
 	const [productPickerVisible, setProductPickerVisible] = useState(false);
 	const [contactPickerVisible, setContactPickerVisible] = useState(false);
-	const [selectedProductId, setSelectedProductId] = useState<number | null>(
+	const [selectedProductId, setSelectedProductId] = useState<string | null>(
 		null,
 	);
 	const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -204,7 +178,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	}, []);
 
 	const handleQuantityChange = useCallback(
-		(productId: number, change: number) => {
+		(productId: string, change: number) => {
 			setInvoiceItems((prev) =>
 				prev.map((item) => {
 					if (item.id === productId) {
@@ -218,7 +192,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		[],
 	);
 
-	const handleRemoveProduct = useCallback((productId: number) => {
+	const handleRemoveProduct = useCallback((productId: string) => {
 		Alert.alert("Remove Product", "Remove this product from the invoice?", [
 			{ text: "Cancel", style: "cancel" },
 			{
@@ -233,7 +207,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		]);
 	}, []);
 
-	const handleAddDiscount = useCallback((productId: number) => {
+	const handleAddDiscount = useCallback((productId: string) => {
 		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
@@ -292,11 +266,22 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 		[selectedProductId, isEditingGlobalDiscount],
 	);
 
-	const handleEditDiscount = useCallback((productId: number) => {
+	const handleEditDiscount = useCallback((productId: string) => {
 		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
 	}, []);
+
+	// Helper to convert Product to InvoiceProduct
+	function toInvoiceProduct(product: any): InvoiceProduct {
+		return {
+			id: product._id,
+			name: product.name,
+			description: product.unit,
+			price: product.price, // Already in paise
+			quantity: 1,
+		};
+	}
 
 	return {
 		invoiceItems,

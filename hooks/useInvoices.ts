@@ -1,25 +1,27 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useSearch } from "@/hooks/useSearch";
-import { useInvoiceStore } from "@/store/invoiceStore";
 import type { Invoice } from "@/types";
 import { isInvoiceStatus } from "@/types/invoice";
 import { formatCurrency } from "@/utils/currency";
 
 export function useInvoices() {
-	const storeInvoices = useInvoiceStore((state) => state.invoices);
+	const storeInvoices = useQuery(api.invoices.list) ?? [];
+	const isLoading = storeInvoices === undefined;
 	const [selectionMode, setSelectionMode] = useState(false);
 
-	// Convert store invoices to UI format with checked state
-	const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+	// Convert Convex IDs to proper type and add checked state
+	const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
-	const invoices: Invoice[] = storeInvoices.map((inv) => {
+	const invoices: Invoice[] = storeInvoices.map((inv: any) => {
 		// For partial payments, show remaining amount
 		const remainingAmount = inv.total - (inv.amountPaid || 0);
 		const amountToDisplay =
 			inv.status === "partial" ? remainingAmount : inv.total;
 
 		return {
-			id: inv.id,
+			id: inv._id,
 			customerName: inv.customerName,
 			invoiceNumber: inv.invoiceNumber,
 			amount: formatCurrency(amountToDisplay),
@@ -30,11 +32,11 @@ export function useInvoices() {
 				year: "numeric",
 			}),
 			status: isInvoiceStatus(inv.status) ? inv.status : "unpaid",
-			checked: checkedIds.has(inv.id),
+			checked: checkedIds.has(inv._id),
 		};
 	});
 
-	const toggleInvoice = (id: number) => {
+	const toggleInvoice = (id: string) => {
 		setCheckedIds((prev) => {
 			const newSet = new Set(prev);
 			if (newSet.has(id)) {
@@ -80,6 +82,7 @@ export function useInvoices() {
 
 	return {
 		invoices: filteredInvoices,
+		loading: isLoading,
 		selectionMode,
 		searchText,
 		setSearchText,
@@ -87,5 +90,7 @@ export function useInvoices() {
 		enableSelectionMode,
 		getSelectedCount,
 		cancelSelection,
+		updatePayment: useMutation(api.invoices.updatePayment),
+		deleteInvoice: useMutation(api.invoices.remove),
 	};
 }

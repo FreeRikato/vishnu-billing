@@ -1,5 +1,5 @@
 export interface Invoice {
-	id: number;
+	id: string; // Convex ID
 	customerName: string;
 	invoiceNumber: string;
 	amount: string;
@@ -10,7 +10,7 @@ export interface Invoice {
 }
 
 export interface Customer {
-	id: number;
+	id: string; // Convex ID (string)
 	name: string;
 	phone: string;
 	address: string;
@@ -27,40 +27,41 @@ export interface Discount {
 }
 
 export interface InvoiceProduct {
-	id: number; // Product ID (number for consistency with DB)
+	id: string; // Product ID (now string for Convex)
 	name: string;
 	description: string;
-	price: number;
+	price: number; // Paise
 	quantity: number;
 	discount?: Discount;
 }
 
 export interface InvoiceSummary {
-	subtotal: number;
-	totalDiscount: number;
-	tax: number;
-	total: number;
+	subtotal: number; // Paise
+	totalDiscount: number; // Paise
+	tax: number; // Paise
+	total: number; // Paise
 }
 
 // Type definition for invoice with items from database
 export type InvoiceWithItems = {
-	id: number;
+	_id: string; // Convex ID
+	_creationTime: number;
 	invoiceNumber: string;
-	customerId: number;
+	customerId: string; // Convex ID (string)
 	customerName: string;
 	customerPhone: string;
 	customerAddress: string;
-	customerGstin: string | null;
-	customerDlNo: string | null;
-	subtotal: number;
-	totalDiscount: number;
-	tax: number;
-	total: number;
-	amountPaid: number;
+	customerGstin?: string;
+	customerDlNo?: string;
+	subtotal: number; // Paise
+	totalDiscount: number; // Paise
+	tax: number; // Paise
+	total: number; // Paise
+	amountPaid: number; // Paise
 	date: string;
-	status: string;
-	pdfPath: string | null;
-	deletedAt: string | null;
+	status: InvoiceStatus;
+	pdfStorageId?: string;
+	deletedAt?: string;
 	items: InvoiceProduct[];
 };
 

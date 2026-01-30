@@ -1,26 +1,25 @@
 import { useCallback } from "react";
-import { useProductStore } from "@/store/productStore";
-import type { Product } from "@/types";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useSearch } from "./useSearch";
+import type { ProductUI } from "@/types/product";
 
-/**
- * Hook for managing product list UI state and search functionality.
- * Reads data from Zustand store instead of fetching on every navigation.
- * Provides debounced local search filtering for optimal UX.
- */
 export function useProducts() {
-	// Subscribe to store state for products and loading
-	const products = useProductStore((state) => state.products);
-	const loading = useProductStore((state) => state.loading);
+	const products = useQuery(api.products.list) ?? [];
+	const isLoading = products === undefined;
 
-	// Define how to filter a product
-	const filterProduct = useCallback((product: Product, query: string) => {
-		const lowerQuery = query.toLowerCase();
-		return product.name.toLowerCase().includes(lowerQuery);
+	// Map Convex products to UI format
+	const productsUI: ProductUI[] = products.map((product: any) => ({
+		...product,
+		id: product._id,
+	}));
+
+	const filterProduct = useCallback((product: ProductUI, query: string) => {
+		return product.name.toLowerCase().includes(query.toLowerCase());
 	}, []);
 
 	const { searchText, setSearchText, results } = useSearch(
-		products,
+		productsUI,
 		filterProduct,
 	);
 
@@ -28,6 +27,9 @@ export function useProducts() {
 		searchText,
 		setSearchText,
 		products: results,
-		loading,
+		loading: isLoading,
+		createProduct: useMutation(api.products.create),
+		updateProduct: useMutation(api.products.update),
+		deleteProduct: useMutation(api.products.remove),
 	};
 }

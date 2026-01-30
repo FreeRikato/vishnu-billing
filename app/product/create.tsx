@@ -2,12 +2,13 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
-import { useProductStore } from "@/store/productStore";
+import { useProducts } from "@/hooks/useProducts";
 import { decimalToPaise } from "@/utils/currency";
 import { validateProduct } from "@/utils/validation";
 
 export default function CreateProductScreen() {
 	const router = useRouter();
+	const { createProduct } = useProducts();
 
 	// State for form data
 	const [formData, setFormData] = useState({
@@ -36,14 +37,14 @@ export default function CreateProductScreen() {
 			// Convert rupees to paise before storing
 			const priceInPaise = decimalToPaise(validation.data.price);
 
-			// Use store method which wraps service and updates state
-			const newProduct = await useProductStore.getState().createProduct({
+			// Use Convex mutation
+			const result = await createProduct({
 				name: validation.data.name,
 				price: priceInPaise,
 				unit: validation.data.unit,
 			});
 
-			if (newProduct) {
+			if (result) {
 				Alert.alert("Success", "Product created successfully");
 				router.back();
 			} else {

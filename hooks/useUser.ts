@@ -1,16 +1,21 @@
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useEffect } from "react";
-import { useUserStore } from "@/store/userStore";
+import type { UserUI } from "@/types/user";
 
 export function useUser() {
-	const user = useUserStore((state) => state.user);
-	const loading = useUserStore((state) => state.loading);
-	const ensureDefault = useUserStore((state) => state.ensureDefault);
+	const user = useQuery(api.users.getCurrent);
+	const ensureDefault = useMutation(api.users.ensureDefault);
+	const isLoading = user === undefined;
+
+	// Map Convex user to UI format
+	const userUI: UserUI | null = user ? { ...user, id: user._id } : null;
 
 	useEffect(() => {
-		if (!user && !loading) {
+		if (!user && !isLoading) {
 			ensureDefault();
 		}
-	}, [user, loading, ensureDefault]);
+	}, [user, isLoading, ensureDefault]);
 
-	return { user, isLoading: loading, error: null as null | Error };
+	return { user: userUI, isLoading, ensureDefault };
 }

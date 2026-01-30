@@ -1,5 +1,11 @@
-import type { InferSelectModel } from "drizzle-orm";
-import type { User as UserSchema } from "@/db/schema";
+// User type from Convex (with _id)
+export type User = {
+	_id: string; // Convex ID
+	_creationTime: number;
+	name: string;
+};
 
-// Infer User type from Drizzle schema
-export type User = InferSelectModel<typeof UserSchema>;
+// User type for UI components (with id instead of _id)
+export type UserUI = Omit<User, "_id" | "_creationTime"> & {
+	id: string; // Map _id to id for UI components
+};

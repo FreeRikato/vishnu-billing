@@ -1,10 +1,11 @@
 import { router } from "expo-router";
 import { Alert, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { getLocalDateString, useCreateInvoice } from "@/hooks/useCreateInvoice";
-import { generateInvoiceNumber } from "@/services/invoiceService";
+import { paiseToDecimal } from "@/utils/currency";
 import PdfService from "@/services/pdfService";
-import { useInvoiceStore } from "@/store/invoiceStore";
 import { invoiceStyles } from "@/styles";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 import { ContactPickerModal } from "../../components/invoice/ContactPickerModal";
@@ -17,7 +18,7 @@ import { InvoiceProductsSection } from "../../components/invoice/InvoiceProducts
 import { ProductPickerModal } from "../../components/invoice/ProductPickerModal";
 
 export default function CreateInvoiceScreen() {
-	const addInvoice = useInvoiceStore((state) => state.addInvoice);
+	const createInvoice = useMutation(api.invoices.create);
 
 	// Use the custom hook to manage state and handlers
 	const {
@@ -61,23 +62,43 @@ export default function CreateInvoiceScreen() {
 			return;
 		}
 
-		// Debug: Log selected customer data
-		console.log("[InvoiceCreate] Selected customer:", {
-			name: selectedCustomer.name,
-			phone: selectedCustomer.phone,
-			address: selectedCustomer.address,
-			gstin: selectedCustomer.gstin,
-			dlNo: selectedCustomer.dlNo,
-		});
-
 		try {
-			// Generate invoice number once using the service
-			const invoiceNumber = generateInvoiceNumber();
+			// Convert invoice items to match Convex schema
+			const items = invoiceItems.map((item) => ({
+				productId: item.id, // Already a Convex ID string
+				name: item.name,
+				description: item.description,
+				price: item.price, // Already in paise
+				quantity: item.quantity,
+				discount: item.discount,
+			}));
 
-			// Generate invoice HTML
+			// Create invoice in Convex (invoice number is generated server-side)
+			const result = await createInvoice({
+				customerId: selectedCustomer.id as any, // Convex Id<"contacts">
+				customerName: selectedCustomer.name,
+				customerPhone: selectedCustomer.phone,
+				customerAddress: selectedCustomer.address,
+				customerGstin: selectedCustomer.gstin ?? undefined,
+				customerDlNo: selectedCustomer.dlNo ?? undefined,
+				subtotal: summary.subtotal, // Already in paise
+				totalDiscount: summary.totalDiscount, // Already in paise
+				tax: summary.tax, // Already in paise
+				total: summary.total, // Already in paise
+				amountPaid: 0, // New invoice, no payment yet
+				date: getLocalDateString(),
+				items,
+			});
+
+			if (!result) {
+				Alert.alert("Error", "Failed to create invoice");
+				return;
+			}
+
+			// Generate invoice HTML using the server-generated invoice number
 			const html = generateInvoiceHtml(
 				"Vishnu Billing", // Sender name
-				invoiceNumber, // Invoice number
+				result.invoiceNumber, // Server-generated invoice number
 				getLocalDateString(), // Date (local time)
 				{
 					name: selectedCustomer.name,
@@ -92,41 +113,22 @@ export default function CreateInvoiceScreen() {
 
 			// Generate and save PDF using PdfService
 			const fileName = PdfService.generateFileName("invoice");
-			const result = await PdfService.generateAndSavePdf(html, fileName);
+			const pdfResult = await PdfService.generateAndSavePdf(html, fileName);
 
-			if (!result) {
+			if (!pdfResult) {
 				Alert.alert("Error", "Failed to generate PDF");
 				return;
 			}
 
-			// Create invoice in database
-			const newInvoice = await addInvoice({
-				invoiceNumber,
-				customerId: selectedCustomer.id,
-				customerName: selectedCustomer.name,
-				customerPhone: selectedCustomer.phone,
-				customerAddress: selectedCustomer.address,
-				customerGstin: selectedCustomer.gstin,
-				customerDlNo: selectedCustomer.dlNo,
-				items: invoiceItems,
-				summary,
-				date: getLocalDateString(),
-				pdfPath: result.savedPath ?? result.tempUri,
-			});
-
-			if (newInvoice) {
-				Alert.alert("Success", "Invoice created successfully and PDF saved!", [
-					{
-						text: "OK",
-						onPress: () => router.back(),
-					},
-				]);
-			} else {
-				Alert.alert("Error", "Failed to save invoice to database");
-			}
+			Alert.alert("Success", "Invoice created successfully and PDF saved!", [
+				{
+					text: "OK",
+					onPress: () => router.back(),
+				},
+			]);
 		} catch (error) {
-			console.error("Error generating PDF:", error);
-			Alert.alert("Error", "Failed to generate PDF");
+			console.error("Error generating invoice:", error);
+			Alert.alert("Error", "Failed to create invoice");
 		}
 	};
 
@@ -179,11 +181,10 @@ export default function CreateInvoiceScreen() {
 				onApply={handleApplyDiscount}
 				initialValue={
 					isEditingGlobalDiscount
-						? globalDiscount?.value || 0
+						? paiseToDecimal(globalDiscount?.value || 0)
 						: (selectedProductId &&
 								invoiceItems.find((p) => p.id === selectedProductId)?.discount
-									?.value) ||
-							0
+									?.value) || 0
 				}
 				initialType={
 					isEditingGlobalDiscount
@@ -195,7 +196,7 @@ export default function CreateInvoiceScreen() {
 				}
 				productPrice={
 					isEditingGlobalDiscount
-						? summary.subtotal
+						? paiseToDecimal(summary.subtotal)
 						: selectedProductId
 							? invoiceItems.find((p) => p.id === selectedProductId)?.price || 0
 							: 0

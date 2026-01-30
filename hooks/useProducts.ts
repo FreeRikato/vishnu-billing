@@ -1,15 +1,15 @@
+import { useMutation, useQuery } from "convex/react";
 import { useCallback } from "react";
-import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Product, ProductUI } from "@/types/product";
 import { useSearch } from "./useSearch";
-import type { ProductUI } from "@/types/product";
 
 export function useProducts() {
 	const products = useQuery(api.products.list) ?? [];
 	const isLoading = products === undefined;
 
 	// Map Convex products to UI format
-	const productsUI: ProductUI[] = products.map((product: any) => ({
+	const productsUI: ProductUI[] = products.map((product: Product) => ({
 		...product,
 		id: product._id,
 	}));

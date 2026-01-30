@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { useSearch } from "@/hooks/useSearch";
 import type { Invoice } from "@/types";
+import type { InvoiceDoc } from "@/types/invoice";
 import { isInvoiceStatus } from "@/types/invoice";
 import { formatCurrency } from "@/utils/currency";
 
@@ -14,7 +15,24 @@ export function useInvoices() {
 	// Convert Convex IDs to proper type and add checked state
 	const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
-	const invoices: Invoice[] = storeInvoices.map((inv: any) => {
+	// Map of full Convex documents for sharing functionality
+	const [invoicesMap, setInvoicesMap] = useState<Record<string, InvoiceDoc>>(
+		{},
+	);
+
+	// Update map when store changes
+	useEffect(() => {
+		const map = storeInvoices.reduce(
+			(acc, inv) => {
+				acc[inv._id] = inv;
+				return acc;
+			},
+			{} as Record<string, InvoiceDoc>,
+		);
+		setInvoicesMap(map);
+	}, [storeInvoices]);
+
+	const invoices: Invoice[] = storeInvoices.map((inv: InvoiceDoc) => {
 		// For partial payments, show remaining amount
 		const remainingAmount = inv.total - (inv.amountPaid || 0);
 		const amountToDisplay =
@@ -82,6 +100,7 @@ export function useInvoices() {
 
 	return {
 		invoices: filteredInvoices,
+		invoicesMap,
 		loading: isLoading,
 		selectionMode,
 		searchText,

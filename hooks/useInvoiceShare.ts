@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Alert } from "react-native";
 import type { InvoiceWithItems } from "@/types";
+import PdfService from "@/utils/pdfService";
 import { generateMergedInvoiceHtml } from "@/utils/pdfTemplate";
-import PdfService from "@/services/pdfService";
 
 export function useInvoiceShare() {
 	const [isSharing, setIsSharing] = useState(false);
@@ -49,13 +49,19 @@ export function useInvoiceShare() {
 								}));
 
 								// Generate Merged HTML
-								const html = generateMergedInvoiceHtml(invoiceData, "Vishnu Billing");
+								const html = generateMergedInvoiceHtml(
+									invoiceData,
+									"Vishnu Billing",
+								);
 
 								// Generate PDF
 								const uri = await PdfService.generatePdf(html);
 
 								// Share
-								await PdfService.sharePdf(uri, `Share ${invoices.length} Invoices`);
+								await PdfService.sharePdf(
+									uri,
+									`Share ${invoices.length} Invoices`,
+								);
 							} catch (error) {
 								console.error("Share error:", error);
 								Alert.alert("Error", "Failed to generate or share invoices.");

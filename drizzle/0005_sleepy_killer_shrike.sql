@@ -1,1 +1,0 @@
-ALTER TABLE `invoice` ADD `amountPaid` real DEFAULT 0 NOT NULL;

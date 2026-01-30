@@ -4,4 +4,3 @@ export { useInvoiceShare } from "./useInvoiceShare";
 export { useInvoices } from "./useInvoices";
 export { usePinchToZoom } from "./usePinchToZoom";
 export { useSearch } from "./useSearch";
-export { useSync } from "./useSync";

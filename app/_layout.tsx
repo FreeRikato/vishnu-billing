@@ -2,7 +2,6 @@
 import "react-native-url-polyfill/auto";
 import "text-encoding";
 
-import NetInfo from "@react-native-community/netinfo";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
@@ -13,7 +12,6 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { db, expoDb } from "@/db/client"; // Import expoDb
 import migrations from "@/drizzle/migrations";
 import { useColorScheme } from "@/hooks";
-import { SyncService } from "@/services/syncService";
 import { useContactStore } from "@/store/contactStore";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { useProductStore } from "@/store/productStore";
@@ -49,20 +47,6 @@ export default function RootLayout() {
 			fetchInvoices();
 		}
 	}, [success, ensureDefaultUser, fetchContacts, fetchProducts, fetchInvoices]);
-
-	// Automatic Cloud Sync on network connection
-	useEffect(() => {
-		const unsubscribe = NetInfo.addEventListener((state) => {
-			if (state.isConnected && state.isInternetReachable) {
-				console.log("Internet detected, attempting auto-backup...");
-				SyncService.backupToCloud()
-					.then(() => console.log("Auto-backup successful"))
-					.catch((err) => console.log("Auto-backup skipped:", err.message));
-			}
-		});
-
-		return () => unsubscribe();
-	}, []);
 
 	if (error) {
 		return (

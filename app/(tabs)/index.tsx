@@ -5,22 +5,13 @@ import {
 	CreateInvoiceButton,
 	HomeHeader,
 	InvoiceStatsChart,
-	RecoverButton,
-	SyncStatusIndicator,
 } from "@/components";
 import { HOME_CONSTANTS } from "@/constants/home";
-import { useSync } from "@/hooks/useSync";
 import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
 
 export default function HomeScreen() {
 	const { user, isLoading, error } = useUser();
-	const {
-		isSyncing,
-		handleBackupToCloud,
-		handleRecoverFromCloud,
-		isRecoveryEnabled,
-	} = useSync();
 
 	const handleCreateInvoice = () => {
 		router.push("/invoice/create");
@@ -57,10 +48,7 @@ export default function HomeScreen() {
 		<SafeAreaView style={homeStyles.container} edges={["top", "left", "right"]}>
 			<ScrollView showsVerticalScrollIndicator={false}>
 				{/* Header Section */}
-				<HomeHeader user={user} onSyncCloud={handleBackupToCloud} />
-
-				{/* Sync Status Indicator */}
-				<SyncStatusIndicator isSyncing={isSyncing} />
+				<HomeHeader user={user} />
 
 				{/* Content Area */}
 				<View
@@ -71,12 +59,6 @@ export default function HomeScreen() {
 
 					{/* Invoice Statistics Chart */}
 					<InvoiceStatsChart />
-
-					{/* Developer Only Recover Button - Hidden by default */}
-					<RecoverButton
-						onRecover={handleRecoverFromCloud}
-						enabled={isRecoveryEnabled}
-					/>
 				</View>
 			</ScrollView>
 		</SafeAreaView>

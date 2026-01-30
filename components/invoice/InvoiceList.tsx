@@ -6,7 +6,7 @@ import InvoiceItem from "./InvoiceItem";
 
 interface InvoiceListProps {
 	invoices: Invoice[];
-	onToggleInvoice?: (id: number) => void;
+	onToggleInvoice?: (id: string) => void;
 	onLongPressInvoice?: () => void;
 	onPressInvoice?: (invoice: Invoice) => void;
 	selectionMode: boolean;
@@ -34,7 +34,7 @@ export default function InvoiceList({
 			style={contactsStyles.contactList}
 			data={invoices}
 			renderItem={renderInvoiceItem}
-			keyExtractor={(item) => String(item.id)}
+			keyExtractor={(item) => item.id}
 			showsVerticalScrollIndicator={false}
 			contentContainerStyle={invoiceStyles.invoiceListContent}
 			ListFooterComponent={<View style={contactsStyles.bottomSpacer} />}

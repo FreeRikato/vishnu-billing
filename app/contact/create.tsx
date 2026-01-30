@@ -5,8 +5,8 @@ import { AvatarPreview, ColorPicker } from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
 import { useContacts } from "@/hooks/useContacts";
 import { generateInitials, generateRandomColor } from "@/utils/contactUtils";
-import { validateContact } from "@/utils/validation";
 import { verticalScale } from "@/utils/responsive";
+import { validateContact } from "@/utils/validation";
 
 export default function CreateContactScreen() {
 	const router = useRouter();
@@ -84,7 +84,9 @@ export default function CreateContactScreen() {
 			>
 				<ScrollView showsVerticalScrollIndicator={false}>
 					{/* Contact Avatar Preview - for visual feedback only */}
-					<View style={{ alignItems: "center", marginBottom: verticalScale(20) }}>
+					<View
+						style={{ alignItems: "center", marginBottom: verticalScale(20) }}
+					>
 						<AvatarPreview
 							initials={formData.initials || "?"}
 							color={formData.color}

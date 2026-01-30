@@ -1,20 +1,30 @@
+import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Text, View } from "react-native";
 import { FormField, ScreenLayout } from "@/components/common";
 import { ProductDeleteSection } from "@/components/product/ProductDeleteSection";
-import { getProductById } from "@/services/productService";
-import { useProductStore } from "@/store/productStore";
-import type { Product } from "@/types";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { decimalToPaise, paiseToDecimal } from "@/utils/currency";
 
 export default function ProductDetailScreen() {
 	const router = useRouter();
 	const { id } = useLocalSearchParams();
 
-	// State for product data and loading
-	const [product, setProduct] = useState<Product | null>(null);
-	const [loading, setLoading] = useState(true);
+	// The ID from params is now a string (Convex ID)
+	const productId = Array.isArray(id) ? id[0] : id;
+
+	// Fetch product using Convex query
+	const product = useQuery(
+		api.products.get,
+		productId ? { id: productId as Id<"products"> } : "skip",
+	);
+	const isLoading = product === undefined;
+
+	// Mutations
+	const updateProduct = useMutation(api.products.update);
+	const deleteProduct = useMutation(api.products.remove);
 
 	// State for form data
 	const [formData, setFormData] = useState({
@@ -23,57 +33,27 @@ export default function ProductDetailScreen() {
 		unit: "",
 	});
 
-	// Load existing product data
-	const loadProduct = useCallback(async () => {
-		try {
-			// Safely parse ID
-			const idString = Array.isArray(id) ? id[0] : id;
-			const productId = Number(idString);
-
-			if (productId && !Number.isNaN(productId)) {
-				const productData = await getProductById(productId);
-				if (productData) {
-					setProduct(productData);
-					setFormData({
-						name: productData.name,
-						price: paiseToDecimal(productData.price).toString(),
-						unit: productData.unit,
-					});
-				} else {
-					Alert.alert("Error", "Product not found");
-					router.back();
-				}
-			} else {
-				Alert.alert("Error", "Invalid product ID");
-				router.back();
-			}
-		} catch (error) {
-			console.error("Error loading product:", error);
-			Alert.alert("Error", "Failed to load product");
-			router.back();
-		} finally {
-			setLoading(false);
-		}
-	}, [id, router]);
-
+	// Update form data when product loads
 	useEffect(() => {
-		loadProduct();
-	}, [loadProduct]);
+		if (product) {
+			setFormData({
+				name: product.name,
+				price: paiseToDecimal(product.price).toString(),
+				unit: product.unit,
+			});
+		}
+	}, [product]);
 
 	const handleSave = async () => {
-		if (!product) return;
-
-		if (!formData.name.trim()) {
-			Alert.alert("Error", "Product name is required");
-			return;
-		}
-
-		if (!formData.price.trim()) {
-			Alert.alert("Error", "Price is required");
-			return;
-		}
+		if (!productId || !product) return;
 
 		const priceValue = parseFloat(formData.price);
+
+		if (!formData.name.trim()) {
+			Alert.alert("Error", "Name is required");
+			return;
+		}
+
 		if (Number.isNaN(priceValue) || priceValue < 0) {
 			Alert.alert("Error", "Please enter a valid price");
 			return;
@@ -88,16 +68,14 @@ export default function ProductDetailScreen() {
 			// Convert rupees to paise before storing
 			const priceInPaise = decimalToPaise(priceValue);
 
-			// Use store method which wraps service and updates state
-			const updatedProduct = await useProductStore
-				.getState()
-				.updateProduct(product.id, {
-					name: formData.name,
-					price: priceInPaise,
-					unit: formData.unit,
-				});
+			const result = await updateProduct({
+				id: productId as Id<"products">,
+				name: formData.name,
+				price: priceInPaise,
+				unit: formData.unit,
+			});
 
-			if (updatedProduct) {
+			if (result) {
 				Alert.alert("Success", "Product updated successfully");
 				router.back();
 			} else {
@@ -114,7 +92,7 @@ export default function ProductDetailScreen() {
 	};
 
 	const handleDelete = async () => {
-		if (!product) return;
+		if (!productId || !product) return;
 
 		Alert.alert(
 			"Delete Product?",
@@ -129,20 +107,21 @@ export default function ProductDetailScreen() {
 					style: "destructive",
 					onPress: async () => {
 						try {
-							// Use store method which wraps service and updates state
-							const result = await useProductStore
-								.getState()
-								.deleteProduct(product.id);
+							const result = await deleteProduct({
+								id: productId as Id<"products">,
+							});
 							if (result.success) {
 								Alert.alert("Success", "Product deleted successfully");
 								router.back();
-							} else if (result.reason === "in_use") {
-								Alert.alert(
-									"Cannot Delete",
-									"This product is used in one or more invoices. Please delete those invoices first.",
-								);
 							} else {
-								Alert.alert("Error", "Failed to delete product");
+								if (result.reason === "in_use") {
+									Alert.alert(
+										"Cannot Delete",
+										"This product is used in invoices. Delete those invoices first.",
+									);
+								} else {
+									Alert.alert("Error", "Failed to delete product");
+								}
 							}
 						} catch (error) {
 							console.error("Error deleting product:", error);
@@ -154,6 +133,43 @@ export default function ProductDetailScreen() {
 		);
 	};
 
+	if (isLoading) {
+		return (
+			<>
+				<Stack.Screen options={{ headerShown: false }} />
+				<ScreenLayout title="" onCancel={handleCancel}>
+					<View
+						style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+					>
+						<View
+							style={{
+								width: 32,
+								height: 32,
+								borderRadius: 16,
+								backgroundColor: "#13ec6a",
+							}}
+						/>
+					</View>
+				</ScreenLayout>
+			</>
+		);
+	}
+
+	if (!product) {
+		return (
+			<>
+				<Stack.Screen options={{ headerShown: false }} />
+				<ScreenLayout title="" onCancel={handleCancel}>
+					<View
+						style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+					>
+						<Text>Product not found</Text>
+					</View>
+				</ScreenLayout>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<Stack.Screen options={{ headerShown: false }} />
@@ -161,8 +177,6 @@ export default function ProductDetailScreen() {
 				title="Edit Product"
 				onCancel={handleCancel}
 				onSave={handleSave}
-				isLoading={loading}
-				loadingMessage="Loading product..."
 			>
 				<FormField
 					label="Product Name"
@@ -198,7 +212,6 @@ export default function ProductDetailScreen() {
 					}
 				/>
 
-				{/* Delete Button */}
 				<ProductDeleteSection onDelete={handleDelete} />
 			</ScreenLayout>
 		</>

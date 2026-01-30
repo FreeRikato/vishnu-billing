@@ -7,9 +7,9 @@ import { ProductItem } from "./ProductItem";
 
 interface ProductListProps {
 	products: InvoiceProduct[];
-	onQuantityChange: (productId: number, change: number) => void;
-	onRemoveProduct: (productId: number) => void;
-	onAddDiscount: (productId: number) => void;
+	onQuantityChange: (productId: string, change: number) => void;
+	onRemoveProduct: (productId: string) => void;
+	onAddDiscount: (productId: string) => void;
 	onAddProduct: () => void;
 }
 
@@ -24,9 +24,9 @@ export function ProductList({
 		<View style={invoiceStyles.section}>
 			<Text style={invoiceStyles.sectionTitle}>What are they buying?</Text>
 			<View style={invoiceStyles.productsSection}>
-				{products.map((product) => (
+				{products.map((product, index) => (
 					<ProductItem
-						key={product.id}
+						key={product.lineItemId || `product-${index}`}
 						product={product}
 						onQuantityChange={onQuantityChange}
 						onRemoveProduct={onRemoveProduct}

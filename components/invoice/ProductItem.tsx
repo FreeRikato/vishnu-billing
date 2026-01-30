@@ -6,9 +6,9 @@ import { scale } from "@/utils/responsive";
 
 interface ProductItemProps {
 	product: InvoiceProduct;
-	onQuantityChange: (productId: number, change: number) => void;
-	onRemoveProduct: (productId: number) => void;
-	onAddDiscount: (productId: number) => void;
+	onQuantityChange: (productId: string, change: number) => void;
+	onRemoveProduct: (productId: string) => void;
+	onAddDiscount: (productId: string) => void;
 }
 
 export function ProductItem({
@@ -27,7 +27,9 @@ export function ProductItem({
 					</Text>
 				</View>
 				<TouchableOpacity
-					onPress={() => onRemoveProduct(product.id)}
+					onPress={() =>
+						product.lineItemId && onRemoveProduct(product.lineItemId)
+					}
 					style={invoiceStyles.removeButton}
 				>
 					<AntDesign name="close-circle" size={scale(20)} color="#9ca3af" />
@@ -39,14 +41,18 @@ export function ProductItem({
 				</Text>
 				<View style={invoiceStyles.stepper}>
 					<TouchableOpacity
-						onPress={() => onQuantityChange(product.id, -1)}
+						onPress={() =>
+							product.lineItemId && onQuantityChange(product.lineItemId, -1)
+						}
 						style={invoiceStyles.stepperButton}
 					>
 						<Ionicons name="remove-circle" size={scale(20)} />
 					</TouchableOpacity>
 					<Text style={invoiceStyles.stepperValue}>{product.quantity}</Text>
 					<TouchableOpacity
-						onPress={() => onQuantityChange(product.id, 1)}
+						onPress={() =>
+							product.lineItemId && onQuantityChange(product.lineItemId, 1)
+						}
 						style={invoiceStyles.stepperButtonPrimary}
 					>
 						<Ionicons name="add-circle" size={scale(20)} />
@@ -55,7 +61,9 @@ export function ProductItem({
 			</View>
 			{!product.discount ? (
 				<TouchableOpacity
-					onPress={() => onAddDiscount(product.id)}
+					onPress={() =>
+						product.lineItemId && onAddDiscount(product.lineItemId)
+					}
 					style={invoiceStyles.addDiscountButton}
 				>
 					<MaterialIcons name="discount" size={scale(16)} color="#13ec6a" />

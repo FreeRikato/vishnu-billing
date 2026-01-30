@@ -1,11 +1,11 @@
+import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { AvatarPreview, ColorPicker, DeleteContactButton } from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
-import { getContactById } from "@/services/contactService";
-import { useContactStore } from "@/store/contactStore";
-import type { Contact } from "@/types";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { generateInitials } from "@/utils/contactUtils";
 import { verticalScale } from "@/utils/responsive";
 
@@ -13,9 +13,19 @@ export default function ContactDetailScreen() {
 	const router = useRouter();
 	const { id } = useLocalSearchParams();
 
-	// State for contact data and loading
-	const [contact, setContact] = useState<Contact | null>(null);
-	const [loading, setLoading] = useState(true);
+	// The ID from params is now a string (Convex ID)
+	const contactId = Array.isArray(id) ? id[0] : id;
+
+	// Fetch contact using Convex query
+	const contact = useQuery(
+		api.contacts.get,
+		contactId ? { id: contactId as Id<"contacts"> } : "skip",
+	);
+	const isLoading = contact === undefined;
+
+	// Mutations
+	const updateContact = useMutation(api.contacts.update);
+	const deleteContact = useMutation(api.contacts.remove);
 
 	// State for form data
 	const [formData, setFormData] = useState({
@@ -28,46 +38,20 @@ export default function ContactDetailScreen() {
 		color: "#3B82F6",
 	});
 
-	// Load existing contact data
-	const loadContact = useCallback(async () => {
-		try {
-			// Safely parse ID
-			const idString = Array.isArray(id) ? id[0] : id;
-			const contactId = Number(idString);
-
-			if (contactId && !Number.isNaN(contactId)) {
-				const contactData = await getContactById(contactId);
-				if (contactData) {
-					setContact(contactData);
-					setFormData({
-						name: contactData.name,
-						phone: contactData.phone,
-						address: contactData.address ?? "",
-						gstin: contactData.gstin ?? "",
-						dlNo: contactData.dlNo ?? "",
-						initials: contactData.initials,
-						color: contactData.color,
-					});
-				} else {
-					Alert.alert("Error", "Contact not found");
-					router.back();
-				}
-			} else {
-				Alert.alert("Error", "Invalid contact ID");
-				router.back();
-			}
-		} catch (error) {
-			console.error("Error loading contact:", error);
-			Alert.alert("Error", "Failed to load contact");
-			router.back();
-		} finally {
-			setLoading(false);
-		}
-	}, [id, router]);
-
+	// Update form data when contact loads
 	useEffect(() => {
-		loadContact();
-	}, [loadContact]);
+		if (contact) {
+			setFormData({
+				name: contact.name,
+				phone: contact.phone,
+				address: contact.address,
+				gstin: contact.gstin ?? "",
+				dlNo: contact.dlNo ?? "",
+				initials: contact.initials,
+				color: contact.color,
+			});
+		}
+	}, [contact]);
 
 	// Update initials when name changes
 	const handleNameChange = (text: string) => {
@@ -80,7 +64,7 @@ export default function ContactDetailScreen() {
 	};
 
 	const handleSave = async () => {
-		if (!contact) return;
+		if (!contactId || !contact) return;
 
 		if (!formData.name.trim()) {
 			Alert.alert("Error", "Name is required");
@@ -98,20 +82,17 @@ export default function ContactDetailScreen() {
 		}
 
 		try {
-			// Use store method which wraps service and updates state
-			const updatedContact = await useContactStore
-				.getState()
-				.updateContact(contact.id, {
-					name: formData.name,
-					phone: formData.phone,
-					address: formData.address,
-					gstin: formData.gstin.trim() || null,
-					dlNo: formData.dlNo.trim() || null,
-					initials: formData.initials,
-					color: formData.color,
-				});
+			const result = await updateContact({
+				id: contactId as Id<"contacts">,
+				name: formData.name,
+				phone: formData.phone,
+				address: formData.address,
+				gstin: formData.gstin.trim() || undefined,
+				dlNo: formData.dlNo.trim() || undefined,
+				color: formData.color,
+			});
 
-			if (updatedContact) {
+			if (result) {
 				Alert.alert("Success", "Contact updated successfully");
 				router.back();
 			} else {
@@ -128,7 +109,7 @@ export default function ContactDetailScreen() {
 	};
 
 	const handleDelete = async () => {
-		if (!contact) return;
+		if (!contactId || !contact) return;
 
 		Alert.alert(
 			"Delete Contact?",
@@ -143,18 +124,17 @@ export default function ContactDetailScreen() {
 					style: "destructive",
 					onPress: async () => {
 						try {
-							// Use store method which wraps service and updates state
-							const result = await useContactStore
-								.getState()
-								.deleteContact(contact.id);
+							const result = await deleteContact({
+								id: contactId as Id<"contacts">,
+							});
 							if (result.success) {
 								Alert.alert("Success", "Contact deleted successfully");
 								router.back();
 							} else {
 								if (result.reason === "has_invoices") {
 									Alert.alert(
-										"Cannot Delete Contact",
-										"This contact is associated with existing invoices. Please delete the invoices first.",
+										"Cannot Delete",
+										"This contact has invoices associated with it. Delete those invoices first.",
 									);
 								} else {
 									Alert.alert("Error", "Failed to delete contact");
@@ -170,6 +150,43 @@ export default function ContactDetailScreen() {
 		);
 	};
 
+	if (isLoading) {
+		return (
+			<>
+				<Stack.Screen options={{ headerShown: false }} />
+				<ScreenLayout title="" onCancel={handleCancel}>
+					<View
+						style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+					>
+						<View
+							style={{
+								width: 32,
+								height: 32,
+								borderRadius: 16,
+								backgroundColor: "#13ec6a",
+							}}
+						/>
+					</View>
+				</ScreenLayout>
+			</>
+		);
+	}
+
+	if (!contact) {
+		return (
+			<>
+				<Stack.Screen options={{ headerShown: false }} />
+				<ScreenLayout title="" onCancel={handleCancel}>
+					<View
+						style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+					>
+						<Text>Contact not found</Text>
+					</View>
+				</ScreenLayout>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<Stack.Screen options={{ headerShown: false }} />
@@ -177,14 +194,14 @@ export default function ContactDetailScreen() {
 				title="Edit Contact"
 				onCancel={handleCancel}
 				onSave={handleSave}
-				isLoading={loading}
-				loadingMessage="Loading contact..."
 			>
 				<ScrollView showsVerticalScrollIndicator={false}>
 					{/* Contact Avatar Preview */}
-					<View style={{ alignItems: "center", marginBottom: verticalScale(20) }}>
+					<View
+						style={{ alignItems: "center", marginBottom: verticalScale(20) }}
+					>
 						<AvatarPreview
-							initials={formData.initials}
+							initials={formData.initials || "?"}
 							color={formData.color}
 						/>
 					</View>
@@ -263,7 +280,7 @@ export default function ContactDetailScreen() {
 						}
 					/>
 
-					{/* Delete Button */}
+					{/* Delete Section */}
 					<DeleteContactButton onPress={handleDelete} />
 				</ScrollView>
 			</ScreenLayout>

@@ -9,10 +9,10 @@ import { scale } from "@/utils/responsive";
 
 interface InvoiceProductCardProps {
 	product: InvoiceProduct;
-	onQuantityChange: (id: number, delta: number) => void;
-	onRemove: (id: number) => void;
-	onAddDiscount: (id: number) => void;
-	onEditDiscount: (id: number) => void;
+	onQuantityChange: (id: string, delta: number) => void;
+	onRemove: (id: string) => void;
+	onAddDiscount: (id: string) => void;
+	onEditDiscount: (id: string) => void;
 }
 
 export function InvoiceProductCard({
@@ -32,7 +32,7 @@ export function InvoiceProductCard({
 					</Text>
 				</View>
 				<TouchableOpacity
-					onPress={() => onRemove(product.id)}
+					onPress={() => product.lineItemId && onRemove(product.lineItemId)}
 					style={invoiceStyles.removeButton}
 				>
 					<AntDesign name="close-circle" size={scale(20)} color="#9ca3af" />
@@ -44,14 +44,18 @@ export function InvoiceProductCard({
 				</Text>
 				<View style={invoiceStyles.stepper}>
 					<TouchableOpacity
-						onPress={() => onQuantityChange(product.id, -1)}
+						onPress={() =>
+							product.lineItemId && onQuantityChange(product.lineItemId, -1)
+						}
 						style={invoiceStyles.stepperButton}
 					>
 						<Ionicons name="remove-circle" size={scale(20)} color="#ffffff" />
 					</TouchableOpacity>
 					<Text style={invoiceStyles.stepperValue}>{product.quantity}</Text>
 					<TouchableOpacity
-						onPress={() => onQuantityChange(product.id, 1)}
+						onPress={() =>
+							product.lineItemId && onQuantityChange(product.lineItemId, 1)
+						}
 						style={invoiceStyles.stepperButtonPrimary}
 					>
 						<Ionicons name="add-circle" size={scale(20)} />
@@ -60,7 +64,9 @@ export function InvoiceProductCard({
 			</View>
 			{!product.discount ? (
 				<TouchableOpacity
-					onPress={() => onAddDiscount(product.id)}
+					onPress={() =>
+						product.lineItemId && onAddDiscount(product.lineItemId)
+					}
 					style={invoiceStyles.addDiscountButton}
 				>
 					<MaterialIcons name="discount" size={scale(16)} color="#13ec6a" />
@@ -69,7 +75,9 @@ export function InvoiceProductCard({
 			) : (
 				<TouchableOpacity
 					style={invoiceStyles.discountInfo}
-					onPress={() => onEditDiscount(product.id)}
+					onPress={() =>
+						product.lineItemId && onEditDiscount(product.lineItemId)
+					}
 				>
 					<Text style={invoiceStyles.discountText}>
 						-

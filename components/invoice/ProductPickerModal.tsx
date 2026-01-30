@@ -19,7 +19,7 @@ interface ProductPickerModalProps {
 	onClose: () => void;
 	onProductSelect: (product: InvoiceProduct) => void;
 	products: InvoiceProduct[];
-	selectedProductIds?: number[];
+	selectedProductIds?: string[];
 }
 
 export function ProductPickerModal({
@@ -29,7 +29,7 @@ export function ProductPickerModal({
 	products,
 	selectedProductIds = [],
 }: ProductPickerModalProps) {
-	const [localSelectedIds, setLocalSelectedIds] = useState<Set<number>>(
+	const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(
 		new Set(selectedProductIds),
 	);
 
@@ -53,12 +53,14 @@ export function ProductPickerModal({
 	} = useSearch(products, filterProduct);
 
 	const handleProductToggle = (product: InvoiceProduct) => {
+		if (!product.lineItemId) return; // Skip if no id
+
 		const newSelectedIds = new Set(localSelectedIds);
 
-		if (newSelectedIds.has(product.id)) {
-			newSelectedIds.delete(product.id);
+		if (newSelectedIds.has(product.lineItemId)) {
+			newSelectedIds.delete(product.lineItemId);
 		} else {
-			newSelectedIds.add(product.id);
+			newSelectedIds.add(product.lineItemId);
 		}
 
 		setLocalSelectedIds(newSelectedIds);
@@ -66,7 +68,9 @@ export function ProductPickerModal({
 	};
 
 	const renderProductItem = ({ item }: { item: InvoiceProduct }) => {
-		const isSelected = localSelectedIds.has(item.id);
+		const isSelected = item.lineItemId
+			? localSelectedIds.has(item.lineItemId)
+			: false;
 
 		return (
 			<View style={invoiceStyles.productItem}>
@@ -120,7 +124,7 @@ export function ProductPickerModal({
 		>
 			<FlatList
 				data={filteredProducts}
-				keyExtractor={(item) => String(item.id)}
+				keyExtractor={(item, index) => item.lineItemId || `product-${index}`}
 				renderItem={renderProductItem}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={invoiceStyles.productListContent}

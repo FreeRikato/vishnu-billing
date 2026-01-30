@@ -1,12 +1,12 @@
+import { useMutation } from "convex/react";
 import { router } from "expo-router";
 import { Alert, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getLocalDateString, useCreateInvoice } from "@/hooks/useCreateInvoice";
-import { paiseToDecimal } from "@/utils/currency";
-import PdfService from "@/services/pdfService";
 import { invoiceStyles } from "@/styles";
+import { paiseToDecimal } from "@/utils/currency";
+import PdfService from "@/utils/pdfService";
 import { generateInvoiceHtml } from "@/utils/pdfTemplate";
 import { ContactPickerModal } from "../../components/invoice/ContactPickerModal";
 import { DiscountModal } from "../../components/invoice/DiscountModal";
@@ -65,7 +65,7 @@ export default function CreateInvoiceScreen() {
 		try {
 			// Convert invoice items to match Convex schema
 			const items = invoiceItems.map((item) => ({
-				productId: item.id, // Already a Convex ID string
+				productId: item.productId ?? undefined,
 				name: item.name,
 				description: item.description,
 				price: item.price, // Already in paise
@@ -75,7 +75,7 @@ export default function CreateInvoiceScreen() {
 
 			// Create invoice in Convex (invoice number is generated server-side)
 			const result = await createInvoice({
-				customerId: selectedCustomer.id as any, // Convex Id<"contacts">
+				customerId: selectedCustomer.id,
 				customerName: selectedCustomer.name,
 				customerPhone: selectedCustomer.phone,
 				customerAddress: selectedCustomer.address,
@@ -183,29 +183,31 @@ export default function CreateInvoiceScreen() {
 					isEditingGlobalDiscount
 						? paiseToDecimal(globalDiscount?.value || 0)
 						: (selectedProductId &&
-								invoiceItems.find((p) => p.id === selectedProductId)?.discount
-									?.value) || 0
+								invoiceItems.find((p) => p.lineItemId === selectedProductId)
+									?.discount?.value) ||
+							0
 				}
 				initialType={
 					isEditingGlobalDiscount
 						? globalDiscount?.type || "percent"
 						: (selectedProductId &&
-								invoiceItems.find((p) => p.id === selectedProductId)?.discount
-									?.type) ||
+								invoiceItems.find((p) => p.lineItemId === selectedProductId)
+									?.discount?.type) ||
 							"percent"
 				}
 				productPrice={
 					isEditingGlobalDiscount
 						? paiseToDecimal(summary.subtotal)
 						: selectedProductId
-							? invoiceItems.find((p) => p.id === selectedProductId)?.price || 0
+							? invoiceItems.find((p) => p.lineItemId === selectedProductId)
+									?.price || 0
 							: 0
 				}
 				productQuantity={
 					isEditingGlobalDiscount
 						? 1
 						: selectedProductId
-							? invoiceItems.find((p) => p.id === selectedProductId)
+							? invoiceItems.find((p) => p.lineItemId === selectedProductId)
 									?.quantity || 1
 							: 1
 				}
@@ -226,7 +228,9 @@ export default function CreateInvoiceScreen() {
 				onClose={() => setProductPickerVisible(false)}
 				onProductSelect={handleProductSelect}
 				products={availableProducts.map(toInvoiceProduct)}
-				selectedProductIds={invoiceItems.map((i) => i.id)}
+				selectedProductIds={invoiceItems
+					.map((i) => i.lineItemId)
+					.filter((id): id is string => id !== undefined)}
 			/>
 		</SafeAreaView>
 	);

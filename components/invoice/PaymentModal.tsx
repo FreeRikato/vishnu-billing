@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+	Alert,
 	Animated,
 	Keyboard,
 	KeyboardAvoidingView,
@@ -42,6 +43,7 @@ export function PaymentModal({
 			? paiseToDecimal(currentPaidAmountInPaise).toString()
 			: "",
 	);
+	const [error, setError] = useState<string | null>(null);
 
 	const slideAnim = useRef(
 		new Animated.Value(SCREEN_DIMENSIONS.height),
@@ -76,9 +78,31 @@ export function PaymentModal({
 					? paiseToDecimal(currentPaidAmountInPaise).toString()
 					: "",
 			);
+			setError(null);
 			animateIn();
 		}
 	}, [visible, currentPaidAmountInPaise, animateIn]);
+
+	// Validate amount on change
+	useEffect(() => {
+		if (!amount || amount === ".") {
+			setError(null);
+			return;
+		}
+
+		const numAmount = parseFloat(amount);
+		if (Number.isNaN(numAmount)) {
+			setError("Invalid amount");
+			return;
+		}
+
+		const amountInPaise = decimalToPaise(numAmount);
+		if (amountInPaise > totalAmountInPaise) {
+			setError(`Cannot exceed ${formatCurrency(totalAmountInPaise)}`);
+		} else {
+			setError(null);
+		}
+	}, [amount, totalAmountInPaise]);
 
 	const handleClose = () => {
 		Keyboard.dismiss();
@@ -104,8 +128,16 @@ export function PaymentModal({
 		if (Number.isNaN(numAmount) || numAmount < 0) {
 			onSave(0);
 		} else {
-			// Convert rupees to paise
-			onSave(decimalToPaise(numAmount));
+			const amountInPaise = decimalToPaise(numAmount);
+			// Validate that amount doesn't exceed total
+			if (amountInPaise > totalAmountInPaise) {
+				Alert.alert(
+					"Invalid Amount",
+					`Payment amount cannot exceed total due of ${formatCurrency(totalAmountInPaise)}`,
+				);
+				return;
+			}
+			onSave(amountInPaise);
 		}
 		handleClose();
 	};
@@ -191,6 +223,20 @@ export function PaymentModal({
 									)}
 								</View>
 
+								{/* Error Message */}
+								{error && (
+									<Text
+										style={{
+											color: "#ef4444",
+											fontSize: scale(12),
+											marginTop: scale(4),
+											paddingHorizontal: scale(4),
+										}}
+									>
+										{error}
+									</Text>
+								)}
+
 								{/* Quick Actions */}
 								<View style={invoiceStyles.quickActions}>
 									<TouchableOpacity
@@ -233,8 +279,10 @@ export function PaymentModal({
 										style={[
 											invoiceStyles.actionButton,
 											invoiceStyles.applyButton,
+											error && { opacity: 0.5 },
 										]}
 										onPress={handleSave}
+										disabled={!!error}
 									>
 										<Text style={invoiceStyles.applyButtonText}>Save</Text>
 									</TouchableOpacity>

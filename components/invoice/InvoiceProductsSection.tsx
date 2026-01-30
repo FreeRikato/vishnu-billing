@@ -8,10 +8,10 @@ import { InvoiceProductCard } from "./InvoiceProductCard";
 interface InvoiceProductsSectionProps {
 	invoiceItems: InvoiceProduct[];
 	availableProducts: Product[];
-	onQuantityChange: (id: number, delta: number) => void;
-	onRemoveProduct: (id: number) => void;
-	onAddDiscount: (id: number) => void;
-	onEditDiscount: (id: number) => void;
+	onQuantityChange: (id: string, delta: number) => void;
+	onRemoveProduct: (id: string) => void;
+	onAddDiscount: (id: string) => void;
+	onEditDiscount: (id: string) => void;
 	onAddProduct: () => void;
 }
 
@@ -30,7 +30,7 @@ export function InvoiceProductsSection({
 			<View style={invoiceStyles.productsSection}>
 				{invoiceItems.map((product) => (
 					<InvoiceProductCard
-						key={product.id}
+						key={product.lineItemId}
 						product={product}
 						onQuantityChange={onQuantityChange}
 						onRemove={onRemoveProduct}

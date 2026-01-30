@@ -18,6 +18,7 @@ export default function InvoiceScreen() {
 
 	const {
 		invoices,
+		invoicesMap,
 		selectionMode,
 		searchText,
 		setSearchText,
@@ -34,10 +35,11 @@ export default function InvoiceScreen() {
 
 	const handleSharePress = async () => {
 		// Filter selected invoices and get full invoice data
-		const selectedInvoices = invoices.filter((i) => i.checked);
-		// Note: shareInvoices expects full InvoiceWithItems[], which should be fetched from Convex
-		// For now, we'll just share based on the UI data
-		await shareInvoices(selectedInvoices as any);
+		const selectedIds = invoices.filter((i) => i.checked).map((i) => i.id);
+		const selectedInvoices = selectedIds
+			.map((id) => invoicesMap[id])
+			.filter((inv): inv is (typeof invoicesMap)[string] => inv !== undefined);
+		await shareInvoices(selectedInvoices);
 	};
 
 	return (

@@ -1,12 +1,13 @@
+import { useQuery } from "convex/react";
 import { useMemo } from "react";
 import { Text, View } from "react-native";
 import { Pie, PolarChart } from "victory-native";
-import { useInvoiceStore } from "@/store/invoiceStore";
+import { api } from "@/convex/_generated/api";
 import { homeStyles } from "@/styles/home";
 import { formatCurrency } from "@/utils/currency";
 
 export function InvoiceStatsChart() {
-	const invoices = useInvoiceStore((state) => state.invoices);
+	const invoices = useQuery(api.invoices.list) ?? [];
 
 	// Calculate totals from store data
 	const { paid, unpaid, total } = useMemo(() => {

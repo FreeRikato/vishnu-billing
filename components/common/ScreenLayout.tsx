@@ -36,7 +36,7 @@ export function ScreenLayout({
 		return (
 			<SafeAreaView
 				style={commonStyles.centerContainer}
-				edges={["top", "left", "right"]}
+				edges={["top", "left", "right", "bottom"]}
 			>
 				<ActivityIndicator size="large" color="#13EC6A" />
 				<Text style={commonStyles.loadingText}>{loadingMessage}</Text>
@@ -48,7 +48,7 @@ export function ScreenLayout({
 		return (
 			<SafeAreaView
 				style={commonStyles.centerContainer}
-				edges={["top", "left", "right"]}
+				edges={["top", "left", "right", "bottom"]}
 			>
 				<Text style={commonStyles.errorText}>{errorMessage}</Text>
 				<TouchableOpacity style={commonStyles.backButton} onPress={onCancel}>

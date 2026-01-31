@@ -7,9 +7,9 @@ import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks";
 import "react-native-reanimated";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import config from "@/utils/config";
 
 export const unstable_settings = {

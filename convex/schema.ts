@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 // Shared validator for invoice items (embedded in Invoice)
 const invoiceItemValidator = v.object({
-	id: v.string(), // Unique identifier for the line item (used as key in UI)
+	id: v.optional(v.string()), // Unique identifier for the line item (used as key in UI) - TEMPORARY: optional for migration
 	productId: v.optional(v.id("products")),
 	name: v.string(),
 	description: v.string(),
@@ -32,8 +32,10 @@ export default defineSchema({
 		address: v.string(),
 		gstin: v.optional(v.string()),
 		dlNo: v.optional(v.string()),
+		deletedAt: v.optional(v.string()), // ISO timestamp for soft delete
 	})
 		.index("by_name", ["name"])
+		.index("by_deletedAt", ["deletedAt"])
 		.searchIndex("search_name", { searchField: "name" })
 		.searchIndex("search_phone", { searchField: "phone" }),
 
@@ -42,8 +44,10 @@ export default defineSchema({
 		name: v.string(),
 		price: v.number(), // Paise
 		unit: v.string(),
+		deletedAt: v.optional(v.string()), // ISO timestamp for soft delete
 	})
 		.index("by_name", ["name"])
+		.index("by_deletedAt", ["deletedAt"])
 		.searchIndex("search_name", { searchField: "name" }),
 
 	// Invoices (with embedded items)

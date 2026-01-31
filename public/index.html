@@ -5,481 +5,337 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sree Vishnu Agency Invoice</title>
     <style>
-        @page {
-            size: A4 landscape;
-            margin: 0;
-        }
-        
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4; /* Light gray background for screen viewing */
-            color: #006400; /* Dark Green text */
+        /* General Reset and Page Setup */
+        * {
+            box-sizing: border-box;
             -webkit-print-color-adjust: exact;
         }
 
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            color: black; /* Navy Blue to match the ink */
+        }
+
         .page {
-            width: 297mm;
-            height: 210mm;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            margin: 10mm auto;
             background: white;
-            margin: 0 auto;
-            padding: 10mm;
-            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
-        /* General Utility Classes */
-        .green-border {
-            border: 1px solid #006400;
-        }
-        
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .text-left { text-align: left; }
+        /* Utility Classes */
         .bold { font-weight: bold; }
-        .small-text { font-size: 10px; }
-        
-        /* Flex Utilities */
-        .row { display: flex; width: 100%; }
-        .col { flex: 1; }
-        
-        /* --- TOP SECTION: ACKNOWLEDGEMENT --- */
-        .ack-section {
-            border: 1px solid #006400;
-            height: 40mm;
-            display: flex;
-            margin-bottom: 5mm;
+        .flex { display: flex; }
+        .flex-col { display: flex; flex-direction: column; }
+        .justify-between { justify-content: space-between; }
+        .align-start { align-items: flex-start; }
+        .align-end { align-items: flex-end; }
+        .w-full { width: 100%; }
+        .text-sm { font-size: 12px; }
+        .text-xs { font-size: 11px; }
+
+        /* Header Section */
+        .header {
+            margin-bottom: 20px;
         }
 
-        .ack-left {
-            width: 15%;
-            border-right: 1px solid #006400;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            font-weight: bold;
-            font-size: 14px;
-            padding: 5px;
+        .company-details {
+            width: 55%;
         }
 
-        .ack-mid {
-            width: 50%;
-            border-right: 1px solid #006400;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .ack-mid h2 {
-            margin: 0;
-            font-family: 'Arial Black', sans-serif;
+        .company-name {
             font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .ack-mid p { margin: 2px 0; font-size: 12px; text-align: center;}
-
-        .ack-title-vert {
-            width: 5%;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            transform: rotate(180deg);
-            text-align: center;
-            border-right: 1px solid #006400;
-            font-weight: bold;
-            padding: 5px 0;
-            background-color: #eaffea;
         }
 
-        .ack-right {
-            width: 30%;
-            padding: 10px;
-            font-size: 14px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .line-input {
-            border-bottom: 1px dotted #006400;
-            display: inline-block;
-            width: 60%;
-        }
-
-        /* --- CUTTING LINE --- */
-        .cut-line {
-            border-top: 2px dashed #006400;
-            width: 100%;
-            margin-bottom: 5mm;
-            position: relative;
-        }
-
-        /* --- MAIN INVOICE --- */
-        .invoice-box {
-            border: 1px solid #006400;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
-        .inv-header {
-            display: flex;
-            border-bottom: 1px solid #006400;
-            height: 35mm;
-        }
-
-        .inv-header-left {
-            width: 60%;
-            border-right: 1px solid #006400;
-            padding: 10px;
-            position: relative;
-            display: flex;
-        }
-
-        .logo-placeholder {
-            width: 60px;
-            height: 60px;
-            border: 1px dashed #ccc;
-            background: #eee;
-            color: #999;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            margin-right: 15px;
-        }
-
-        .agency-details h1 {
-            margin: 0;
-            font-size: 28px;
-            font-family: 'Arial Black', sans-serif;
-            letter-spacing: 1px;
-            color: #006400;
-        }
-
-        .agency-details h3 { margin: 2px 0; font-size: 14px; color: #333; }
-        .agency-details p { margin: 2px 0; font-size: 12px; }
-
-        .dl-gst-info {
-            margin-top: 10px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .inv-header-right {
-            width: 40%;
-            padding: 10px;
-            font-size: 13px;
-        }
-
-        .field-row {
-            display: flex;
-            justify-content: space-between;
+        .company-sub {
+            font-style: italic;
+            font-size: 12px;
             margin-bottom: 5px;
         }
-        
-        .red-text { color: red; font-weight: bold; }
 
-        /* Table */
-        .inv-table-container {
-            flex-grow: 1;
-            position: relative;
+        .address {
+            font-size: 12px;
+            line-height: 1.4;
         }
 
-        /* Watermark Placeholder */
-        .watermark-placeholder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 150px;
-            height: 150px;
-            border: 2px dashed #ccc;
-            border-radius: 50%;
+        .invoice-meta {
+            width: 40%;
+            text-align: right;
+        }
+
+        .qr-box {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #000080;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ccc;
-            font-size: 14px;
-            z-index: 0;
-            opacity: 0.5;
+            font-size: 10px;
+            text-align: center;
+            margin-left: auto;
+            margin-bottom: 10px;
         }
 
-        table {
+        /* Input Fields Area */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: baseline;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .dots {
+            border-bottom: 1px dotted #000080;
+            flex-grow: 1;
+            margin-left: 5px;
+            height: 14px;
+        }
+
+        .section-title {
+            text-decoration: underline;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        /* Table Section */
+        .invoice-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
-            z-index: 1;
-            position: relative;
+            margin-bottom: 20px;
+            font-size: 11px;
+            border: 1px solid #000080;
         }
 
-        th {
-            border-bottom: 1px solid #006400;
-            border-right: 1px solid #006400;
+        .invoice-table th {
+            border: 1px solid #000080;
             padding: 5px;
-            background: #eaffea;
-        }
-        
-        td {
-            border-right: 1px solid #006400;
-            padding: 5px;
-            vertical-align: top;
+            text-align: center;
+            background-color: transparent;
         }
 
-        th:last-child, td:last-child { border-right: none; }
+        .invoice-table td {
+            border: 1px solid #000080;
+            height: 25px; /* Minimum height for rows */
+        }
 
-        /* Column Widths */
-        .col-mfr { width: 4%; }
-        .col-prod { width: 30%; }
-        .col-hsn { width: 8%; }
-        .col-batch { width: 8%; }
-        .col-exp { width: 6%; }
-        .col-mrp { width: 6%; }
-        .col-pack { width: 6%; }
-        .col-qty { width: 4%; }
-        .col-rate { width: 6%; }
-        .col-amt { width: 8%; }
-
-        /* Footer Calculation Area */
-        .footer-grid {
+        /* Footer Section */
+        .footer {
+            margin-top: auto;
             display: flex;
-            border-top: 1px solid #006400;
+            justify-content: space-between;
             font-size: 12px;
         }
 
         .footer-left {
-            flex-grow: 1;
+            width: 40%;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
         }
 
-        .tax-row {
-            display: flex;
-            border-top: 1px solid #006400;
-        }
-        
-        .tax-cell {
-            padding: 4px;
-            border-right: 1px solid #006400;
-            text-align: center;
-            font-size: 11px;
-        }
-
         .footer-right {
-            width: 300px;
-            border-left: 1px solid #006400;
+            width: 50%;
         }
 
-        .calc-row {
+        .totals-row {
             display: flex;
-            border-bottom: 1px solid #006400;
+            justify-content: space-between;
+            margin-bottom: 5px;
         }
-        
-        .calc-label {
-            width: 60%;
-            padding: 4px;
-            border-right: 1px solid #006400;
-            text-align: right;
+
+        .totals-label {
             font-weight: bold;
         }
-        
-        .calc-val {
-            width: 40%;
-            padding: 4px;
-            text-align: right;
+
+        .totals-value {
+            width: 100px;
+            border-bottom: 1px dotted #000080;
         }
 
-        .final-row {
-            display: flex;
-            height: 40px;
-            align-items: flex-end;
-            font-size: 11px;
-            padding: 5px;
-            justify-content: space-between;
+        .signature-section {
+            margin-top: 40px;
+            text-align: center;
         }
 
-        /* Print adjustments */
+        .customer-sign {
+            margin-top: 50px;
+        }
+
+        /* Print Settings */
         @media print {
-            body { background-color: white; padding: 0; }
-            .page { box-shadow: none; margin: 0; width: 100%; height: 100%; }
+            body { background: none; margin: 0; }
+            .page { margin: 0; box-shadow: none; border: none; width: 100%; height: auto;}
+            @page { margin: 0; size: A4; }
         }
-
     </style>
 </head>
 <body>
 
     <div class="page">
+        <!-- Top Section -->
+        <div class="flex justify-between header">
+            <!-- Left: Company Info -->
+            <div class="company-details">
+                <div class="company-name">SREE VISHNU AGENCY</div>
+                <div class="company-sub">(Pharmaceutical Distributor)</div>
+                <div class="address">
+                    8 B GANDHI STREET (1st FLOOR)<br>
+                    JAIHINDPURAM 2nd STREET,<br>
+                    MADURAI - 625011<br>
+                    <span class="bold">Contact:</span> 9345907825
+                </div>
+                <div class="text-sm" style="margin-top: 10px;">
+                    <span class="bold">DL NO:</span> MDU/2027/20B &nbsp; MDU/1865/21B<br>
+                    <span class="bold">GST NO:</span> 33AQAPR 9634H1ZO
+                </div>
+            </div>
+
+            <!-- Right: QR and Basic Bill Info -->
+            <div class="invoice-meta flex-col align-end">
+                <div class="text-xs" style="margin-bottom: 2px;">Scan QR to Pay</div>
+                <div class="qr-box">
+                    <!-- Placeholder for QR Code -->
+                </div>
+                
+                <div class="w-full" style="margin-top: 10px;">
+                    <div class="input-line">
+                        <span>BILL NO:</span><span class="dots"></span>
+                    </div>
+                    <div class="input-line" style="margin-top: 5px;">
+                        <span>DATE:</span><span class="dots"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Section: Customer Info -->
+        <div class="section-title">GST INVOICE</div>
         
-        <!-- TOP SLIP -->
-        <div class="ack-section">
-            <div class="ack-left">
-                CASH / CREDIT BILL
+        <div class="input-grid">
+            <div class="input-line">
+                <span>CUSTOMER CODE:</span><span class="dots"></span>
             </div>
-            <div class="ack-mid">
-                <h2>SREE VISHNU AGENCY</h2>
-                <p>8-B, Gandhiji Street, (1st Floor),</p>
-                <p>Jaihindpuram 2nd Street, MADURAI-625 011.</p>
+            <div class="input-line">
+                <span>DL NO:</span><span class="dots"></span>
             </div>
-            <div class="ack-title-vert">
-                ACKNOWLEDGEMENT
+            <div class="input-line">
+                <span>CUSTOMER NAME:</span><span class="dots"></span>
             </div>
-            <div class="ack-right">
-                <div style="margin-bottom: 5px;">
-                    Party Name: <span class="line-input" style="width: 100%;"></span>
+            <div class="input-line">
+                <span>GST NO:</span><span class="dots"></span>
+            </div>
+            <div class="input-line"></div> <!-- Empty grid slot for spacing if needed -->
+            <div class="input-line">
+                <span>PHONE NO:</span><span class="dots"></span>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 30px;">S.NO</th>
+                    <th style="width: 40px;">MFY</th>
+                    <th>PRODUCT NAME</th>
+                    <th style="width: 60px;">HSN CODE</th>
+                    <th style="width: 60px;">BATCH NO</th>
+                    <th style="width: 60px;">EXP. DATE</th>
+                    <th style="width: 40px;">PACK</th>
+                    <th style="width: 50px;">MRP</th>
+                    <th style="width: 40px;">QTY</th>
+                    <th style="width: 40px;">FREE</th>
+                    <th style="width: 50px;">RATE</th>
+                    <th style="width: 70px;">AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Generating empty rows to mimic the form -->
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <!-- Left Footer: Customer Sign -->
+            <div class="footer-left">
+                <div class="customer-sign">
+                    <span class="bold">CUSTOMER</span><br>
+                    <span class="text-sm">seal with signature</span>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <div>Invoice No. <span class="red-text">638</span></div>
+            </div>
+
+            <!-- Right Footer: Totals and Auth Sign -->
+            <div class="footer-right">
+                <div class="totals-row">
+                    <span class="totals-label">GOODS VALUE :</span>
+                    <span class="totals-value"></span>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <div>Date <span class="line-input" style="width: 60px;"></span></div>
-                    <div>Amount <span class="line-input" style="width: 60px;"></span></div>
+                <div class="totals-row">
+                    <span class="totals-label">CASH DISCOUNT :</span>
+                    <span class="totals-value"></span>
                 </div>
-                <div class="text-right" style="font-size: 10px; margin-top: 5px;">
-                    Seal with Signature
+                <div class="totals-row">
+                    <span class="totals-label">TAXABLE AMOUNT :</span>
+                    <span class="totals-value"></span>
+                </div>
+                <div class="totals-row">
+                    <span class="totals-label">CGST 2.5% :</span>
+                    <span class="totals-value"></span>
+                </div>
+                <div class="totals-row">
+                    <span class="totals-label">SGST 2.5% :</span>
+                    <span class="totals-value"></span>
+                </div>
+                <div class="totals-row">
+                    <span class="totals-label">SUB TOTAL :</span>
+                    <span class="totals-value"></span>
+                </div>
+                <div class="totals-row">
+                    <span class="totals-label">ROUND OFF :</span>
+                    <span class="totals-value"></span>
+                </div>
+                <div class="totals-row" style="margin-top: 10px;">
+                    <span class="totals-label" style="font-size: 14px;">NET AMOUNT :</span>
+                    <span class="totals-value"></span>
+                </div>
+
+                <div class="signature-section">
+                    <div class="text-sm" style="margin-bottom: 40px;">For <span class="bold">Sree Vishnu Agency</span></div>
+                    <div class="bold">AUTHORISED SIGNATORY</div>
                 </div>
             </div>
         </div>
 
-        <div class="cut-line"></div>
-
-        <!-- MAIN BILL -->
-        <div class="invoice-box">
-            
-            <!-- Header -->
-            <div class="inv-header">
-                <div class="inv-header-left">
-                    <div class="logo-placeholder">Logo<br>Placeholder</div>
-                    <div class="agency-details">
-                        <h1>SREE VISHNU AGENCY</h1>
-                        <h3 style="letter-spacing: 2px;">Pharmaceutical Distributors</h3>
-                        <p>8-B, Gandhiji Street, (1st Floor), Jaihindpuram 2nd Street, MADURAI-625 011.</p>
-                        <p class="bold">Mobile : 9345907825</p>
-                        <div class="dl-gst-info">
-                            DL No.: MDU/2027/20B, MDU/1865/21B<br>
-                            GSTIN : 33AQAPR9634H1ZO
-                        </div>
-                    </div>
-                </div>
-                <div class="inv-header-right">
-                    <div class="field-row">
-                        <div style="width: 50%;">Bill No.: <span class="red-text" style="font-size: 18px;">638</span></div>
-                        <div style="width: 50%;">Date: ________________</div>
-                    </div>
-                    <div style="margin: 8px 0;">
-                        M/s : _________________________________________
-                        <br>______________________________________________
-                    </div>
-                    <div class="field-row">
-                        <span>GSTIN No. _______________________</span>
-                    </div>
-                    <div class="field-row">
-                        <span>DL No. __________________________</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Table Section -->
-            <div class="inv-table-container">
-                <div class="watermark-placeholder">Image Placeholder</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="col-mfr">Mfr.</th>
-                            <th class="col-prod">Product Name</th>
-                            <th class="col-hsn">HSN Code</th>
-                            <th class="col-batch">Batch No.</th>
-                            <th class="col-exp">Exp. Dt.</th>
-                            <th class="col-mrp">M.R.P</th>
-                            <th class="col-pack">Packing</th>
-                            <th class="col-qty">Qty</th>
-                            <th class="col-rate">Rate</th>
-                            <th class="col-amt">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Empty rows to simulate paper height -->
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                        <tr style="height: 20px;"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Footer Calculations -->
-            <div class="footer-grid">
-                <!-- Left Side (Tax details) -->
-                <div class="footer-left">
-                    <!-- Spacer to push tax row to bottom -->
-                    <div style="flex-grow: 1;"></div>
-                    
-                    <div class="tax-row">
-                        <div class="tax-cell" style="width: 20%;">Taxable Amt.</div>
-                        <div class="tax-cell" style="width: 10%;">CGST % ......</div>
-                        <div class="tax-cell" style="width: 20%;">CGST Amt</div>
-                        <div class="tax-cell" style="width: 10%;">SGST % ......</div>
-                        <div class="tax-cell" style="width: 20%; border-right: none;">SGST Amt</div>
-                    </div>
-                </div>
-
-                <!-- Right Side (Totals) -->
-                <div class="footer-right">
-                    <div class="calc-row">
-                        <div class="calc-label">Nett Amount</div>
-                        <div class="calc-val"></div>
-                    </div>
-                    <div class="calc-row">
-                        <div class="calc-label">Cash Discount</div>
-                        <div class="calc-val"></div>
-                    </div>
-                    <div class="calc-row">
-                        <div class="calc-label">Taxable Amt.</div>
-                        <div class="calc-val"></div>
-                    </div>
-                    <div class="calc-row">
-                        <div class="calc-label">Round off</div>
-                        <div class="calc-val"></div>
-                    </div>
-                    <div class="calc-row" style="background: #eaffea;">
-                        <div class="calc-label">Sub Total</div>
-                        <div class="calc-val"></div>
-                    </div>
-                    <div class="calc-row" style="border-bottom: none; font-weight: bold; font-size: 14px;">
-                        <div class="calc-label">TOTAL</div>
-                        <div class="calc-val"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Final Signature Row -->
-            <div class="final-row" style="border-top: 1px solid #006400;">
-                <div class="text-left" style="width: 30%;">
-                    <div class="bold" style="color: #666;">E.&O.E</div>
-                    <div>Subject to Madurai Jurisdiction</div>
-                </div>
-                <div class="text-right" style="width: 40%;">
-                    <div class="bold" style="margin-bottom: 25px;">For Sree Vishnu Agency</div>
-                    <div>Seal with Signature</div>
-                </div>
-            </div>
-
-        </div>
     </div>
 
 </body>

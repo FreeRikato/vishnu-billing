@@ -11,7 +11,10 @@
 import type * as contacts from "../contacts.js";
 import type * as files from "../files.js";
 import type * as invoices from "../invoices.js";
+import type * as migrations from "../migrations.js";
+import type * as migrations_addInvoiceItemIds from "../migrations/addInvoiceItemIds.js";
 import type * as products from "../products.js";
+import type * as systemMeta from "../systemMeta.js";
 import type * as users from "../users.js";
 
 import type {
@@ -24,7 +27,10 @@ declare const fullApi: ApiFromModules<{
 	contacts: typeof contacts;
 	files: typeof files;
 	invoices: typeof invoices;
+	migrations: typeof migrations;
+	"migrations/addInvoiceItemIds": typeof migrations_addInvoiceItemIds;
 	products: typeof products;
+	systemMeta: typeof systemMeta;
 	users: typeof users;
 }>;
 

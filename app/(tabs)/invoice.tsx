@@ -80,6 +80,7 @@ export default function InvoiceScreen() {
 					onLongPressInvoice={enableSelectionMode}
 					onPressInvoice={handleInvoicePress}
 					selectionMode={selectionMode}
+					colorScheme={colorScheme ?? "light"}
 				/>
 
 				{/* Floating Share Button */}

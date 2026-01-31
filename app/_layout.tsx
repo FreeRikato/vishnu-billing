@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "@/hooks";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import config from "@/utils/config";
 
 export const unstable_settings = {
 	anchor: "(tabs)",
@@ -19,7 +20,7 @@ export default function RootLayout() {
 	const colorScheme = useColorScheme();
 
 	// Initialize Convex client
-	const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+	const convex = new ConvexReactClient(config.CONVEX_URL, {
 		unsavedChangesWarning: false, // React Native doesn't have window
 	});
 

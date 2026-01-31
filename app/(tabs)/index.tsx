@@ -7,18 +7,23 @@ import {
 	InvoiceStatsChart,
 } from "@/components";
 import { HOME_CONSTANTS } from "@/constants/home";
+import { useInvoices } from "@/hooks/useInvoices";
 import { useUser } from "@/hooks/useUser";
 import { homeStyles } from "@/styles";
 import { scale, verticalScale } from "@/utils/responsive";
 
 export default function HomeScreen() {
 	const { user, isLoading } = useUser();
+	const { invoicesMap, loading: invoicesLoading } = useInvoices();
+
+	// Convert invoicesMap to array for the chart
+	const invoices = Object.values(invoicesMap);
 
 	const handleCreateInvoice = () => {
 		router.push("/invoice/create");
 	};
 
-	if (isLoading) {
+	if (isLoading || invoicesLoading) {
 		return (
 			<SafeAreaView
 				style={homeStyles.container}
@@ -51,7 +56,7 @@ export default function HomeScreen() {
 					<CreateInvoiceButton onPress={handleCreateInvoice} />
 
 					{/* Invoice Statistics Chart */}
-					<InvoiceStatsChart />
+					<InvoiceStatsChart invoices={invoices} />
 				</View>
 			</ScrollView>
 		</SafeAreaView>

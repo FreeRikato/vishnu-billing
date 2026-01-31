@@ -114,14 +114,7 @@ export default function ProductDetailScreen() {
 								Alert.alert("Success", "Product deleted successfully");
 								router.back();
 							} else {
-								if (result.reason === "in_use") {
-									Alert.alert(
-										"Cannot Delete",
-										"This product is used in invoices. Delete those invoices first.",
-									);
-								} else {
-									Alert.alert("Error", "Failed to delete product");
-								}
+								Alert.alert("Error", "Failed to delete product");
 							}
 						} catch (error) {
 							console.error("Error deleting product:", error);

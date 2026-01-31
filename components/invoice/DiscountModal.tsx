@@ -16,7 +16,6 @@ import Animated, {
 	Easing,
 	useAnimatedStyle,
 	useSharedValue,
-	withSpring,
 	withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -53,6 +52,14 @@ interface DiscountModalProps {
 	productQuantity?: number;
 }
 
+// Helper function outside component to avoid dependency issues
+function getDisplayValue(val: number, type: DiscountType): string {
+	if (val === 0) return "";
+	return type === "percent"
+		? basisPointsToPercent(val).toString()
+		: paiseToDecimal(val).toString();
+}
+
 export function DiscountModal({
 	visible,
 	onClose,
@@ -67,16 +74,6 @@ export function DiscountModal({
 	const [showModal, setShowModal] = useState(visible);
 
 	const [discountType, setDiscountType] = useState<DiscountType>(initialType);
-
-	// Convert initial value from storage format to display format
-	// For percent: basis points -> percent (e.g., 1000 -> 10)
-	// For fixed: paise -> rupees (e.g., 1000 -> 10.00)
-	function getDisplayValue(val: number, type: DiscountType): string {
-		if (val === 0) return "";
-		return type === "percent"
-			? basisPointsToPercent(val).toString()
-			: paiseToDecimal(val).toString();
-	}
 
 	const [discountValue, setDiscountValue] = useState(
 		getDisplayValue(initialValue, initialType),
@@ -96,9 +93,9 @@ export function DiscountModal({
 			setDiscountType(initialType);
 
 			// Animate in using Reanimated
-			translateY.value = withSpring(0, {
-				damping: 20,
-				stiffness: 90,
+			translateY.value = withTiming(0, {
+				duration: 200,
+				easing: Easing.out(Easing.cubic),
 			});
 			opacity.value = withTiming(1, { duration: 200 });
 		}

@@ -12,7 +12,7 @@ export function InvoiceCreateHeader({ onCancel }: InvoiceCreateHeaderProps) {
 	return (
 		<View style={invoiceStyles.header}>
 			<TouchableOpacity
-				onPress={() => router.back()}
+				onPress={() => router.dismiss()}
 				style={invoiceStyles.backButton}
 			>
 				<EvilIcons name="arrow-left" size={scale(28)} />

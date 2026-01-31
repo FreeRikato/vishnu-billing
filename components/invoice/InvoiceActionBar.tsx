@@ -10,6 +10,7 @@ interface InvoiceActionBarProps {
 	disabled?: boolean;
 	saveText?: string;
 	shareText?: string;
+	saveIcon?: keyof typeof MaterialIcons.glyphMap;
 }
 
 export function InvoiceActionBar({
@@ -17,6 +18,7 @@ export function InvoiceActionBar({
 	onShare,
 	onPayment,
 	disabled = false,
+	saveIcon = "save-alt",
 }: InvoiceActionBarProps) {
 	return (
 		<View style={invoiceStyles.actionBar}>
@@ -38,7 +40,7 @@ export function InvoiceActionBar({
 				style={invoiceStyles.saveButton}
 				disabled={disabled}
 			>
-				<MaterialIcons name="save-alt" size={scale(24)} color="#ffffff" />
+				<MaterialIcons name={saveIcon} size={scale(24)} color="#ffffff" />
 			</TouchableOpacity>
 			<TouchableOpacity
 				onPress={onShare}

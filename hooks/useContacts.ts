@@ -2,9 +2,14 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Contact, ContactUI } from "@/types/contact";
 import { useSearch } from "./useSearch";
+import { useSettings } from "./useSettings";
 
 export function useContacts() {
-	const contacts = useQuery(api.contacts.list) ?? [];
+	const { showArchivedContacts } = useSettings();
+	const contacts =
+		useQuery(api.contacts.list, {
+			includeDeleted: showArchivedContacts,
+		}) ?? [];
 	const isLoading = contacts === undefined;
 
 	// Map Convex contacts to UI format

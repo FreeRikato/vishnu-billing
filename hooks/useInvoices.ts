@@ -5,17 +5,24 @@ import type { Invoice } from "@/types";
 import type { InvoiceDoc } from "@/types/invoice";
 import { isInvoiceStatus } from "@/types/invoice";
 import { formatCurrency } from "@/utils/currency";
+import { useSettings } from "./useSettings";
 
 export function useInvoices() {
 	const [searchText, setSearchText] = useState("");
+	const { showArchivedInvoices } = useSettings();
 
 	// Use server-side search when there's search text, otherwise use list
 	const searchResults = useQuery(
 		api.invoices.search,
-		searchText.trim() ? { query: searchText } : "skip",
+		searchText.trim()
+			? { query: searchText, includeDeleted: showArchivedInvoices }
+			: "skip",
 	);
 
-	const storeInvoices = useQuery(api.invoices.list) ?? [];
+	const storeInvoices =
+		useQuery(api.invoices.list, {
+			includeDeleted: showArchivedInvoices,
+		}) ?? [];
 
 	// Use search results when available, otherwise use all invoices
 	const sourceInvoices = searchResults ?? storeInvoices;

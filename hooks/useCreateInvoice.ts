@@ -61,9 +61,9 @@ export interface UseCreateInvoiceReturn {
 }
 
 export function useCreateInvoice(): UseCreateInvoiceReturn {
-	// Get real data from Convex
-	const contacts = useQuery(api.contacts.list) ?? [];
-	const products = useQuery(api.products.list) ?? [];
+	// Get real data from Convex (don't show deleted items)
+	const contacts = useQuery(api.contacts.list, { includeDeleted: false }) ?? [];
+	const products = useQuery(api.products.list, { includeDeleted: false }) ?? [];
 
 	// Convert contacts to customers
 	const customers: Customer[] = contacts.map((contact: Contact) => ({
@@ -143,7 +143,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 			"Are you sure you want to cancel creating this invoice?",
 			[
 				{ text: "No", style: "cancel" },
-				{ text: "Yes", onPress: () => router.back() },
+				{ text: "Yes", onPress: () => router.dismiss() },
 			],
 		);
 	};

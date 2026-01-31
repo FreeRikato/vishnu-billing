@@ -2,9 +2,14 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Product, ProductUI } from "@/types/product";
 import { useSearch } from "./useSearch";
+import { useSettings } from "./useSettings";
 
 export function useProducts() {
-	const products = useQuery(api.products.list) ?? [];
+	const { showArchivedProducts } = useSettings();
+	const products =
+		useQuery(api.products.list, {
+			includeDeleted: showArchivedProducts,
+		}) ?? [];
 	const isLoading = products === undefined;
 
 	// Map Convex products to UI format

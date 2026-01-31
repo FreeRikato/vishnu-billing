@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import { invoiceStyles } from "@/styles";
 import type { InvoiceWithItems } from "@/types/invoice";
 import { basisPointsToPercent, paiseToDecimal } from "@/utils/currency";
@@ -8,15 +8,6 @@ interface InvoicePreviewCardProps {
 }
 
 export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
-	// Debug: Log invoice customer data
-	console.log("[InvoicePreviewCard] Invoice customer data:", {
-		customerName: invoice.customerName,
-		customerPhone: invoice.customerPhone,
-		customerAddress: invoice.customerAddress,
-		customerGstin: invoice.customerGstin,
-		customerDlNo: invoice.customerDlNo,
-	});
-
 	// Calculate formatted date
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
@@ -26,6 +17,54 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 			year: "numeric",
 		});
 	};
+
+	// Render item for FlatList
+	const renderItem = ({
+		item,
+		index,
+	}: {
+		item: InvoiceWithItems["items"][number];
+		index: number;
+	}) => {
+		const lineTotal = (paiseToDecimal(item.price) * item.quantity).toFixed(2);
+		const isLast = index === invoice.items.length - 1;
+
+		return (
+			<View
+				style={[invoiceStyles.tableRow, !isLast && invoiceStyles.borderBottom]}
+			>
+				<View style={invoiceStyles.itemDetails}>
+					<Text style={invoiceStyles.itemName}>{item.name}</Text>
+					<Text style={invoiceStyles.itemMeta}>
+						{item.quantity} x {item.description} @ ₹
+						{paiseToDecimal(item.price).toFixed(2)}
+					</Text>
+					{item.discount && (
+						<Text style={invoiceStyles.previewCardDiscountText}>
+							Discount: -
+							{item.discount.type === "percent"
+								? `${basisPointsToPercent(item.discount.value)}%`
+								: `₹${paiseToDecimal(item.discount.value).toFixed(2)}`}
+						</Text>
+					)}
+				</View>
+				<Text style={[invoiceStyles.itemAmount, invoiceStyles.textRight]}>
+					₹{lineTotal}
+				</Text>
+			</View>
+		);
+	};
+
+	const keyExtractor = (
+		item: InvoiceWithItems["items"][number],
+		index: number,
+	) => item.id || `item-${index}`;
+
+	const getItemLayout = (_data: unknown, index: number) => ({
+		length: 80, // Approximate height of each item
+		offset: 80 * index,
+		index,
+	});
 
 	return (
 		<View style={invoiceStyles.container}>
@@ -94,45 +133,13 @@ export function InvoicePreviewCard({ invoice }: InvoicePreviewCardProps) {
 							Amount
 						</Text>
 					</View>
-					{invoice.items.map(
-						(item: InvoiceWithItems["items"][number], index: number) => {
-							const lineTotal = (
-								paiseToDecimal(item.price) * item.quantity
-							).toFixed(2);
-							const isLast = index === invoice.items.length - 1;
-
-							return (
-								<View
-									key={item.id || `item-${index}`}
-									style={[
-										invoiceStyles.tableRow,
-										!isLast && invoiceStyles.borderBottom,
-									]}
-								>
-									<View style={invoiceStyles.itemDetails}>
-										<Text style={invoiceStyles.itemName}>{item.name}</Text>
-										<Text style={invoiceStyles.itemMeta}>
-											{item.quantity} x {item.description} @ ₹
-											{paiseToDecimal(item.price).toFixed(2)}
-										</Text>
-										{item.discount && (
-											<Text style={invoiceStyles.previewCardDiscountText}>
-												Discount: -
-												{item.discount.type === "percent"
-													? `${basisPointsToPercent(item.discount.value)}%`
-													: `₹${paiseToDecimal(item.discount.value).toFixed(2)}`}
-											</Text>
-										)}
-									</View>
-									<Text
-										style={[invoiceStyles.itemAmount, invoiceStyles.textRight]}
-									>
-										₹{lineTotal}
-									</Text>
-								</View>
-							);
-						},
-					)}
+					<FlatList
+						data={invoice.items}
+						renderItem={renderItem}
+						keyExtractor={keyExtractor}
+						getItemLayout={getItemLayout}
+						scrollEnabled={false}
+					/>
 				</View>
 
 				{/* Summary Section */}

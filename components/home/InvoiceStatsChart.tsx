@@ -1,40 +1,43 @@
-import { useQuery } from "convex/react";
-import { useMemo } from "react";
-import { Text, View } from "react-native";
+import { Suspense } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 import { Pie, PolarChart } from "victory-native";
-import { api } from "@/convex/_generated/api";
 import { homeStyles } from "@/styles/home";
+import type { InvoiceDoc } from "@/types/invoice";
 import { formatCurrency } from "@/utils/currency";
 
-export function InvoiceStatsChart() {
-	const invoices = useQuery(api.invoices.list) ?? [];
+interface InvoiceStatsChartProps {
+	invoices: InvoiceDoc[];
+}
 
+// Loading component for Suspense fallback
+function ChartLoader() {
+	return (
+		<View style={[homeStyles.chartContainer, { justifyContent: "center" }]}>
+			<ActivityIndicator size="small" color="#13EC6A" />
+		</View>
+	);
+}
+
+export function InvoiceStatsChart({ invoices }: InvoiceStatsChartProps) {
 	// Calculate totals from store data
-	const { paid, unpaid, total } = useMemo(() => {
-		let paidCalc = 0;
-		let totalCalc = 0;
+	let paidCalc = 0;
+	let totalCalc = 0;
 
-		for (const inv of invoices) {
-			paidCalc += inv.amountPaid || 0;
-			totalCalc += inv.total || 0;
-		}
+	for (const inv of invoices) {
+		paidCalc += inv.amountPaid || 0;
+		totalCalc += inv.total || 0;
+	}
 
-		// Ensure strictly non-negative numbers
-		const safePaid = Math.max(0, paidCalc);
-		const safeTotal = Math.max(0, totalCalc);
-		const safeUnpaid = Math.max(0, safeTotal - safePaid);
-
-		return { paid: safePaid, unpaid: safeUnpaid, total: safeTotal };
-	}, [invoices]);
+	// Ensure strictly non-negative numbers
+	const paid = Math.max(0, paidCalc);
+	const total = Math.max(0, totalCalc);
+	const unpaid = Math.max(0, total - paid);
 
 	// Prepare data for Victory Native
-	const chartData = useMemo(
-		() => [
-			{ value: paid, color: "#13EC6A", label: "Paid" }, // Green
-			{ value: unpaid, color: "#EF4444", label: "Unpaid" }, // Red
-		],
-		[paid, unpaid],
-	);
+	const chartData = [
+		{ value: paid, color: "#13EC6A", label: "Paid" }, // Green
+		{ value: unpaid, color: "#EF4444", label: "Unpaid" }, // Red
+	];
 
 	// If no data exists, don't render anything
 	if (total === 0) return null;
@@ -45,28 +48,30 @@ export function InvoiceStatsChart() {
 
 			<View style={homeStyles.chartContentContainer}>
 				{/* Chart Section */}
-				<View style={homeStyles.chartContainer}>
-					<PolarChart
-						data={chartData}
-						labelKey="label"
-						valueKey="value"
-						colorKey="color"
-					>
-						<Pie.Chart innerRadius="70%" />
-					</PolarChart>
-
-					{/* Center Text (Donut Hole) */}
-					<View style={homeStyles.centerTextContainer}>
-						<Text style={homeStyles.centerLabel}>Total</Text>
-						<Text
-							style={homeStyles.centerValue}
-							numberOfLines={1}
-							adjustsFontSizeToFit
+				<Suspense fallback={<ChartLoader />}>
+					<View style={homeStyles.chartContainer}>
+						<PolarChart
+							data={chartData}
+							labelKey="label"
+							valueKey="value"
+							colorKey="color"
 						>
-							{formatCurrency(total)}
-						</Text>
+							<Pie.Chart innerRadius="70%" />
+						</PolarChart>
+
+						{/* Center Text (Donut Hole) */}
+						<View style={homeStyles.centerTextContainer}>
+							<Text style={homeStyles.centerLabel}>Total</Text>
+							<Text
+								style={homeStyles.centerValue}
+								numberOfLines={1}
+								adjustsFontSizeToFit
+							>
+								{formatCurrency(total)}
+							</Text>
+						</View>
 					</View>
-				</View>
+				</Suspense>
 
 				{/* Legend Section */}
 				<View style={homeStyles.legendContainer}>

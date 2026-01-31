@@ -1,19 +1,26 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Alert,
-	Animated,
 	Keyboard,
 	KeyboardAvoidingView,
 	Modal,
 	Platform,
+	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
+import Animated, {
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { scheduleOnRN } from "react-native-worklets";
 import { invoiceStyles } from "@/styles";
 import {
 	decimalToPaise,
@@ -21,6 +28,21 @@ import {
 	paiseToDecimal,
 } from "@/utils/currency";
 import { SCREEN_DIMENSIONS, scale, verticalScale } from "@/utils/responsive";
+
+const paymentModalStyles = StyleSheet.create({
+	keyboardAvoidingView: {
+		flex: 1,
+		width: "100%",
+		justifyContent: "flex-end",
+		paddingBottom: Platform.OS === "ios" ? 0 : verticalScale(20),
+	},
+	errorMessage: {
+		color: "#ef4444",
+		fontSize: scale(12),
+		marginTop: scale(4),
+		paddingHorizontal: scale(4),
+	},
+});
 
 interface PaymentModalProps {
 	visible: boolean;
@@ -45,31 +67,12 @@ export function PaymentModal({
 	);
 	const [error, setError] = useState<string | null>(null);
 
-	const slideAnim = useRef(
-		new Animated.Value(SCREEN_DIMENSIONS.height),
-	).current;
-	const fadeAnim = useRef(new Animated.Value(0)).current;
+	// Reanimated shared values (instead of Animated.Value)
+	const translateY = useSharedValue(SCREEN_DIMENSIONS.height);
+	const opacity = useSharedValue(0);
 	const inputRef = useRef<TextInput>(null);
 
-	const animateIn = useCallback(() => {
-		slideAnim.setValue(SCREEN_DIMENSIONS.height);
-		fadeAnim.setValue(0);
-
-		Animated.parallel([
-			Animated.spring(slideAnim, {
-				toValue: 0,
-				useNativeDriver: true,
-				damping: 20,
-				stiffness: 90,
-			}),
-			Animated.timing(fadeAnim, {
-				toValue: 1,
-				duration: 200,
-				useNativeDriver: true,
-			}),
-		]).start();
-	}, [fadeAnim, slideAnim]);
-
+	// Sync internal state with external prop
 	useEffect(() => {
 		if (visible) {
 			setShowModal(true);
@@ -79,9 +82,15 @@ export function PaymentModal({
 					: "",
 			);
 			setError(null);
-			animateIn();
+
+			// Animate in using Reanimated
+			translateY.value = withTiming(0, {
+				duration: 200,
+				easing: Easing.out(Easing.cubic),
+			});
+			opacity.value = withTiming(1, { duration: 200 });
 		}
-	}, [visible, currentPaidAmountInPaise, animateIn]);
+	}, [visible, currentPaidAmountInPaise, translateY, opacity]);
 
 	// Validate amount on change
 	useEffect(() => {
@@ -105,22 +114,23 @@ export function PaymentModal({
 	}, [amount, totalAmountInPaise]);
 
 	const handleClose = () => {
-		Keyboard.dismiss();
-		Animated.parallel([
-			Animated.timing(slideAnim, {
-				toValue: SCREEN_DIMENSIONS.height,
+		// Dismiss keyboard on UI thread
+		scheduleOnRN(Keyboard.dismiss);
+
+		// Animate out using Reanimated
+		translateY.value = withTiming(
+			SCREEN_DIMENSIONS.height,
+			{
 				duration: 200,
-				useNativeDriver: true,
-			}),
-			Animated.timing(fadeAnim, {
-				toValue: 0,
-				duration: 200,
-				useNativeDriver: true,
-			}),
-		]).start(() => {
-			setShowModal(false);
-			onClose();
-		});
+				easing: Easing.in(Easing.cubic),
+			},
+			() => {
+				// Run JS callbacks after animation completes
+				scheduleOnRN(setShowModal, false);
+				scheduleOnRN(onClose);
+			},
+		);
+		opacity.value = withTiming(0, { duration: 200 });
 	};
 
 	const handleSave = () => {
@@ -157,6 +167,12 @@ export function PaymentModal({
 		totalAmountInPaise - currentInputAmountInPaise,
 	);
 
+	// Animated styles using Reanimated
+	const modalStyle = useAnimatedStyle(() => ({
+		transform: [{ translateY: translateY.value }],
+		opacity: opacity.value,
+	}));
+
 	return (
 		<Modal
 			visible={showModal}
@@ -169,22 +185,14 @@ export function PaymentModal({
 				<SafeAreaView style={invoiceStyles.modalOverlay}>
 					<KeyboardAvoidingView
 						behavior={Platform.OS === "ios" ? "padding" : "height"}
-						style={{
-							flex: 1,
-							width: "100%",
-							justifyContent: "flex-end", // Bottom sheet style often looks better for numpads
-							paddingBottom: Platform.OS === "ios" ? 0 : verticalScale(20),
-						}}
+						style={paymentModalStyles.keyboardAvoidingView}
 					>
 						<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 							<Animated.View
 								style={[
 									invoiceStyles.modalContainer,
-									{
-										transform: [{ translateY: slideAnim }],
-										opacity: fadeAnim,
-										alignSelf: "center",
-									},
+									modalStyle,
+									{ alignSelf: "center" },
 								]}
 							>
 								{/* Header */}
@@ -225,16 +233,7 @@ export function PaymentModal({
 
 								{/* Error Message */}
 								{error && (
-									<Text
-										style={{
-											color: "#ef4444",
-											fontSize: scale(12),
-											marginTop: scale(4),
-											paddingHorizontal: scale(4),
-										}}
-									>
-										{error}
-									</Text>
+									<Text style={paymentModalStyles.errorMessage}>{error}</Text>
 								)}
 
 								{/* Quick Actions */}

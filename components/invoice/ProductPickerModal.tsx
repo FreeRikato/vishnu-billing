@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	FlatList,
 	Pressable,
@@ -39,11 +39,8 @@ export function ProductPickerModal({
 	}, [selectedProductIds]);
 
 	// Filter function for products
-	const filterProduct = useCallback(
-		(product: InvoiceProduct, query: string) =>
-			product.name.toLowerCase().includes(query.toLowerCase()),
-		[],
-	);
+	const filterProduct = (product: InvoiceProduct, query: string) =>
+		product.name.toLowerCase().includes(query.toLowerCase());
 
 	// Use debounced search hook
 	const {

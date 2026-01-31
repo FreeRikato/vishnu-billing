@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { Invoice } from "@/types";
 import { moderateScale, scale } from "@/utils/responsive";
 
@@ -9,19 +9,12 @@ interface InvoiceItemProps {
 	onLongPress?: () => void;
 	onPress?: () => void;
 	selectionMode: boolean;
+	colorScheme: "light" | "dark";
 }
 
-export default function InvoiceItem({
-	item,
-	onToggle,
-	onLongPress,
-	onPress,
-	selectionMode,
-}: InvoiceItemProps) {
-	const colorScheme = useColorScheme();
-	const isDark = colorScheme === "dark";
-
-	const styles = {
+// Create styles function
+const createInvoiceItemStyles = (isDark: boolean) =>
+	StyleSheet.create({
 		invoiceItem: {
 			flexDirection: "row" as const,
 			alignItems: "flex-start" as const,
@@ -131,7 +124,18 @@ export default function InvoiceItem({
 		statusTextUnpaid: {
 			color: "#ef4444",
 		},
-	};
+	});
+
+function InvoiceItem({
+	item,
+	onToggle,
+	onLongPress,
+	onPress,
+	selectionMode,
+	colorScheme,
+}: InvoiceItemProps) {
+	const isDark = colorScheme === "dark";
+	const styles = createInvoiceItemStyles(isDark);
 
 	return (
 		<TouchableOpacity
@@ -221,3 +225,5 @@ export default function InvoiceItem({
 		</TouchableOpacity>
 	);
 }
+
+export default InvoiceItem;

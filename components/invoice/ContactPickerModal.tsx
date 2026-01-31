@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
 	FlatList,
 	Pressable,
@@ -33,11 +33,8 @@ export function ContactPickerModal({
 	);
 
 	// Filter function for customers
-	const filterCustomer = useCallback(
-		(customer: Customer, query: string) =>
-			customer.name.toLowerCase().includes(query.toLowerCase()),
-		[],
-	);
+	const filterCustomer = (customer: Customer, query: string) =>
+		customer.name.toLowerCase().includes(query.toLowerCase());
 
 	// Use debounced search hook
 	const {

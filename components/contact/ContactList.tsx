@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { contactsStyles } from "@/styles/contacts";
 import type { Contact } from "@/types";
 import ContactItem from "./ContactItem";
@@ -16,12 +17,20 @@ export default function ContactList({
 	onPressContact,
 	loading = false,
 }: ContactListProps) {
-	const renderContactItem = ({ item }: { item: Contact }) => (
-		<ContactItem
-			contact={item}
-			onEdit={onEditContact}
-			onPress={onPressContact}
-		/>
+	const renderContactItem = ({
+		item,
+		index,
+	}: {
+		item: Contact;
+		index: number;
+	}) => (
+		<Animated.View entering={FadeIn.delay(index * 50).springify()}>
+			<ContactItem
+				contact={item}
+				onEdit={onEditContact}
+				onPress={onPressContact}
+			/>
+		</Animated.View>
 	);
 
 	if (loading) {
@@ -43,6 +52,11 @@ export default function ContactList({
 			showsVerticalScrollIndicator={false}
 			contentContainerStyle={contactsStyles.contactListContent}
 			ListFooterComponent={<View style={contactsStyles.bottomSpacer} />}
+			removeClippedSubviews={true}
+			maxToRenderPerBatch={10}
+			updateCellsBatchingPeriod={50}
+			initialNumToRender={10}
+			windowSize={5}
 			maintainVisibleContentPosition={{
 				minIndexForVisible: 0,
 				autoscrollToTopThreshold: 10,

@@ -1,7 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-	Animated,
 	Keyboard,
 	KeyboardAvoidingView,
 	Modal,
@@ -13,7 +12,15 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
+import Animated, {
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+	withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { scheduleOnRN } from "react-native-worklets";
 import { SCREEN_DIMENSIONS, scale } from "@/utils/responsive";
 import { invoiceStyles } from "../../styles/invoice";
 import type { Discount, DiscountType } from "../../types/invoice";
@@ -23,6 +30,18 @@ import {
 	paiseToDecimal,
 } from "../../utils/currency";
 import { calculateDiscountAmount as coreCalculateDiscountAmount } from "../../utils/invoiceUtils";
+
+const discountModalStyles = StyleSheet.create({
+	keyboardAvoidingView: {
+		flex: 1,
+		width: "100%",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	overlay: {
+		backgroundColor: "rgba(0,0,0,0.5)",
+	},
+});
 
 interface DiscountModalProps {
 	visible: boolean;
@@ -52,46 +71,22 @@ export function DiscountModal({
 	// Convert initial value from storage format to display format
 	// For percent: basis points -> percent (e.g., 1000 -> 10)
 	// For fixed: paise -> rupees (e.g., 1000 -> 10.00)
-	const getDisplayValue = useCallback(
-		(val: number, type: DiscountType): string => {
-			if (val === 0) return "";
-			return type === "percent"
-				? basisPointsToPercent(val).toString()
-				: paiseToDecimal(val).toString();
-		},
-		[],
-	);
+	function getDisplayValue(val: number, type: DiscountType): string {
+		if (val === 0) return "";
+		return type === "percent"
+			? basisPointsToPercent(val).toString()
+			: paiseToDecimal(val).toString();
+	}
 
 	const [discountValue, setDiscountValue] = useState(
 		getDisplayValue(initialValue, initialType),
 	);
 
-	const slideAnim = useRef(
-		new Animated.Value(SCREEN_DIMENSIONS.height),
-	).current; // Start off-screen (bottom)
-	const fadeAnim = useRef(new Animated.Value(0)).current;
+	// Reanimated shared values (instead of Animated.Value)
+	const translateY = useSharedValue(SCREEN_DIMENSIONS.height);
+	const opacity = useSharedValue(0);
 
 	const subtotal = productPrice * productQuantity; // In paise
-
-	const animateIn = useCallback(() => {
-		// Reset values just in case
-		slideAnim.setValue(SCREEN_DIMENSIONS.height);
-		fadeAnim.setValue(0);
-
-		Animated.parallel([
-			Animated.spring(slideAnim, {
-				toValue: 0,
-				useNativeDriver: true,
-				damping: 20,
-				stiffness: 90,
-			}),
-			Animated.timing(fadeAnim, {
-				toValue: 1,
-				duration: 200,
-				useNativeDriver: true,
-			}),
-		]).start();
-	}, [fadeAnim, slideAnim]);
 
 	// Sync internal state with external prop
 	useEffect(() => {
@@ -99,31 +94,37 @@ export function DiscountModal({
 			setShowModal(true);
 			setDiscountValue(getDisplayValue(initialValue, initialType));
 			setDiscountType(initialType);
-			animateIn();
-		}
-	}, [visible, initialValue, initialType, animateIn, getDisplayValue]);
 
-	// 2. New Helper to handle the Exit Animation BEFORE unmounting
+			// Animate in using Reanimated
+			translateY.value = withSpring(0, {
+				damping: 20,
+				stiffness: 90,
+			});
+			opacity.value = withTiming(1, { duration: 200 });
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [visible, initialValue, initialType, translateY, opacity]);
+
+	// Helper to handle the exit animation BEFORE unmounting
 	const handleClose = () => {
-		Animated.parallel([
-			Animated.timing(slideAnim, {
-				toValue: SCREEN_DIMENSIONS.height, // Slide back down
+		// Animate out using Reanimated
+		translateY.value = withTiming(
+			SCREEN_DIMENSIONS.height,
+			{
 				duration: 200,
-				useNativeDriver: true,
-			}),
-			Animated.timing(fadeAnim, {
-				toValue: 0,
-				duration: 200,
-				useNativeDriver: true,
-			}),
-		]).start(() => {
-			// Once animation finishes, tell parent to hide it
-			setShowModal(false);
-			onClose();
-		});
+				easing: Easing.in(Easing.ease),
+			},
+			() => {
+				// Run JS callbacks after animation completes
+				scheduleOnRN(setShowModal, false);
+				scheduleOnRN(onClose);
+			},
+		);
+		opacity.value = withTiming(0, { duration: 200 });
 	};
 
-	// 3. Validation & Preview Logic
+	// Validation & Preview Logic
 	const calculateDiscountAmount = (
 		totalInPaise: number,
 		val: string,
@@ -167,7 +168,7 @@ export function DiscountModal({
 
 		let finalValue = rawValue;
 
-		// 4. Strict Logic Validation
+		// Strict Logic Validation
 		if (discountType === "percent") {
 			if (rawValue > 100) finalValue = 100;
 		} else {
@@ -180,7 +181,7 @@ export function DiscountModal({
 		handleClose();
 	};
 
-	// 5. Input Sanitization
+	// Input Sanitization
 	const handleTextChange = (text: string) => {
 		// Only allow numbers and one decimal point
 		const cleaned = text.replace(/[^0-9.]/g, "");
@@ -231,6 +232,16 @@ export function DiscountModal({
 		);
 	};
 
+	// Animated styles using Reanimated
+	const overlayStyle = useAnimatedStyle(() => ({
+		opacity: opacity.value,
+	}));
+
+	const modalStyle = useAnimatedStyle(() => ({
+		transform: [{ translateY: translateY.value }],
+		opacity: opacity.value,
+	}));
+
 	return (
 		<Modal
 			visible={showModal}
@@ -243,32 +254,20 @@ export function DiscountModal({
 				<SafeAreaView style={invoiceStyles.modalOverlay}>
 					<KeyboardAvoidingView
 						behavior={Platform.OS === "ios" ? "padding" : "height"}
-						style={{
-							flex: 1,
-							width: "100%",
-							alignItems: "center",
-							justifyContent: "center",
-						}}
+						style={discountModalStyles.keyboardAvoidingView}
 					>
 						{/* Click outside to close */}
 						<TouchableWithoutFeedback onPress={handleClose}>
 							<Animated.View
 								style={[
 									StyleSheet.absoluteFill,
-									{ opacity: fadeAnim, backgroundColor: "rgba(0,0,0,0.5)" },
+									discountModalStyles.overlay,
+									overlayStyle,
 								]}
 							/>
 						</TouchableWithoutFeedback>
 
-						<Animated.View
-							style={[
-								invoiceStyles.modalContainer,
-								{
-									transform: [{ translateY: slideAnim }],
-									opacity: fadeAnim,
-								},
-							]}
-						>
+						<Animated.View style={[invoiceStyles.modalContainer, modalStyle]}>
 							{/* Header */}
 							<View style={invoiceStyles.modalHeader}>
 								<Text style={invoiceStyles.modalTitle}>Apply Discount</Text>

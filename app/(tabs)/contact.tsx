@@ -16,7 +16,7 @@ export default function ContactScreen() {
 	const router = useRouter();
 
 	const handleSettingsPress = () => {
-		Alert.alert("Settings", "Settings functionality coming soon!");
+		router.push("/settings");
 	};
 
 	const handleEditContact = (contact: Contact) => {

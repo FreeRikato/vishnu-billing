@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Alert, StatusBar } from "react-native";
+import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	FloatingAddActionButton,
@@ -17,7 +17,7 @@ export default function ProductScreen() {
 	const router = useRouter();
 
 	const handleSettingsPress = () => {
-		Alert.alert("Settings", "Settings functionality coming soon!");
+		router.push("/settings");
 	};
 
 	const handleEditProduct = (product: Product) => {
@@ -41,8 +41,6 @@ export default function ProductScreen() {
 			style={contactsStyles.container}
 			edges={["top", "left", "right"]}
 		>
-			<StatusBar barStyle="light-content" backgroundColor="#000000" />
-
 			<ProductHeader onSettingsPress={handleSettingsPress} />
 
 			<SearchBar

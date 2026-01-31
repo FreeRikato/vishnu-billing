@@ -33,6 +33,10 @@ export default function InvoiceScreen() {
 		router.push(`/invoice/${invoice.id}`);
 	};
 
+	const handleSettingsPress = () => {
+		router.push("/settings");
+	};
+
 	const handleSharePress = async () => {
 		// Filter selected invoices and get full invoice data
 		const selectedIds = invoices.filter((i) => i.checked).map((i) => i.id);
@@ -56,7 +60,10 @@ export default function InvoiceScreen() {
 				}
 			>
 				{/* Header */}
-				<ContactHeader title="Invoice History" />
+				<ContactHeader
+					title="Invoice History"
+					onSettingsPress={handleSettingsPress}
+				/>
 
 				{/* Search Bar */}
 				<View

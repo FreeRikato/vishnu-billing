@@ -129,14 +129,14 @@ export default function InvoicePreviewScreen() {
 		router.back();
 	};
 
-	const handleDelete = () => {
+	const handleArchive = () => {
 		Alert.alert(
-			"Delete Invoice",
-			"Are you sure you want to delete this invoice? This action cannot be undone.",
+			"Archive Invoice",
+			"Are you sure you want to archive this invoice? You can view it again from Settings.",
 			[
 				{ text: "Cancel", style: "cancel" },
 				{
-					text: "Delete",
+					text: "Archive",
 					style: "destructive",
 					onPress: async () => {
 						const result = await deleteInvoice({
@@ -145,7 +145,7 @@ export default function InvoicePreviewScreen() {
 						if (result.success) {
 							router.back();
 						} else {
-							Alert.alert("Error", "Failed to delete invoice");
+							Alert.alert("Error", "Failed to archive invoice");
 						}
 					},
 				},
@@ -206,9 +206,10 @@ export default function InvoicePreviewScreen() {
 				<InvoicePreviewCard invoice={invoice} />
 
 				<InvoiceActionBar
-					onSave={handleDelete}
+					onSave={handleArchive}
 					onShare={handleShare}
 					onPayment={() => setPaymentModalVisible(true)}
+					saveIcon="archive"
 				/>
 
 				<PaymentModal

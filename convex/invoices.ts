@@ -21,9 +21,15 @@ function generateInvoiceNumber(): string {
 }
 
 export const list = query({
-	handler: async (ctx) => {
-		// Use the by_deletedAt index for efficient filtering
+	args: {
+		includeDeleted: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
 		// Default to first 50 non-deleted invoices for performance
+		if (args.includeDeleted) {
+			return await ctx.db.query("invoices").take(50);
+		}
+		// Use the by_deletedAt index for efficient filtering
 		const results = await ctx.db
 			.query("invoices")
 			.withIndex("by_deletedAt")
@@ -40,10 +46,14 @@ export const search = query({
 		status: v.optional(
 			v.union(v.literal("unpaid"), v.literal("partial"), v.literal("paid")),
 		),
+		includeDeleted: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		if (!args.query.trim()) {
-			// Return first 50 non-deleted invoices when no query
+			// Return first 50 invoices when no query
+			if (args.includeDeleted) {
+				return await ctx.db.query("invoices").take(50);
+			}
 			const results = await ctx.db
 				.query("invoices")
 				.withIndex("by_deletedAt")
@@ -59,15 +69,20 @@ export const search = query({
 			.withSearchIndex("search_customerName", (q) =>
 				q.search("customerName", args.query),
 			)
-			.filter((q) => q.eq(q.field("deletedAt"), undefined))
 			.take(50);
+
+		// Filter by deletedAt if needed
+		let filtered = results;
+		if (!args.includeDeleted) {
+			filtered = results.filter((inv) => inv.deletedAt === undefined);
+		}
 
 		// Filter by status if provided
 		if (args.status) {
-			return results.filter((inv) => inv.status === args.status);
+			return filtered.filter((inv) => inv.status === args.status);
 		}
 
-		return results;
+		return filtered;
 	},
 });
 

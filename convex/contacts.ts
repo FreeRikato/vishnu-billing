@@ -32,18 +32,39 @@ function generateRandomHexColor(): string {
 }
 
 export const list = query({
-	handler: async (ctx) => {
+	args: {
+		includeDeleted: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
 		// Default to first 50 items for performance
-		return await ctx.db.query("contacts").take(50);
+		if (args.includeDeleted) {
+			return await ctx.db.query("contacts").take(50);
+		}
+		// Use the by_deletedAt index for efficient filtering
+		return await ctx.db
+			.query("contacts")
+			.withIndex("by_deletedAt")
+			.filter((q) => q.eq(q.field("deletedAt"), undefined))
+			.take(50);
 	},
 });
 
 export const search = query({
-	args: { query: v.string() },
+	args: {
+		query: v.string(),
+		includeDeleted: v.optional(v.boolean()),
+	},
 	handler: async (ctx, args) => {
 		if (!args.query.trim()) {
 			// Return first 50 contacts when query is empty
-			return await ctx.db.query("contacts").take(50);
+			if (args.includeDeleted) {
+				return await ctx.db.query("contacts").take(50);
+			}
+			return await ctx.db
+				.query("contacts")
+				.withIndex("by_deletedAt")
+				.filter((q) => q.eq(q.field("deletedAt"), undefined))
+				.take(50);
 		}
 
 		// Use the search index with pagination for efficient search
@@ -52,6 +73,10 @@ export const search = query({
 			.withSearchIndex("search_name", (q) => q.search("name", args.query))
 			.take(50);
 
+		// Filter by deletedAt if needed
+		if (!args.includeDeleted) {
+			return results.filter((c) => c.deletedAt === undefined);
+		}
 		return results;
 	},
 });
@@ -136,6 +161,7 @@ export const remove = mutation({
 		const existingInvoices = await ctx.db
 			.query("invoices")
 			.withIndex("by_customer", (q) => q.eq("customerId", args.id))
+			.filter((q) => q.eq(q.field("deletedAt"), undefined))
 			.collect();
 
 		if (existingInvoices.length > 0) {
@@ -145,7 +171,9 @@ export const remove = mutation({
 			};
 		}
 
-		await ctx.db.delete(args.id);
+		// Soft delete by setting deletedAt to current timestamp
+		const deletedAt = new Date().toISOString();
+		await ctx.db.patch(args.id, { deletedAt });
 		return { success: true };
 	},
 });

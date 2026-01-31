@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "convex/react";
-import { useCallback } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Contact, ContactUI } from "@/types/contact";
 import { useSearch } from "./useSearch";
@@ -14,12 +13,12 @@ export function useContacts() {
 		id: contact._id,
 	}));
 
-	const filterContact = useCallback((contact: ContactUI, query: string) => {
+	const filterContact = (contact: ContactUI, query: string) => {
 		return (
 			contact.name.toLowerCase().includes(query.toLowerCase()) ||
 			contact.phone.includes(query)
 		);
-	}, []);
+	};
 
 	const { searchText, setSearchText, results } = useSearch(
 		contactsUI,

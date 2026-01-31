@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Generic hook for searching lists with debouncing.
@@ -16,8 +16,8 @@ export function useSearch<T>(
 	const [searchText, setSearchText] = useState("");
 	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-	// Store the latest filterFn in a ref to avoid triggering useMemo
-	// when the function reference changes (e.g., not memoized with useCallback)
+	// Store the latest filterFn in a ref to avoid triggering recalculation
+	// when the function reference changes (e.g., not memoized)
 	const filterFnRef = useRef(filterFn);
 	filterFnRef.current = filterFn;
 
@@ -29,17 +29,12 @@ export function useSearch<T>(
 		return () => clearTimeout(timer);
 	}, [searchText, delay]);
 
-	// Compute filtered items using useMemo
+	// Compute filtered items
 	// We use filterFnRef.current to access the latest filter function
 	// without including it in the dependency array
-	const filteredItems = useMemo(() => {
-		if (!debouncedSearchText.trim()) {
-			return items;
-		}
-		return items.filter((item) =>
-			filterFnRef.current(item, debouncedSearchText),
-		);
-	}, [debouncedSearchText, items]);
+	const filteredItems = debouncedSearchText.trim()
+		? items.filter((item) => filterFnRef.current(item, debouncedSearchText))
+		: items;
 
 	return {
 		searchText,

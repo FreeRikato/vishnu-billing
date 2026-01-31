@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "convex/react";
-import { useCallback } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Product, ProductUI } from "@/types/product";
 import { useSearch } from "./useSearch";
@@ -14,9 +13,9 @@ export function useProducts() {
 		id: product._id,
 	}));
 
-	const filterProduct = useCallback((product: ProductUI, query: string) => {
+	const filterProduct = (product: ProductUI, query: string) => {
 		return product.name.toLowerCase().includes(query.toLowerCase());
-	}, []);
+	};
 
 	const { searchText, setSearchText, results } = useSearch(
 		productsUI,

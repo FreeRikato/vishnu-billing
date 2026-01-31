@@ -1,14 +1,25 @@
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/convex/_generated/api";
-import { useSearch } from "@/hooks/useSearch";
 import type { Invoice } from "@/types";
 import type { InvoiceDoc } from "@/types/invoice";
 import { isInvoiceStatus } from "@/types/invoice";
 import { formatCurrency } from "@/utils/currency";
 
 export function useInvoices() {
+	const [searchText, setSearchText] = useState("");
+
+	// Use server-side search when there's search text, otherwise use list
+	const searchResults = useQuery(
+		api.invoices.search,
+		searchText.trim() ? { query: searchText } : "skip",
+	);
+
 	const storeInvoices = useQuery(api.invoices.list) ?? [];
+
+	// Use search results when available, otherwise use all invoices
+	const sourceInvoices = searchResults ?? storeInvoices;
+
 	const isLoading = storeInvoices === undefined;
 	const [selectionMode, setSelectionMode] = useState(false);
 
@@ -16,23 +27,15 @@ export function useInvoices() {
 	const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
 	// Map of full Convex documents for sharing functionality
-	const [invoicesMap, setInvoicesMap] = useState<Record<string, InvoiceDoc>>(
-		{},
+	const invoicesMap: Record<string, InvoiceDoc> = storeInvoices.reduce(
+		(acc, inv) => {
+			acc[inv._id] = inv;
+			return acc;
+		},
+		{} as Record<string, InvoiceDoc>,
 	);
 
-	// Update map when store changes
-	useEffect(() => {
-		const map = storeInvoices.reduce(
-			(acc, inv) => {
-				acc[inv._id] = inv;
-				return acc;
-			},
-			{} as Record<string, InvoiceDoc>,
-		);
-		setInvoicesMap(map);
-	}, [storeInvoices]);
-
-	const invoices: Invoice[] = storeInvoices.map((inv: InvoiceDoc) => {
+	const invoices: Invoice[] = sourceInvoices.map((inv: InvoiceDoc) => {
 		// For partial payments, show remaining amount
 		const remainingAmount = inv.total - (inv.amountPaid || 0);
 		const amountToDisplay =
@@ -80,26 +83,13 @@ export function useInvoices() {
 		return invoices.filter((invoice) => invoice.checked).length;
 	};
 
-	// Filter function for search
-	const filterFn = (invoice: Invoice, query: string) =>
-		invoice.customerName.toLowerCase().includes(query.toLowerCase()) ||
-		invoice.date.toLowerCase().includes(query.toLowerCase()) ||
-		invoice.invoiceNumber.toLowerCase().includes(query.toLowerCase());
-
-	// Use debounced search hook
-	const {
-		searchText,
-		setSearchText,
-		results: filteredInvoices,
-	} = useSearch(invoices, filterFn);
-
 	const cancelSelection = () => {
 		setCheckedIds(new Set());
 		setSelectionMode(false);
 	};
 
 	return {
-		invoices: filteredInvoices,
+		invoices,
 		invoicesMap,
 		loading: isLoading,
 		selectionMode,

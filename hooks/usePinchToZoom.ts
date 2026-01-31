@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Gesture } from "react-native-gesture-handler";
 import {
 	useAnimatedStyle,
@@ -14,19 +13,17 @@ export function usePinchToZoom() {
 	const scale = useSharedValue(1);
 	const savedScale = useSharedValue(1);
 
-	const pinchGesture = useMemo(
-		() =>
-			Gesture.Pinch()
-				.onUpdate((e) => {
-					scale.value = savedScale.value * e.scale;
-				})
-				.onEnd(() => {
-					// Snap back to 1 on release for Android to ensure usability
-					scale.value = withSpring(1);
-					savedScale.value = 1;
-				}),
-		[scale, savedScale],
-	);
+	const pinchGesture = Gesture.Pinch()
+		.onUpdate((e) => {
+			"worklet";
+			scale.value = savedScale.value * e.scale;
+		})
+		.onEnd(() => {
+			"worklet";
+			// Snap back to 1 on release for Android to ensure usability
+			scale.value = withSpring(1);
+			savedScale.value = 1;
+		});
 
 	const animatedStyle = useAnimatedStyle(() => ({
 		transform: [{ scale: scale.value }],

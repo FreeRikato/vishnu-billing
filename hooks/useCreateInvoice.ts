@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { Alert } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Contact } from "@/types/contact";
@@ -66,18 +66,14 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	const products = useQuery(api.products.list) ?? [];
 
 	// Convert contacts to customers
-	const customers: Customer[] = useMemo(
-		() =>
-			contacts.map((contact: Contact) => ({
-				id: contact._id,
-				name: contact.name,
-				phone: contact.phone,
-				address: contact.address ?? "",
-				gstin: contact.gstin ?? null,
-				dlNo: contact.dlNo ?? null,
-			})),
-		[contacts],
-	);
+	const customers: Customer[] = contacts.map((contact: Contact) => ({
+		id: contact._id,
+		name: contact.name,
+		phone: contact.phone,
+		address: contact.address ?? "",
+		gstin: contact.gstin ?? null,
+		dlNo: contact.dlNo ?? null,
+	}));
 
 	// State for invoice items (products added to invoice)
 	const [invoiceItems, setInvoiceItems] = useState<InvoiceProduct[]>([]);
@@ -100,40 +96,38 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 
 	// Derived state (Calculations)
 	// All calculations are done in paise (integers) to avoid floating-point errors
-	const summary = useMemo(() => {
-		// 1. Calculate Item-level Subtotal (Net of item discounts) - in paise
-		const subtotal = invoiceItems.reduce((sum, product) => {
-			const itemTotal = product.price * product.quantity; // price is in paise
-			const discount = calculateDiscountAmount(itemTotal, product.discount);
-			return sum + itemTotal - discount;
-		}, 0);
+	// 1. Calculate Item-level Subtotal (Net of item discounts) - in paise
+	const subtotal = invoiceItems.reduce((sum, product) => {
+		const itemTotal = product.price * product.quantity; // price is in paise
+		const discount = calculateDiscountAmount(itemTotal, product.discount);
+		return sum + itemTotal - discount;
+	}, 0);
 
-		// 2. Calculate Total Item Discounts (Informational) - in paise
-		const itemDiscounts = invoiceItems.reduce((sum, product) => {
-			const itemTotal = product.price * product.quantity;
-			return sum + calculateDiscountAmount(itemTotal, product.discount);
-		}, 0);
+	// 2. Calculate Total Item Discounts (Informational) - in paise
+	const itemDiscounts = invoiceItems.reduce((sum, product) => {
+		const itemTotal = product.price * product.quantity;
+		return sum + calculateDiscountAmount(itemTotal, product.discount);
+	}, 0);
 
-		// 3. Calculate Global Discount - in paise
-		const globalDiscountAmount = calculateDiscountAmount(
-			subtotal,
-			globalDiscount,
-		);
+	// 3. Calculate Global Discount - in paise
+	const globalDiscountAmount = calculateDiscountAmount(
+		subtotal,
+		globalDiscount,
+	);
 
-		// 4. Calculate Final Totals - all in paise
-		const netSubtotal = subtotal - globalDiscountAmount;
+	// 4. Calculate Final Totals - all in paise
+	const netSubtotal = subtotal - globalDiscountAmount;
 
-		// Calculate tax using basis points (e.g., 5% = 500 basis points)
-		const tax = Math.round((netSubtotal * TAX_RATE_BASIS_POINTS) / 10000);
-		const total = netSubtotal + tax;
+	// Calculate tax using basis points (e.g., 5% = 500 basis points)
+	const tax = Math.round((netSubtotal * TAX_RATE_BASIS_POINTS) / 10000);
+	const total = netSubtotal + tax;
 
-		return {
-			subtotal, // Already in paise
-			totalDiscount: itemDiscounts + globalDiscountAmount, // Already in paise
-			tax, // Already in paise
-			total, // Already in paise
-		};
-	}, [invoiceItems, globalDiscount]);
+	const summary = {
+		subtotal, // Already in paise
+		totalDiscount: itemDiscounts + globalDiscountAmount, // Already in paise
+		tax, // Already in paise
+		total, // Already in paise
+	};
 
 	// Get all products (filtering is handled in the modal)
 	// Map to ProductUI format for components
@@ -143,7 +137,7 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 	}));
 
 	// Handler functions
-	const handleCancel = useCallback(() => {
+	const handleCancel = () => {
 		Alert.alert(
 			"Cancel",
 			"Are you sure you want to cancel creating this invoice?",
@@ -152,26 +146,26 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 				{ text: "Yes", onPress: () => router.back() },
 			],
 		);
-	}, []);
+	};
 
-	const handleSelectCustomer = useCallback(() => {
+	const handleSelectCustomer = () => {
 		setContactPickerVisible(true);
-	}, []);
+	};
 
-	const handleCreateNewCustomer = useCallback(() => {
+	const handleCreateNewCustomer = () => {
 		router.push("/contact/create");
-	}, []);
+	};
 
-	const handleAddProduct = useCallback(() => {
+	const handleAddProduct = () => {
 		setProductPickerVisible(true);
-	}, []);
+	};
 
-	const handleContactSelect = useCallback((customer: Customer) => {
+	const handleContactSelect = (customer: Customer) => {
 		setSelectedCustomer(customer);
 		setContactPickerVisible(false);
-	}, []);
+	};
 
-	const handleProductSelect = useCallback((product: InvoiceProduct) => {
+	const handleProductSelect = (product: InvoiceProduct) => {
 		setInvoiceItems((prev) => {
 			const exists = prev.some(
 				(item) => item.lineItemId === product.lineItemId,
@@ -183,24 +177,21 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 			// Add new product
 			return [...prev, { ...product, quantity: 1 }];
 		});
-	}, []);
+	};
 
-	const handleQuantityChange = useCallback(
-		(productId: string, change: number) => {
-			setInvoiceItems((prev) =>
-				prev.map((item) => {
-					if (item.lineItemId === productId) {
-						const newQuantity = Math.max(1, item.quantity + change);
-						return { ...item, quantity: newQuantity };
-					}
-					return item;
-				}),
-			);
-		},
-		[],
-	);
+	const handleQuantityChange = (productId: string, change: number) => {
+		setInvoiceItems((prev) =>
+			prev.map((item) => {
+				if (item.lineItemId === productId) {
+					const newQuantity = Math.max(1, item.quantity + change);
+					return { ...item, quantity: newQuantity };
+				}
+				return item;
+			}),
+		);
+	};
 
-	const handleRemoveProduct = useCallback((productId: string) => {
+	const handleRemoveProduct = (productId: string) => {
 		Alert.alert("Remove Product", "Remove this product from the invoice?", [
 			{ text: "Cancel", style: "cancel" },
 			{
@@ -213,72 +204,69 @@ export function useCreateInvoice(): UseCreateInvoiceReturn {
 				},
 			},
 		]);
-	}, []);
+	};
 
-	const handleAddDiscount = useCallback((productId: string) => {
+	const handleAddDiscount = (productId: string) => {
 		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
-	}, []);
+	};
 
-	const handleAddGlobalDiscount = useCallback(() => {
+	const handleAddGlobalDiscount = () => {
 		setIsEditingGlobalDiscount(true);
 		setSelectedProductId(null);
 		setDiscountModalVisible(true);
-	}, []);
+	};
 
-	const handleRemoveGlobalDiscount = useCallback(() => {
+	const handleRemoveGlobalDiscount = () => {
 		setGlobalDiscount(undefined);
-	}, []);
+	};
 
-	const handleApplyDiscount = useCallback(
-		(value: number, type: DiscountType) => {
-			if (isEditingGlobalDiscount) {
-				// Remove discount if value is 0, otherwise set it
-				if (value === 0) {
-					setGlobalDiscount(undefined);
-				} else {
-					// Convert percent to basis points for percent discounts
-					// For fixed discounts, convert rupees to paise
-					const discountValue =
-						type === "percent"
-							? percentToBasisPoints(value)
-							: Math.round(value * 100);
-					setGlobalDiscount({ value: discountValue, type });
-				}
-			} else if (selectedProductId) {
-				setInvoiceItems((prev) =>
-					prev.map((item) => {
-						if (item.lineItemId === selectedProductId) {
-							// Remove discount if value is 0, otherwise set it
-							if (value === 0) {
-								// biome-ignore lint/correctness/noUnusedVariables: We want to remove discount from the object
-								const { discount, ...rest } = item;
-								return rest;
-							}
-							// Convert percent to basis points for percent discounts
-							// For fixed discounts, convert rupees to paise
-							const discountValue =
-								type === "percent"
-									? percentToBasisPoints(value)
-									: Math.round(value * 100);
-							return { ...item, discount: { value: discountValue, type } };
-						}
-						return item;
-					}),
-				);
+	const handleApplyDiscount = (value: number, type: DiscountType) => {
+		if (isEditingGlobalDiscount) {
+			// Remove discount if value is 0, otherwise set it
+			if (value === 0) {
+				setGlobalDiscount(undefined);
+			} else {
+				// Convert percent to basis points for percent discounts
+				// For fixed discounts, convert rupees to paise
+				const discountValue =
+					type === "percent"
+						? percentToBasisPoints(value)
+						: Math.round(value * 100);
+				setGlobalDiscount({ value: discountValue, type });
 			}
-			setSelectedProductId(null);
-			setIsEditingGlobalDiscount(false);
-		},
-		[selectedProductId, isEditingGlobalDiscount],
-	);
+		} else if (selectedProductId) {
+			setInvoiceItems((prev) =>
+				prev.map((item) => {
+					if (item.lineItemId === selectedProductId) {
+						// Remove discount if value is 0, otherwise set it
+						if (value === 0) {
+							// biome-ignore lint/correctness/noUnusedVariables: We want to remove discount from the object
+							const { discount, ...rest } = item;
+							return rest;
+						}
+						// Convert percent to basis points for percent discounts
+						// For fixed discounts, convert rupees to paise
+						const discountValue =
+							type === "percent"
+								? percentToBasisPoints(value)
+								: Math.round(value * 100);
+						return { ...item, discount: { value: discountValue, type } };
+					}
+					return item;
+				}),
+			);
+		}
+		setSelectedProductId(null);
+		setIsEditingGlobalDiscount(false);
+	};
 
-	const handleEditDiscount = useCallback((productId: string) => {
+	const handleEditDiscount = (productId: string) => {
 		setIsEditingGlobalDiscount(false);
 		setSelectedProductId(productId);
 		setDiscountModalVisible(true);
-	}, []);
+	};
 
 	// Helper to convert Product to InvoiceProduct
 	function toInvoiceProduct(product: ProductUI): InvoiceProduct {

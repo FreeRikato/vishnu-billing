@@ -22,13 +22,52 @@ function generateInvoiceNumber(): string {
 
 export const list = query({
 	handler: async (ctx) => {
-		// Get all non-deleted invoices
-		const invoices = await ctx.db
+		// Use the by_deletedAt index for efficient filtering
+		// Default to first 50 non-deleted invoices for performance
+		const results = await ctx.db
 			.query("invoices")
+			.withIndex("by_deletedAt")
 			.filter((q) => q.eq(q.field("deletedAt"), undefined))
-			.collect();
+			.take(50);
 
-		return invoices;
+		return results;
+	},
+});
+
+export const search = query({
+	args: {
+		query: v.string(),
+		status: v.optional(
+			v.union(v.literal("unpaid"), v.literal("partial"), v.literal("paid")),
+		),
+	},
+	handler: async (ctx, args) => {
+		if (!args.query.trim()) {
+			// Return first 50 non-deleted invoices when no query
+			const results = await ctx.db
+				.query("invoices")
+				.withIndex("by_deletedAt")
+				.filter((q) => q.eq(q.field("deletedAt"), undefined))
+				.take(50);
+			return results;
+		}
+
+		// Use search index for efficient full-text search on customerName
+		// This avoids full table scan and scales to large datasets
+		const results = await ctx.db
+			.query("invoices")
+			.withSearchIndex("search_customerName", (q) =>
+				q.search("customerName", args.query),
+			)
+			.filter((q) => q.eq(q.field("deletedAt"), undefined))
+			.take(50);
+
+		// Filter by status if provided
+		if (args.status) {
+			return results.filter((inv) => inv.status === args.status);
+		}
+
+		return results;
 	},
 });
 

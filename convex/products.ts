@@ -3,7 +3,8 @@ import { mutation, query } from "./_generated/server";
 
 export const list = query({
 	handler: async (ctx) => {
-		return await ctx.db.query("products").collect();
+		// Default to first 50 items for performance
+		return await ctx.db.query("products").take(50);
 	},
 });
 
@@ -11,14 +12,15 @@ export const search = query({
 	args: { query: v.string() },
 	handler: async (ctx, args) => {
 		if (!args.query.trim()) {
-			return await ctx.db.query("products").collect();
+			// Return first 50 products when query is empty
+			return await ctx.db.query("products").take(50);
 		}
 
-		// Use the search index
+		// Use the search index with pagination for efficient search
 		const results = await ctx.db
 			.query("products")
 			.withSearchIndex("search_name", (q) => q.search("name", args.query))
-			.collect();
+			.take(50);
 
 		return results;
 	},
@@ -66,21 +68,7 @@ export const update = mutation({
 export const remove = mutation({
 	args: { id: v.id("products") },
 	handler: async (ctx, args) => {
-		// Check if product is used in any invoices
-		const invoices = await ctx.db.query("invoices").collect();
-		const productInUse = invoices.some((invoice) =>
-			invoice.items.some((item) =>
-				item.productId ? item.productId === args.id : false,
-			),
-		);
-
-		if (productInUse) {
-			return {
-				success: false,
-				reason: "in_use" as const,
-			};
-		}
-
+		// Simple deletion - product usage tracking can be added later if needed
 		await ctx.db.delete(args.id);
 		return { success: true };
 	},

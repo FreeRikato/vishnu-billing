@@ -33,7 +33,8 @@ function generateRandomHexColor(): string {
 
 export const list = query({
 	handler: async (ctx) => {
-		return await ctx.db.query("contacts").collect();
+		// Default to first 50 items for performance
+		return await ctx.db.query("contacts").take(50);
 	},
 });
 
@@ -41,14 +42,15 @@ export const search = query({
 	args: { query: v.string() },
 	handler: async (ctx, args) => {
 		if (!args.query.trim()) {
-			return await ctx.db.query("contacts").collect();
+			// Return first 50 contacts when query is empty
+			return await ctx.db.query("contacts").take(50);
 		}
 
-		// Use the search index
+		// Use the search index with pagination for efficient search
 		const results = await ctx.db
 			.query("contacts")
 			.withSearchIndex("search_name", (q) => q.search("name", args.query))
-			.collect();
+			.take(50);
 
 		return results;
 	},

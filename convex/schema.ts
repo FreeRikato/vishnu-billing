@@ -34,7 +34,8 @@ export default defineSchema({
 		dlNo: v.optional(v.string()),
 	})
 		.index("by_name", ["name"])
-		.searchIndex("search_name", { searchField: "name" }),
+		.searchIndex("search_name", { searchField: "name" })
+		.searchIndex("search_phone", { searchField: "phone" }),
 
 	// Products
 	products: defineTable({
@@ -81,10 +82,16 @@ export default defineSchema({
 		// Soft delete
 		deletedAt: v.optional(v.string()),
 	})
+		.index("by_deletedAt", ["deletedAt"])
 		.index("by_customer", ["customerId"])
 		.index("by_date", ["date"])
 		.index("by_status", ["status"])
-		.index("by_invoiceNumber", ["invoiceNumber"]),
+		.index("by_invoiceNumber", ["invoiceNumber"])
+		.index("by_customer_date", ["customerId", "date"])
+		.index("by_status_date", ["status", "date"])
+		.index("by_customer_status", ["customerId", "status"])
+		.index("by_date_deletedAt", ["date", "deletedAt"])
+		.searchIndex("search_customerName", { searchField: "customerName" }),
 
 	// System Meta
 	systemMeta: defineTable({

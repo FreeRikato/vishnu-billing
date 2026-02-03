@@ -1,7 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
-import { AvatarPreview, ColorPicker } from "@/components";
+import { AvatarPreview, ColorPicker, DistrictPickerModal } from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
 import { useContacts } from "@/hooks/useContacts";
 import { generateInitials, generateRandomColor } from "@/utils/contactUtils";
@@ -19,9 +19,13 @@ export default function CreateContactScreen() {
 		address: "",
 		gstin: "",
 		dlNo: "",
+		district: "",
 		initials: "",
 		color: generateRandomColor(),
 	});
+
+	// District picker modal state
+	const [districtPickerVisible, setDistrictPickerVisible] = useState(false);
 
 	// Update initials when name changes
 	const handleNameChange = (text: string) => {
@@ -41,6 +45,7 @@ export default function CreateContactScreen() {
 			address: formData.address.trim(),
 			gstin: formData.gstin.trim() || undefined,
 			dlNo: formData.dlNo.trim() || undefined,
+			district: formData.district.trim() || undefined,
 		});
 
 		if (!validation.success) {
@@ -56,6 +61,7 @@ export default function CreateContactScreen() {
 				address: validation.data.address,
 				gstin: validation.data.gstin,
 				dlNo: validation.data.dlNo,
+				district: validation.data.district,
 			});
 
 			if (result) {
@@ -128,6 +134,16 @@ export default function CreateContactScreen() {
 					/>
 
 					<FormField
+						label="District"
+						icon="location-city"
+						placeholder="Select district"
+						value={formData.district}
+						onPress={() => setDistrictPickerVisible(true)}
+						rightIcon="chevron-right"
+						editable={false}
+					/>
+
+					<FormField
 						label="GSTIN No"
 						icon="info"
 						placeholder="Enter GSTIN number"
@@ -167,6 +183,16 @@ export default function CreateContactScreen() {
 						}
 					/>
 				</ScrollView>
+
+				{/* District Picker Modal */}
+				<DistrictPickerModal
+					visible={districtPickerVisible}
+					onClose={() => setDistrictPickerVisible(false)}
+					onDistrictSelect={(district) =>
+						setFormData((prev) => ({ ...prev, district }))
+					}
+					selectedDistrict={formData.district}
+				/>
 			</ScreenLayout>
 		</>
 	);

@@ -184,7 +184,7 @@ export function numberToWords(amountInPaise: number): string {
 		result += paise === 1 ? " Paise" : " Paise";
 	}
 
-	return result + " Only";
+	return `${result} Only`;
 }
 
 /**
@@ -236,14 +236,14 @@ function convertNumberToWords(num: number): string {
 		if (n < 100) {
 			const ten = Math.floor(n / 10);
 			const one = n % 10;
-			return tens[ten] + (one > 0 ? " " + ones[one] : "");
+			return tens[ten] + (one > 0 ? ` ${ones[one]}` : "");
 		}
 		const hundred = Math.floor(n / 100);
 		const remainder = n % 100;
 		return (
 			ones[hundred] +
 			" Hundred" +
-			(remainder > 0 ? " " + getHundreds(remainder) : "")
+			(remainder > 0 ? ` ${getHundreds(remainder)}` : "")
 		);
 	}
 
@@ -254,21 +254,21 @@ function convertNumberToWords(num: number): string {
 	// Crores (1,00,00,000)
 	if (remaining >= 10000000) {
 		const crores = Math.floor(remaining / 10000000);
-		words += getHundreds(crores) + " Crore ";
+		words += `${getHundreds(crores)} Crore `;
 		remaining %= 10000000;
 	}
 
 	// Lakhs (1,00,000)
 	if (remaining >= 100000) {
 		const lakhs = Math.floor(remaining / 100000);
-		words += getHundreds(lakhs) + " Lakh ";
+		words += `${getHundreds(lakhs)} Lakh `;
 		remaining %= 100000;
 	}
 
 	// Thousands (1,000)
 	if (remaining >= 1000) {
 		const thousands = Math.floor(remaining / 1000);
-		words += getHundreds(thousands) + " Thousand ";
+		words += `${getHundreds(thousands)} Thousand `;
 		remaining %= 1000;
 	}
 

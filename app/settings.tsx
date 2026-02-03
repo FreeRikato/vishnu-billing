@@ -108,7 +108,7 @@ function Toggle({ isActive, onToggle, testID }: ToggleProps) {
 		translateX.value = withTiming(isActive ? activeOffset : 0, {
 			duration: 200,
 		});
-	}, [isActive, activeOffset]);
+	}, [isActive, activeOffset, isActiveShared, translateX]);
 
 	// Tap gesture - runs on UI thread for instant response
 	const tapGesture = Gesture.Tap().onEnd(() => {

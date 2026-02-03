@@ -30,6 +30,7 @@ export default defineSchema({
 		initials: v.string(), // Auto-generated: first 2 chars
 		color: v.string(), // Auto-generated: random hex
 		address: v.string(),
+		district: v.optional(v.string()), // Tamil Nadu district name (e.g., "Chennai", "Madurai")
 		gstin: v.optional(v.string()),
 		dlNo: v.optional(v.string()),
 		deletedAt: v.optional(v.string()), // ISO timestamp for soft delete

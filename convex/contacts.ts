@@ -93,6 +93,7 @@ export const create = mutation({
 		name: v.string(),
 		phone: v.string(),
 		address: v.string(),
+		district: v.optional(v.string()),
 		gstin: v.optional(v.string()),
 		dlNo: v.optional(v.string()),
 	},
@@ -106,6 +107,7 @@ export const create = mutation({
 			initials,
 			color,
 			address: args.address,
+			district: args.district ?? undefined,
 			gstin: args.gstin ?? undefined,
 			dlNo: args.dlNo ?? undefined,
 		});
@@ -120,6 +122,7 @@ export const update = mutation({
 		name: v.optional(v.string()),
 		phone: v.optional(v.string()),
 		address: v.optional(v.string()),
+		district: v.optional(v.string()),
 		gstin: v.optional(v.string()),
 		dlNo: v.optional(v.string()),
 		color: v.optional(v.string()),
@@ -138,6 +141,9 @@ export const update = mutation({
 		}
 		if (updates.address !== undefined) {
 			updateData.address = updates.address;
+		}
+		if (updates.district !== undefined) {
+			updateData.district = updates.district;
 		}
 		if (updates.gstin !== undefined) {
 			updateData.gstin = updates.gstin;

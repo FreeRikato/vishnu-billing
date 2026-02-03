@@ -4,7 +4,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	Alert,
-	Platform,
 	ScrollView,
 	StatusBar,
 	TouchableOpacity,
@@ -21,7 +20,6 @@ import {
 	InvoiceLoadingOverlay,
 	InvoicePreviewCard,
 	PaymentModal,
-	ZoomHint,
 } from "@/components";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -51,8 +49,8 @@ export default function InvoicePreviewScreen() {
 
 	const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
 
-	// Zoom Logic for Android (Pinch to Inspect)
-	const { pinchGesture, animatedStyle } = usePinchToZoom();
+	// Zoom Logic for pinch-to-zoom with pan support and double-tap reset
+	const { pinchGesture, doubleTapGesture, animatedStyle } = usePinchToZoom();
 
 	if (isLoading) {
 		return (
@@ -231,15 +229,15 @@ export default function InvoicePreviewScreen() {
 					style={invoiceStyles.scrollContainer}
 					contentContainerStyle={invoiceStyles.invoicePreviewScrollContent}
 					showsVerticalScrollIndicator={true}
+					scrollEnabled={false}
 				>
-					{Platform.OS === "android" && (
-						<GestureDetector gesture={pinchGesture}>
+					<GestureDetector gesture={pinchGesture}>
+						<GestureDetector gesture={doubleTapGesture}>
 							<Animated.View style={animatedStyle}>
-								<ZoomHint />
+								<InvoicePreviewCard invoice={invoice} />
 							</Animated.View>
 						</GestureDetector>
-					)}
-					<InvoicePreviewCard invoice={invoice} />
+					</GestureDetector>
 				</ScrollView>
 
 				<PaymentModal

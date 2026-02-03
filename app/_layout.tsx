@@ -7,6 +7,7 @@ import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "@/hooks";
 import config from "@/utils/config";
 import "react-native-reanimated";
@@ -25,53 +26,61 @@ export default function RootLayout() {
 	});
 
 	return (
-		<ConvexProvider client={convex}>
-			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DarkTheme}>
-				<StatusBar style="light" animated />
-				<SafeAreaProvider>
-					<Stack>
-						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-						<Stack.Screen
-							name="contact/[id]"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="contact/create"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="product/[id]"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="product/create"
-							options={{
-								headerShown: false,
-							}}
-						/>
-						<Stack.Screen
-							name="invoice/create"
-							options={{
-								headerShown: false,
-								presentation: "modal",
-							}}
-						/>
-						<Stack.Screen
-							name="invoice/[id]"
-							options={{
-								headerShown: false,
-							}}
-						/>
-					</Stack>
-					<StatusBar style="auto" />
-				</SafeAreaProvider>
-			</ThemeProvider>
-		</ConvexProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<ConvexProvider client={convex}>
+				<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DarkTheme}>
+					<StatusBar style="light" animated />
+					<SafeAreaProvider>
+						<Stack>
+							<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+							<Stack.Screen
+								name="contact/[id]"
+								options={{
+									headerShown: false,
+								}}
+							/>
+							<Stack.Screen
+								name="contact/create"
+								options={{
+									headerShown: false,
+								}}
+							/>
+							<Stack.Screen
+								name="product/[id]"
+								options={{
+									headerShown: false,
+								}}
+							/>
+							<Stack.Screen
+								name="product/create"
+								options={{
+									headerShown: false,
+								}}
+							/>
+							<Stack.Screen
+								name="invoice/create"
+								options={{
+									headerShown: false,
+									presentation: "modal",
+								}}
+							/>
+							<Stack.Screen
+								name="invoice/[id]"
+								options={{
+									headerShown: false,
+								}}
+							/>
+							<Stack.Screen
+								name="settings"
+								options={{
+									headerShown: false,
+								}}
+							/>
+						</Stack>
+						<StatusBar style="auto" />
+					</SafeAreaProvider>
+				</ThemeProvider>
+			</ConvexProvider>
+		</GestureHandlerRootView>
 	);
 }

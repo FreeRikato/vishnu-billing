@@ -10,7 +10,7 @@ export function HomeHeader({ user }: HomeHeaderProps) {
 	return (
 		<View style={homeStyles.header}>
 			<View style={homeStyles.headerTop}>
-				<Text style={homeStyles.greeting}>Hello, {user?.name || "User"}</Text>
+				<Text style={homeStyles.greeting}>Hello, {user?.name || "Ravi"}</Text>
 			</View>
 		</View>
 	);

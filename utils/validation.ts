@@ -20,6 +20,7 @@ export const ContactSchema = z.object({
 	address: z.string().min(1, "Address is required"),
 	gstin: z.string().optional(),
 	dlNo: z.string().optional(),
+	district: z.string().optional(),
 });
 
 export type ContactInput = z.infer<typeof ContactSchema>;

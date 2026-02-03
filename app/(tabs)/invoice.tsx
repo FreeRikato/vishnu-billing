@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { StatusBar, useColorScheme, View } from "react-native";
+import { StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
 	ContactHeader,
@@ -13,9 +13,6 @@ import { invoiceStyles } from "@/styles/invoice";
 import type { Invoice } from "@/types";
 
 export default function InvoiceScreen() {
-	const colorScheme = useColorScheme();
-	const isDark = colorScheme === "dark";
-
 	const {
 		invoices,
 		invoicesMap,
@@ -51,14 +48,8 @@ export default function InvoiceScreen() {
 			style={invoiceStyles.container}
 			edges={["top", "left", "right"]}
 		>
-			<StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-			<View
-				style={
-					isDark
-						? invoiceStyles.listContainer
-						: invoiceStyles.listLightContainer
-				}
-			>
+			<StatusBar barStyle="light-content" />
+			<View style={invoiceStyles.listContainer}>
 				{/* Header */}
 				<ContactHeader
 					title="Invoice History"
@@ -66,13 +57,7 @@ export default function InvoiceScreen() {
 				/>
 
 				{/* Search Bar */}
-				<View
-					style={
-						isDark
-							? invoiceStyles.listSearchContainer
-							: invoiceStyles.listLightSearchContainer
-					}
-				>
+				<View style={invoiceStyles.listSearchContainer}>
 					<SearchBar
 						value={searchText}
 						onChangeText={setSearchText}
@@ -87,7 +72,6 @@ export default function InvoiceScreen() {
 					onLongPressInvoice={enableSelectionMode}
 					onPressInvoice={handleInvoicePress}
 					selectionMode={selectionMode}
-					colorScheme={colorScheme ?? "light"}
 				/>
 
 				{/* Floating Share Button */}

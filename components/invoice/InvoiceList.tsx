@@ -11,7 +11,6 @@ interface InvoiceListProps {
 	onLongPressInvoice?: () => void;
 	onPressInvoice?: (invoice: Invoice) => void;
 	selectionMode: boolean;
-	colorScheme: "light" | "dark";
 }
 
 export default function InvoiceList({
@@ -20,7 +19,6 @@ export default function InvoiceList({
 	onLongPressInvoice,
 	onPressInvoice,
 	selectionMode,
-	colorScheme,
 }: InvoiceListProps) {
 	const renderInvoiceItem = ({
 		item,
@@ -36,7 +34,6 @@ export default function InvoiceList({
 				onLongPress={selectionMode ? undefined : onLongPressInvoice}
 				onPress={!selectionMode ? () => onPressInvoice?.(item) : undefined}
 				selectionMode={selectionMode}
-				colorScheme={colorScheme}
 			/>
 		</Animated.View>
 	);

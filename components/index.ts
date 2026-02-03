@@ -18,6 +18,7 @@ export { default as SearchBar } from "./contact/SearchBar";
 export { CreateInvoiceButton } from "./home/CreateInvoiceButton";
 export { HomeHeader } from "./home/HomeHeader";
 export { InvoiceStatsChart } from "./home/InvoiceStatsChart";
+export { TamilNaduMap } from "./home/TamilNaduMap";
 
 // Invoice components
 export { ContactPickerModal } from "./invoice/ContactPickerModal";

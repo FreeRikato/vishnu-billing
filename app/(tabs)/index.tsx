@@ -5,6 +5,7 @@ import {
 	CreateInvoiceButton,
 	HomeHeader,
 	InvoiceStatsChart,
+	TamilNaduMap,
 } from "@/components";
 import { HOME_CONSTANTS } from "@/constants/home";
 import { useInvoices } from "@/hooks/useInvoices";
@@ -57,6 +58,9 @@ export default function HomeScreen() {
 
 					{/* Invoice Statistics Chart */}
 					<InvoiceStatsChart invoices={invoices} />
+
+					{/* District Map */}
+					<TamilNaduMap />
 				</View>
 			</ScrollView>
 		</SafeAreaView>

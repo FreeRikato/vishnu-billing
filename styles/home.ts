@@ -200,4 +200,67 @@ export const homeStyles = StyleSheet.create({
 		fontSize: moderateScale(18),
 		fontWeight: "bold",
 	},
+
+	// Tamil Nadu Map Styles
+	mapCard: {
+		backgroundColor: "#1C1C1E",
+		borderRadius: scale(24),
+		padding: scale(24),
+		marginTop: scale(8),
+	},
+	mapContainer: {
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: scale(16),
+	},
+	mapLegend: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		justifyContent: "space-around",
+		marginTop: scale(16),
+		paddingTop: scale(16),
+		borderTopWidth: 1,
+		borderTopColor: "#2A2A2A",
+	},
+	legendRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: scale(6),
+		marginBottom: scale(8),
+	},
+	legendText: {
+		color: "#9CA3AF",
+		fontSize: moderateScale(12),
+	},
+	modalContainer: {
+		backgroundColor: "#1C1C1E",
+		borderRadius: scale(24),
+		padding: scale(24),
+		width: "90%",
+		maxWidth: scale(400),
+		alignSelf: "center",
+	},
+	modalHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: scale(16),
+	},
+	modalTitle: {
+		color: "#FFFFFF",
+		fontSize: moderateScale(20),
+		fontWeight: "bold",
+	},
+	applyButton: {
+		backgroundColor: "#13EC6A",
+		paddingVertical: scale(16),
+		paddingHorizontal: scale(24),
+		borderRadius: scale(12),
+		alignItems: "center",
+	},
+	applyButtonText: {
+		color: "#000000",
+		fontSize: moderateScale(16),
+		fontWeight: "bold",
+	},
 });

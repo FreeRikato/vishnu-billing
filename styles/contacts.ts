@@ -272,4 +272,39 @@ export const contactsStyles = StyleSheet.create({
 		fontSize: moderateScale(14),
 		fontWeight: "500",
 	},
+
+	// DistrictPickerModal styles
+	districtItem: {
+		backgroundColor: "#1C1C1E",
+		borderRadius: scale(16),
+		marginHorizontal: scale(16),
+		marginBottom: scale(8),
+	},
+	districtContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingHorizontal: scale(20),
+		paddingVertical: scale(16),
+	},
+	districtContentPressed: {
+		backgroundColor: "#2C2C2E",
+	},
+	districtInfo: {
+		flexDirection: "row",
+		alignItems: "center",
+		flex: 1,
+	},
+	districtIcon: {
+		marginRight: scale(16),
+	},
+	districtName: {
+		fontSize: moderateScale(18),
+		fontWeight: "500",
+		color: "#FFFFFF",
+	},
+	districtListContent: {
+		paddingTop: scale(8),
+		paddingBottom: verticalScale(32),
+	},
 });

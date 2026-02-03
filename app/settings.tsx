@@ -164,7 +164,7 @@ export default function SettingsScreen() {
 	return (
 		<SafeAreaView
 			style={settingsStyles.container}
-			edges={["top", "left", "right"]}
+			edges={["top", "left", "right", "bottom"]}
 		>
 			<StatusBar barStyle="light-content" backgroundColor="#000000" />
 

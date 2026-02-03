@@ -28,19 +28,87 @@ export default function DistrictDetailModal({
 }: DistrictDetailModalProps) {
 	if (!stats) return null;
 
-	// Prepare chart data for Victory Native
+	// Prepare chart data for Victory Native with safety checks
 	const chartData = [
 		{
-			value: parseFloat(stats.paidAmount.replace(/[₹,]/g, "")),
+			value: parseFloat(stats.paidAmount.replace(/[₹,]/g, "")) || 0,
 			color: "#13EC6A",
 			label: "Paid",
 		},
 		{
-			value: parseFloat(stats.unpaidAmount.replace(/[₹,]/g, "")),
+			value: parseFloat(stats.unpaidAmount.replace(/[₹,]/g, "")) || 0,
 			color: "#EF4444",
 			label: "Unpaid",
 		},
-	];
+	].filter((item) => item.value > 0); // Only include positive values
+
+	// Don't render chart if no data
+	if (chartData.length === 0) {
+		const noDataContent = (
+			<Text style={modalStyles.noDataText}>No payment data available</Text>
+		);
+
+		return (
+			<Modal
+				visible={visible}
+				transparent
+				animationType="slide"
+				onRequestClose={onClose}
+			>
+				<SafeAreaView style={modalStyles.overlay}>
+					<View style={homeStyles.modalContainer}>
+						{/* Header */}
+						<View style={homeStyles.modalHeader}>
+							<Text style={homeStyles.modalTitle}>{district}</Text>
+							<TouchableOpacity onPress={onClose}>
+								<MaterialIcons name="close" size={24} color="#FFFFFF" />
+							</TouchableOpacity>
+						</View>
+
+						{/* Stats Summary */}
+						<View style={modalStyles.statsRow}>
+							<View style={modalStyles.statItem}>
+								<Text style={modalStyles.statLabel}>Total Invoices</Text>
+								<Text style={modalStyles.statValue}>{stats.totalInvoices}</Text>
+							</View>
+							<View style={modalStyles.statItem}>
+								<Text style={modalStyles.statLabel}>Collection Rate</Text>
+								<Text style={[modalStyles.statValue, modalStyles.accent]}>
+									{stats.paidPercentage}
+								</Text>
+							</View>
+						</View>
+
+						{/* No Data Message */}
+						<Text style={modalStyles.sectionTitle}>Payment Breakdown</Text>
+						{noDataContent}
+
+						{/* Amounts */}
+						<View style={modalStyles.amountRow}>
+							<Text style={modalStyles.amountLabel}>Paid: </Text>
+							<Text style={[modalStyles.amountValue, { color: "#13EC6A" }]}>
+								{stats.paidAmount}
+							</Text>
+						</View>
+						<View style={modalStyles.amountRow}>
+							<Text style={modalStyles.amountLabel}>Unpaid: </Text>
+							<Text style={[modalStyles.amountValue, { color: "#EF4444" }]}>
+								{stats.unpaidAmount}
+							</Text>
+						</View>
+
+						{/* Close Button */}
+						<TouchableOpacity
+							style={[homeStyles.applyButton, modalStyles.closeBtn]}
+							onPress={onClose}
+						>
+							<Text style={homeStyles.applyButtonText}>Close</Text>
+						</TouchableOpacity>
+					</View>
+				</SafeAreaView>
+			</Modal>
+		);
+	}
 
 	return (
 		<Modal
@@ -79,14 +147,16 @@ export default function DistrictDetailModal({
 						<Suspense
 							fallback={<ActivityIndicator size="small" color="#13EC6A" />}
 						>
-							<PolarChart
-								data={chartData}
-								labelKey="label"
-								valueKey="value"
-								colorKey="color"
-							>
-								<Pie.Chart />
-							</PolarChart>
+							<View style={modalStyles.chartWrapper}>
+								<PolarChart
+									data={chartData}
+									labelKey="label"
+									valueKey="value"
+									colorKey="color"
+								>
+									<Pie.Chart />
+								</PolarChart>
+							</View>
 						</Suspense>
 					</View>
 
@@ -157,6 +227,17 @@ const modalStyles = StyleSheet.create({
 		alignItems: "center",
 		paddingVertical: 20,
 		minHeight: 200,
+	},
+	chartWrapper: {
+		height: 200,
+		width: 200,
+		alignSelf: "center",
+	},
+	noDataText: {
+		color: "#9CA3AF",
+		fontSize: 14,
+		textAlign: "center",
+		paddingVertical: 40,
 	},
 	amountRow: {
 		flexDirection: "row",

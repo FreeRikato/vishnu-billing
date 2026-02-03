@@ -11,6 +11,7 @@ export { default as ContactHeader } from "./contact/ContactHeader";
 export { default as ContactItem } from "./contact/ContactItem";
 export { default as ContactList } from "./contact/ContactList";
 export { default as DeleteContactButton } from "./contact/DeleteContactButton";
+export { DistrictPickerModal } from "./contact/DistrictPickerModal";
 export { default as FloatingAddActionButton } from "./contact/FloatingAddActionButton";
 export { default as SearchBar } from "./contact/SearchBar";
 

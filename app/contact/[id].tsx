@@ -2,7 +2,12 @@ import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
-import { AvatarPreview, ColorPicker, DeleteContactButton } from "@/components";
+import {
+	AvatarPreview,
+	ColorPicker,
+	DeleteContactButton,
+	DistrictPickerModal,
+} from "@/components";
 import { FormField, ScreenLayout } from "@/components/common";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -34,9 +39,13 @@ export default function ContactDetailScreen() {
 		address: "",
 		gstin: "",
 		dlNo: "",
+		district: "",
 		initials: "",
 		color: "#3B82F6",
 	});
+
+	// District picker modal state
+	const [districtPickerVisible, setDistrictPickerVisible] = useState(false);
 
 	// Update form data when contact loads
 	useEffect(() => {
@@ -47,6 +56,7 @@ export default function ContactDetailScreen() {
 				address: contact.address,
 				gstin: contact.gstin ?? "",
 				dlNo: contact.dlNo ?? "",
+				district: contact.district ?? "",
 				initials: contact.initials,
 				color: contact.color,
 			});
@@ -89,6 +99,7 @@ export default function ContactDetailScreen() {
 				address: formData.address,
 				gstin: formData.gstin.trim() || undefined,
 				dlNo: formData.dlNo.trim() || undefined,
+				district: formData.district.trim() || undefined,
 				color: formData.color,
 			});
 
@@ -241,6 +252,16 @@ export default function ContactDetailScreen() {
 					/>
 
 					<FormField
+						label="District"
+						icon="location-city"
+						placeholder="Select district"
+						value={formData.district}
+						onPress={() => setDistrictPickerVisible(true)}
+						rightIcon="chevron-right"
+						editable={false}
+					/>
+
+					<FormField
 						label="GSTIN No"
 						icon="info"
 						placeholder="Enter GSTIN number"
@@ -283,6 +304,16 @@ export default function ContactDetailScreen() {
 					{/* Delete Section */}
 					<DeleteContactButton onPress={handleDelete} />
 				</ScrollView>
+
+				{/* District Picker Modal */}
+				<DistrictPickerModal
+					visible={districtPickerVisible}
+					onClose={() => setDistrictPickerVisible(false)}
+					onDistrictSelect={(district) =>
+						setFormData((prev) => ({ ...prev, district }))
+					}
+					selectedDistrict={formData.district}
+				/>
 			</ScreenLayout>
 		</>
 	);

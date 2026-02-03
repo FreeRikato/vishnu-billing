@@ -1,16 +1,16 @@
 // Polyfills for React Native Skia/Victory Native - MUST be first
+import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
 import "text-encoding";
-import "react-native-get-random-values";
 
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks";
-import "react-native-reanimated";
 import config from "@/utils/config";
+import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export const unstable_settings = {
 	anchor: "(tabs)",

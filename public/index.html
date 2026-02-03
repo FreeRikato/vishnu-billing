@@ -44,7 +44,7 @@
 
         /* Header Section */
         .header {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .company-details {
@@ -75,9 +75,9 @@
         }
 
         .qr-box {
-            width: 80px;
-            height: 80px;
-            border: 2px solid #000080;
+            width: 100px;
+            height: 100px;
+            border: 2px solid #000000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -85,6 +85,15 @@
             text-align: center;
             margin-left: auto;
             margin-bottom: 10px;
+            padding: 4px;
+        }
+
+        .qr-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: grayscale(100%);
         }
 
         /* Input Fields Area */
@@ -103,7 +112,7 @@
         }
 
         .dots {
-            border-bottom: 1px dotted #000080;
+            border-bottom: 1px dotted #000000;
             flex-grow: 1;
             margin-left: 5px;
             height: 14px;
@@ -112,7 +121,7 @@
         .section-title {
             text-decoration: underline;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-size: 14px;
         }
 
@@ -122,19 +131,33 @@
             border-collapse: collapse;
             margin-bottom: 20px;
             font-size: 11px;
-            border: 1px solid #000080;
+            border: 1px solid #000000;
         }
 
         .invoice-table th {
-            border: 1px solid #000080;
+            border-left: 1px solid #000000;
+            border-right: 1px solid #000000;
+            border-top: 1px solid #000000;
+            border-bottom: none;
             padding: 5px;
             text-align: center;
             background-color: transparent;
         }
 
         .invoice-table td {
-            border: 1px solid #000080;
+            border-left: 1px solid #000000;
+            border-right: 1px solid #000000;
+            border-top: none;
+            border-bottom: none;
             height: 25px; /* Minimum height for rows */
+        }
+
+        .invoice-table thead tr {
+            border-bottom: 1px solid #000000;
+        }
+
+        .invoice-table tbody tr:last-child {
+            border-bottom: 1px solid #000000;
         }
 
         /* Footer Section */
@@ -168,7 +191,7 @@
 
         .totals-value {
             width: 100px;
-            border-bottom: 1px dotted #000080;
+            border-bottom: 1px dotted #000000;
         }
 
         .signature-section {
@@ -198,23 +221,26 @@
                 <div class="company-name">SREE VISHNU AGENCY</div>
                 <div class="company-sub">(Pharmaceutical Distributor)</div>
                 <div class="address">
-                    8 B GANDHI STREET (1st FLOOR)<br>
+                    8-B GANDHIJI STREET (1st FLOOR)<br>
                     JAIHINDPURAM 2nd STREET,<br>
                     MADURAI - 625011<br>
-                    <span class="bold">Contact:</span> 9345907825
+                    <span class="bold">Contact:</span> 9345907825<br>
+                    <span class="bold">Email:</span> sreevishnuravi@gmail.com
                 </div>
                 <div class="text-sm" style="margin-top: 10px;">
-                    <span class="bold">DL NO:</span> MDU/2027/20B &nbsp; MDU/1865/21B<br>
+                    <span class="bold">DL NO:</span> MDU<span style="font-weight: bold;">/</span>2027<span style="font-weight: bold;">/</span>20B &nbsp; MDU<span style="font-weight: bold;">/</span>1865<span style="font-weight: bold;">/</span>21B<br>
                     <span class="bold">GST NO:</span> 33AQAPR 9634H1ZO
                 </div>
             </div>
 
             <!-- Right: QR and Basic Bill Info -->
             <div class="invoice-meta flex-col align-end">
-                <div class="text-xs" style="margin-bottom: 2px;">Scan QR to Pay</div>
+                <div class="text-xs" style="margin-bottom: 2px;">Scan/Click QR to Pay</div>
+                <a href="upi://pay?pa=aravinthanrc-2@okaxis&pn=Aravinthan&am=300&cu=INR" style="text-decoration: none;">
                 <div class="qr-box">
-                    <!-- Placeholder for QR Code -->
+                <img src="QR.jpeg">
                 </div>
+                </a>
                 
                 <div class="w-full" style="margin-top: 10px;">
                     <div class="input-line">
@@ -228,24 +254,29 @@
         </div>
 
         <!-- Middle Section: Customer Info -->
-        <div class="section-title">GST INVOICE</div>
-        
-        <div class="input-grid">
-            <div class="input-line">
-                <span>CUSTOMER CODE:</span><span class="dots"></span>
+        <div class="flex justify-between" style="margin-bottom: 15px;">
+            <!-- Left: GST INVOICE + Customer Info -->
+            <div style="width: 55%;">
+                <div class="section-title">GST INVOICE</div>
+                <div class="input-line">
+                    <span>CUSTOMER CODE:</span>
+                </div>
+                <div class="input-line" style="margin-top: 5px;">
+                    <span>CUSTOMER NAME:</span>
+                </div>
             </div>
-            <div class="input-line">
-                <span>DL NO:</span><span class="dots"></span>
-            </div>
-            <div class="input-line">
-                <span>CUSTOMER NAME:</span><span class="dots"></span>
-            </div>
-            <div class="input-line">
-                <span>GST NO:</span><span class="dots"></span>
-            </div>
-            <div class="input-line"></div> <!-- Empty grid slot for spacing if needed -->
-            <div class="input-line">
-                <span>PHONE NO:</span><span class="dots"></span>
+            
+            <!-- Right: DL/GST/PHONE NO (aligned with BILL NO/DATE) -->
+            <div style="width: 40%; text-align: right;">
+                <div class="input-line" style="justify-content: flex-end;">
+                    <span>DL NO:</span><span class="dots" style="flex-grow: 0; width: 60%;"></span>
+                </div>
+                <div class="input-line" style="margin-top: 5px; justify-content: flex-end;">
+                    <span>GST NO:</span><span class="dots" style="flex-grow: 0; width: 60%;"></span>
+                </div>
+                <div class="input-line" style="margin-top: 5px; justify-content: flex-end;">
+                    <span>PHONE NO:</span><span class="dots" style="flex-grow: 0; width: 60%;"></span>
+                </div>
             </div>
         </div>
 
@@ -281,6 +312,40 @@
                 <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
                 <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
                 <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+        </table>
+
+        <!-- Amount Details Table -->
+        <table class="invoice-table" style="width: 100%; margin-bottom: 20px;">
+            <tbody>
+                <tr>
+                    <td style="width: 33%; font-weight: bold; padding: 5px;">GOODS VALUE :</td>
+                    <td style="width: 33%; font-weight: bold; padding: 5px;">CGST (2.5%) :</td>
+                    <td style="width: 34%; font-weight: bold; font-size: 14px; vertical-align: top; padding: 5px;">NET AMOUNT :</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 5px;">CASH DISCOUNT :</td>
+                    <td style="font-weight: bold; padding: 5px;">SGST (2.5%) :</td>
+                    <td style="padding: 5px;"></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 5px;">TAXABLE AMOUNT :</td>
+                    <td style="font-weight: bold; padding: 5px;">Sub Total :</td>
+                    <td style="padding: 5px;"></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 5px;">ROUND OFF :</td>
+                    <td style="padding: 5px;"></td>
+                    <td style="padding: 5px;"></td>
+                </tr>
             </tbody>
         </table>
 
@@ -293,47 +358,12 @@
                     <span class="text-sm">seal with signature</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Footer: Totals and Auth Sign -->
-            <div class="footer-right">
-                <div class="totals-row">
-                    <span class="totals-label">GOODS VALUE :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row">
-                    <span class="totals-label">CASH DISCOUNT :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row">
-                    <span class="totals-label">TAXABLE AMOUNT :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row">
-                    <span class="totals-label">CGST 2.5% :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row">
-                    <span class="totals-label">SGST 2.5% :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row">
-                    <span class="totals-label">SUB TOTAL :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row">
-                    <span class="totals-label">ROUND OFF :</span>
-                    <span class="totals-value"></span>
-                </div>
-                <div class="totals-row" style="margin-top: 10px;">
-                    <span class="totals-label" style="font-size: 14px;">NET AMOUNT :</span>
-                    <span class="totals-value"></span>
-                </div>
-
-                <div class="signature-section">
-                    <div class="text-sm" style="margin-bottom: 40px;">For <span class="bold">Sree Vishnu Agency</span></div>
-                    <div class="bold">AUTHORISED SIGNATORY</div>
-                </div>
-            </div>
+        <!-- Authorized Signatory Section -->
+        <div style="text-align: right;">
+            <div class="text-sm" style="margin-bottom: 40px;">For <span class="bold">Sree Vishnu Agency</span></div>
+            <div class="bold">AUTHORISED SIGNATORY</div>
         </div>
 
     </div>

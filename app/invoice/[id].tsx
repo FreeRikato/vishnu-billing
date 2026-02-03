@@ -1,10 +1,11 @@
-import { EvilIcons } from "@expo/vector-icons";
+import { EvilIcons, MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	Alert,
 	Platform,
+	ScrollView,
 	StatusBar,
 	TouchableOpacity,
 	View,
@@ -16,7 +17,6 @@ import {
 import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-	InvoiceActionBar,
 	InvoiceErrorState,
 	InvoiceLoadingOverlay,
 	InvoicePreviewCard,
@@ -62,12 +62,15 @@ export default function InvoicePreviewScreen() {
 			>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 				<View style={invoiceStyles.header}>
-					<TouchableOpacity
-						onPress={() => router.back()}
-						style={invoiceStyles.backButton}
-					>
-						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
-					</TouchableOpacity>
+					<View style={invoiceStyles.headerLeft}>
+						<TouchableOpacity
+							onPress={() => router.back()}
+							style={invoiceStyles.backButton}
+						>
+							<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
+						</TouchableOpacity>
+					</View>
+					<View style={invoiceStyles.headerActions} />
 				</View>
 				<InvoiceLoadingOverlay />
 			</SafeAreaView>
@@ -82,12 +85,15 @@ export default function InvoicePreviewScreen() {
 			>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 				<View style={invoiceStyles.header}>
-					<TouchableOpacity
-						onPress={() => router.back()}
-						style={invoiceStyles.backButton}
-					>
-						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
-					</TouchableOpacity>
+					<View style={invoiceStyles.headerLeft}>
+						<TouchableOpacity
+							onPress={() => router.back()}
+							style={invoiceStyles.backButton}
+						>
+							<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
+						</TouchableOpacity>
+					</View>
+					<View style={invoiceStyles.headerActions} />
 				</View>
 				<InvoiceErrorState />
 			</SafeAreaView>
@@ -187,30 +193,54 @@ export default function InvoicePreviewScreen() {
 			>
 				<StatusBar barStyle="light-content" backgroundColor="#000000" />
 				<View style={invoiceStyles.header}>
-					<TouchableOpacity
-						onPress={handleBack}
-						style={invoiceStyles.backButton}
-					>
-						<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
-					</TouchableOpacity>
+					<View style={invoiceStyles.headerLeft}>
+						<TouchableOpacity
+							onPress={handleBack}
+							style={invoiceStyles.backButton}
+						>
+							<EvilIcons name="arrow-left" size={scale(32)} color="#FFFFFF" />
+						</TouchableOpacity>
+					</View>
+					<View style={invoiceStyles.headerActions}>
+						<TouchableOpacity
+							onPress={() => setPaymentModalVisible(true)}
+							style={invoiceStyles.headerActionButton}
+						>
+							<MaterialIcons
+								name="currency-rupee"
+								size={scale(20)}
+								color="#13EC6A"
+							/>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={handleArchive}
+							style={invoiceStyles.headerActionButton}
+						>
+							<MaterialIcons name="archive" size={scale(20)} color="#FFFFFF" />
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={handleShare}
+							style={invoiceStyles.headerActionButton}
+						>
+							<MaterialIcons name="share" size={scale(20)} color="#13EC6A" />
+						</TouchableOpacity>
+					</View>
 				</View>
 
-				{Platform.OS === "android" && (
-					<GestureDetector gesture={pinchGesture}>
-						<Animated.View style={animatedStyle}>
-							<ZoomHint />
-						</Animated.View>
-					</GestureDetector>
-				)}
-
-				<InvoicePreviewCard invoice={invoice} />
-
-				<InvoiceActionBar
-					onSave={handleArchive}
-					onShare={handleShare}
-					onPayment={() => setPaymentModalVisible(true)}
-					saveIcon="archive"
-				/>
+				<ScrollView
+					style={invoiceStyles.scrollContainer}
+					contentContainerStyle={invoiceStyles.invoicePreviewScrollContent}
+					showsVerticalScrollIndicator={true}
+				>
+					{Platform.OS === "android" && (
+						<GestureDetector gesture={pinchGesture}>
+							<Animated.View style={animatedStyle}>
+								<ZoomHint />
+							</Animated.View>
+						</GestureDetector>
+					)}
+					<InvoicePreviewCard invoice={invoice} />
+				</ScrollView>
 
 				<PaymentModal
 					visible={isPaymentModalVisible}

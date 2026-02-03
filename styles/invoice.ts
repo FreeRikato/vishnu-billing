@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { moderateScale, scale, verticalScale } from "@/utils/responsive";
 
 export const invoiceStyles = StyleSheet.create({

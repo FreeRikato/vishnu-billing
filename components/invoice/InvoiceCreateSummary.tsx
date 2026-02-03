@@ -2,11 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles";
 import type { Discount, InvoiceSummary } from "@/types";
-import {
-	basisPointsToPercent,
-	formatCurrency,
-	numberToWords,
-} from "@/utils/currency";
+import { basisPointsToPercent, formatCurrency } from "@/utils/currency";
 import { scale } from "@/utils/responsive";
 
 interface InvoiceCreateSummaryProps {

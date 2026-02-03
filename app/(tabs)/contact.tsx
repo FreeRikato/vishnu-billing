@@ -28,6 +28,7 @@ export default function ContactScreen() {
 			`Name: ${contact.name}`,
 			`Phone: ${contact.phone}`,
 			contact.address ? `Address: ${contact.address}` : null,
+			contact.district ? `District: ${contact.district}` : null,
 			contact.gstin ? `GSTIN: ${contact.gstin}` : null,
 			contact.dlNo ? `DL No: ${contact.dlNo}` : null,
 		]

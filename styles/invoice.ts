@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { moderateScale, scale, verticalScale } from "@/utils/responsive";
 
 export const invoiceStyles = StyleSheet.create({
@@ -12,10 +12,28 @@ export const invoiceStyles = StyleSheet.create({
 		justifyContent: "space-between",
 		paddingHorizontal: scale(16),
 		paddingVertical: scale(12),
-		minHeight: verticalScale(64),
 		backgroundColor: "rgba(0, 0, 0, 0.95)",
 		borderBottomWidth: 1,
 		borderBottomColor: "#374151",
+	},
+	headerLeft: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	headerActions: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: scale(12),
+	},
+	headerActionButton: {
+		width: scale(40),
+		height: scale(40),
+		borderRadius: scale(20),
+		backgroundColor: "#1C1C1E",
+		alignItems: "center",
+		justifyContent: "center",
+		borderWidth: 1,
+		borderColor: "rgba(19, 236, 106, 0.3)",
 	},
 	backButton: {
 		width: scale(48),
@@ -23,6 +41,14 @@ export const invoiceStyles = StyleSheet.create({
 		borderRadius: scale(24),
 		alignItems: "center",
 		justifyContent: "center",
+	},
+	scrollContainer: {
+		flex: 1,
+		backgroundColor: "#000000",
+	},
+	invoicePreviewScrollContent: {
+		padding: scale(16),
+		paddingBottom: verticalScale(100),
 	},
 	headerTitle: {
 		fontSize: moderateScale(20),
@@ -584,10 +610,10 @@ export const invoiceStyles = StyleSheet.create({
 		width: scale(64),
 	},
 
-	// InvoiceActionBar styles
+	// InvoiceActionBar styles (used by InvoiceActionBar component)
 	actionBar: {
 		position: "absolute",
-		bottom: verticalScale(30),
+		bottom: scale(16),
 		left: scale(20),
 		right: scale(20),
 		flexDirection: "row",
@@ -834,16 +860,25 @@ export const invoiceStyles = StyleSheet.create({
 
 	// ZoomHint styles
 	zoomHint: {
+		position: "absolute",
+		top: scale(16),
+		left: scale(16),
+		right: scale(16),
+		zIndex: 10,
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
 		gap: scale(8),
 		alignSelf: "center",
-		backgroundColor: "rgba(255, 255, 255, 0.1)",
+		backgroundColor: "rgba(28, 28, 30, 0.95)",
 		borderRadius: 9999,
 		paddingHorizontal: scale(16),
-		paddingVertical: scale(6),
-		marginBottom: scale(24),
+		paddingVertical: scale(8),
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 4,
+		elevation: 5,
 	},
 	zoomHintText: {
 		fontSize: moderateScale(14),
@@ -1227,9 +1262,6 @@ export const invoiceStyles = StyleSheet.create({
 	paper: {
 		padding: scale(32),
 		backgroundColor: "#ffffff",
-	},
-	headerLeft: {
-		flexDirection: "column",
 	},
 	summarySection: {
 		borderTopWidth: 2,

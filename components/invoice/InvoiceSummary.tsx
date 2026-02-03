@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import { invoiceStyles } from "@/styles/invoice";
 import type { InvoiceSummary as InvoiceSummaryType } from "@/types/invoice";
-import { formatCurrency } from "@/utils/currency";
+import { formatCurrency, numberToWords } from "@/utils/currency";
 
 interface InvoiceSummaryProps {
 	summary: InvoiceSummaryType;

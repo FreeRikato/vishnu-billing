@@ -1,372 +1,716 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sree Vishnu Agency Invoice</title>
-    <style>
-        /* General Reset and Page Setup */
-        * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sree Vishnu Agency Invoice</title>
+        <style>
+            /* General Reset and Page Setup */
+            * {
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact;
+            }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-            color: black; /* Navy Blue to match the ink */
-        }
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: #f0f0f0;
+                margin: 0;
+                padding: 0;
+                color: black; /* Navy Blue to match the ink */
+            }
 
-        .page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm;
-            margin: 10mm auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
+            .page {
+                width: 210mm;
+                min-height: 297mm;
+                padding: 15mm;
+                margin: 10mm auto;
+                background: white;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                position: relative;
+                display: flex;
+                flex-direction: column;
+            }
 
-        /* Utility Classes */
-        .bold { font-weight: bold; }
-        .flex { display: flex; }
-        .flex-col { display: flex; flex-direction: column; }
-        .justify-between { justify-content: space-between; }
-        .align-start { align-items: flex-start; }
-        .align-end { align-items: flex-end; }
-        .w-full { width: 100%; }
-        .text-sm { font-size: 12px; }
-        .text-xs { font-size: 11px; }
+            /* Utility Classes */
+            .bold {
+                font-weight: bold;
+            }
+            .flex {
+                display: flex;
+            }
+            .flex-col {
+                display: flex;
+                flex-direction: column;
+            }
+            .justify-between {
+                justify-content: space-between;
+            }
+            .align-start {
+                align-items: flex-start;
+            }
+            .align-end {
+                align-items: flex-end;
+            }
+            .w-full {
+                width: 100%;
+            }
+            .text-sm {
+                font-size: 12px;
+            }
+            .text-xs {
+                font-size: 11px;
+            }
 
-        /* Header Section */
-        .header {
-            margin-bottom: 10px;
-        }
+            /* Header Section */
+            .header {
+                margin-bottom: 10px;
+            }
 
-        .company-details {
-            width: 55%;
-        }
+            .company-details {
+                width: 55%;
+            }
 
-        .company-name {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
+            .company-name {
+                font-size: 20px;
+                font-weight: 800;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+            }
 
-        .company-sub {
-            font-style: italic;
-            font-size: 12px;
-            margin-bottom: 5px;
-        }
+            .company-sub {
+                font-style: italic;
+                font-size: 12px;
+                margin-bottom: 5px;
+            }
 
-        .address {
-            font-size: 12px;
-            line-height: 1.4;
-        }
+            .address {
+                font-size: 12px;
+                line-height: 1.4;
+            }
 
-        .invoice-meta {
-            width: 40%;
-            text-align: right;
-        }
+            .invoice-meta {
+                width: 40%;
+                text-align: right;
+            }
 
-        .qr-box {
-            width: 100px;
-            height: 100px;
-            border: 2px solid #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            text-align: center;
-            margin-left: auto;
-            margin-bottom: 10px;
-            padding: 4px;
-        }
+            .qr-box {
+                width: 100px;
+                height: 100px;
+                border: 2px solid #000000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                text-align: center;
+                margin-left: auto;
+                margin-bottom: 5px;
+                padding: 4px;
+            }
 
-        .qr-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            filter: grayscale(100%);
-        }
+            .qr-box img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+                filter: grayscale(100%);
+            }
 
-        /* Input Fields Area */
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+            /* Input Fields Area */
+            .input-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
 
-        .input-line {
-            display: flex;
-            align-items: baseline;
-            font-size: 12px;
-            font-weight: bold;
-        }
+            .input-line {
+                display: flex;
+                align-items: baseline;
+                font-size: 12px;
+                font-weight: bold;
+                margin-top: 5px;
+            }
 
-        .dots {
-            border-bottom: 1px dotted #000000;
-            flex-grow: 1;
-            margin-left: 5px;
-            height: 14px;
-        }
+            .dots {
+                border-bottom: 1px dotted #000000;
+                flex-grow: 1;
+                margin-left: 5px;
+                height: 14px;
+            }
 
-        .section-title {
-            text-decoration: underline;
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
+            .section-title {
+                text-decoration: underline;
+                font-weight: bold;
+                margin-bottom: 5px;
+                font-size: 14px;
+            }
 
-        /* Table Section */
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 11px;
-            border: 1px solid #000000;
-        }
+            /* Table Section */
+            .invoice-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+                border: 1px solid #000000;
+            }
 
-        .invoice-table th {
-            border-left: 1px solid #000000;
-            border-right: 1px solid #000000;
-            border-top: 1px solid #000000;
-            border-bottom: none;
-            padding: 5px;
-            text-align: center;
-            background-color: transparent;
-        }
+            .invoice-table th {
+                border-left: 1px solid #000000;
+                border-right: 1px solid #000000;
+                border-top: 1px solid #000000;
+                padding: 5px;
+                text-align: center;
+                background-color: transparent;
+            }
 
-        .invoice-table td {
-            border-left: 1px solid #000000;
-            border-right: 1px solid #000000;
-            border-top: none;
-            border-bottom: none;
-            height: 25px; /* Minimum height for rows */
-        }
+            .invoice-table td {
+                border-left: 1px solid #000000;
+                border-right: 1px solid #000000;
+                border-top: none;
+                height: 25px; /* Minimum height for rows */
+            }
 
-        .invoice-table thead tr {
-            border-bottom: 1px solid #000000;
-        }
+            .invoice-table thead tr {
+                border-bottom: 1px solid #000000;
+            }
 
-        .invoice-table tbody tr:last-child {
-            border-bottom: 1px solid #000000;
-        }
+            .invoice-table tbody tr:last-child {
+                border-bottom: 1px solid #000000;
+            }
 
-        /* Footer Section */
-        .footer {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-        }
+            /* Footer Section */
+            .footer {
+                display: flex;
+                justify-content: space-between;
+                font-size: 12px;
+            }
 
-        .footer-left {
-            width: 40%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
+            .footer-left {
+                width: 40%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+            }
 
-        .footer-right {
-            width: 50%;
-        }
+            .footer-right {
+                width: 50%;
+            }
 
-        .totals-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
+            .totals-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+            }
 
-        .totals-label {
-            font-weight: bold;
-        }
+            .totals-label {
+                font-weight: bold;
+            }
 
-        .totals-value {
-            width: 100px;
-            border-bottom: 1px dotted #000000;
-        }
+            .totals-value {
+                width: 100px;
+                border-bottom: 1px dotted #000000;
+            }
 
-        .signature-section {
-            margin-top: 40px;
-            text-align: center;
-        }
+            .signature-section {
+                margin-top: 40px;
+                text-align: center;
+            }
 
-        .customer-sign {
-            margin-top: 50px;
-        }
-
-        /* Print Settings */
-        @media print {
-            body { background: none; margin: 0; }
-            .page { margin: 0; box-shadow: none; border: none; width: 100%; height: auto;}
-            @page { margin: 0; size: A4; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="page">
-        <!-- Top Section -->
-        <div class="flex justify-between header">
-            <!-- Left: Company Info -->
-            <div class="company-details">
-                <div class="company-name">SREE VISHNU AGENCY</div>
-                <div class="company-sub">(Pharmaceutical Distributor)</div>
-                <div class="address">
-                    8-B GANDHIJI STREET (1st FLOOR)<br>
-                    JAIHINDPURAM 2nd STREET,<br>
-                    MADURAI - 625011<br>
-                    <span class="bold">Contact:</span> 9345907825<br>
-                    <span class="bold">Email:</span> sreevishnuravi@gmail.com
-                </div>
-                <div class="text-sm" style="margin-top: 10px;">
-                    <span class="bold">DL NO:</span> MDU<span style="font-weight: bold;">/</span>2027<span style="font-weight: bold;">/</span>20B &nbsp; MDU<span style="font-weight: bold;">/</span>1865<span style="font-weight: bold;">/</span>21B<br>
-                    <span class="bold">GST NO:</span> 33AQAPR 9634H1ZO
-                </div>
-            </div>
-
-            <!-- Right: QR and Basic Bill Info -->
-            <div class="invoice-meta flex-col align-end">
-                <div class="text-xs" style="margin-bottom: 2px;">Scan/Click QR to Pay</div>
-                <a href="upi://pay?pa=aravinthanrc-2@okaxis&pn=Aravinthan&am=300&cu=INR" style="text-decoration: none;">
-                <div class="qr-box">
-                <img src="QR.jpeg">
-                </div>
-                </a>
-                
-                <div class="w-full" style="margin-top: 10px;">
-                    <div class="input-line">
-                        <span>BILL NO:</span><span class="dots"></span>
+            /* Print Settings */
+            @media print {
+                body {
+                    background: none;
+                    margin: 0;
+                }
+                .page {
+                    margin: 0;
+                    box-shadow: none;
+                    border: none;
+                    width: 100%;
+                    height: auto;
+                }
+                @page {
+                    margin: 0;
+                    size: A4;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page">
+            <!-- Top Section -->
+            <div class="flex justify-between header">
+                <!-- Left: Company Info -->
+                <div class="company-details">
+                    <div class="company-name">SREE VISHNU AGENCY</div>
+                    <div class="company-sub">(Pharmaceutical Distributor)</div>
+                    <div class="address">
+                        8-B GANDHIJI STREET (1st FLOOR)<br />
+                        JAIHINDPURAM 2nd STREET,<br />
+                        MADURAI - 625011<br />
+                        <span class="bold">Contact:</span> 9345907825<br />
+                        <span class="bold">Email:</span>
+                        sreevishnuravi@gmail.com
                     </div>
-                    <div class="input-line" style="margin-top: 5px;">
-                        <span>DATE:</span><span class="dots"></span>
+                    <div class="text-sm" style="margin-top: 10px">
+                        <span class="bold">DL NO:</span> MDU<span
+                            style="font-weight: bold"
+                            >/</span
+                        >2027<span style="font-weight: bold">/</span>20B &nbsp;
+                        MDU<span style="font-weight: bold">/</span>1865<span
+                            style="font-weight: bold"
+                            >/</span
+                        >21B<br />
+                        <span class="bold">GST NO:</span> 33AQAPR 9634H1ZO
+                    </div>
+                </div>
+
+                <!-- Right: QR and Basic Bill Info -->
+                <div class="invoice-meta flex-col align-end">
+                    <div class="text-xs" style="margin-bottom: 2px">
+                        Scan/Click QR to Pay
+                    </div>
+                    <a
+                        href="upi://pay?pa=umaravichandran1969-1@okhdfcbank&pn=Umar&am=300&cu=INR"
+                        style="text-decoration: none"
+                    >
+                        <div class="qr-box">
+                            <img src="QR.jpeg" />
+                        </div>
+                        <div
+                            class="text-upi"
+                            style="color: black; font-size: 10px"
+                        >
+                            umaravichandran1969-1@okhdfcbank
+                        </div>
+                    </a>
+
+                    <div class="w-full" style="margin-top: 10px">
+                        <div class="input-line">
+                            <span>BILL NO:</span><span class="dots"></span>
+                        </div>
+                        <div class="input-line">
+                            <span>DATE:</span><span class="dots"></span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Middle Section: Customer Info -->
-        <div class="flex justify-between" style="margin-bottom: 15px;">
-            <!-- Left: GST INVOICE + Customer Info -->
-            <div style="width: 55%;">
-                <div class="section-title">GST INVOICE</div>
-                <div class="input-line">
-                    <span>CUSTOMER CODE:</span>
+            <!-- Middle Section: Customer Info -->
+            <div class="flex justify-between" style="margin-bottom: 15px">
+                <!-- Left: GST INVOICE + Customer Info -->
+                <div style="width: 55%">
+                    <div class="section-title">GST INVOICE</div>
+                    <div class="input-line" style="margin-top: 5px">
+                        <span>CUSTOMER CODE:</span>
+                    </div>
+                    <div
+                        class="input-line"
+                        style="margin-top: 5px; margin-bottom: 30px"
+                    >
+                        <span>CUSTOMER NAME:</span>
+                    </div>
                 </div>
-                <div class="input-line" style="margin-top: 5px;">
-                    <span>CUSTOMER NAME:</span>
-                </div>
-            </div>
-            
-            <!-- Right: DL/GST/PHONE NO (aligned with BILL NO/DATE) -->
-            <div style="width: 40%; text-align: right;">
-                <div class="input-line" style="justify-content: flex-end;">
-                    <span>DL NO:</span><span class="dots" style="flex-grow: 0; width: 60%;"></span>
-                </div>
-                <div class="input-line" style="margin-top: 5px; justify-content: flex-end;">
-                    <span>GST NO:</span><span class="dots" style="flex-grow: 0; width: 60%;"></span>
-                </div>
-                <div class="input-line" style="margin-top: 5px; justify-content: flex-end;">
-                    <span>PHONE NO:</span><span class="dots" style="flex-grow: 0; width: 60%;"></span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Main Table -->
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th style="width: 30px;">S.NO</th>
-                    <th style="width: 40px;">MFY</th>
-                    <th>PRODUCT NAME</th>
-                    <th style="width: 60px;">HSN CODE</th>
-                    <th style="width: 60px;">BATCH NO</th>
-                    <th style="width: 60px;">EXP. DATE</th>
-                    <th style="width: 40px;">PACK</th>
-                    <th style="width: 50px;">MRP</th>
-                    <th style="width: 40px;">QTY</th>
-                    <th style="width: 40px;">FREE</th>
-                    <th style="width: 50px;">RATE</th>
-                    <th style="width: 70px;">AMOUNT</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Generating empty rows to mimic the form -->
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            </tbody>
-        </table>
-
-        <!-- Amount Details Table -->
-        <table class="invoice-table" style="width: 100%; margin-bottom: 20px;">
-            <tbody>
-                <tr>
-                    <td style="width: 33%; font-weight: bold; padding: 5px;">GOODS VALUE :</td>
-                    <td style="width: 33%; font-weight: bold; padding: 5px;">CGST (2.5%) :</td>
-                    <td style="width: 34%; font-weight: bold; font-size: 14px; vertical-align: top; padding: 5px;">NET AMOUNT :</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: bold; padding: 5px;">CASH DISCOUNT :</td>
-                    <td style="font-weight: bold; padding: 5px;">SGST (2.5%) :</td>
-                    <td style="padding: 5px;"></td>
-                </tr>
-                <tr>
-                    <td style="font-weight: bold; padding: 5px;">TAXABLE AMOUNT :</td>
-                    <td style="font-weight: bold; padding: 5px;">Sub Total :</td>
-                    <td style="padding: 5px;"></td>
-                </tr>
-                <tr>
-                    <td style="font-weight: bold; padding: 5px;">ROUND OFF :</td>
-                    <td style="padding: 5px;"></td>
-                    <td style="padding: 5px;"></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Footer Section -->
-        <div class="footer">
-            <!-- Left Footer: Customer Sign -->
-            <div class="footer-left">
-                <div class="customer-sign">
-                    <span class="bold">CUSTOMER</span><br>
-                    <span class="text-sm">seal with signature</span>
+                <!-- Right: DL/GST/PHONE NO (aligned with BILL NO/DATE) -->
+                <div style="width: 40%; text-align: right">
+                    <div class="input-line" style="justify-content: flex-end">
+                        <span>DL NO:</span
+                        ><span
+                            class="dots"
+                            style="flex-grow: 0; width: 60%"
+                        ></span>
+                    </div>
+                    <div class="input-line" style="justify-content: flex-end">
+                        <span>GST NO:</span
+                        ><span
+                            class="dots"
+                            style="flex-grow: 0; width: 60%"
+                        ></span>
+                    </div>
+                    <div class="input-line" style="justify-content: flex-end">
+                        <span>PHONE NO:</span
+                        ><span
+                            class="dots"
+                            style="flex-grow: 0; width: 60%"
+                        ></span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Main Table -->
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px">S.NO</th>
+                        <th style="width: 40px">MFY</th>
+                        <th>PRODUCT NAME</th>
+                        <th style="width: 60px">HSN CODE</th>
+                        <th style="width: 60px">BATCH NO</th>
+                        <th style="width: 60px">EXP. DATE</th>
+                        <th style="width: 40px">PACK</th>
+                        <th style="width: 50px">MRP</th>
+                        <th style="width: 40px">QTY</th>
+                        <th style="width: 40px">FREE</th>
+                        <th style="width: 50px">RATE</th>
+                        <th style="width: 70px">AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Generating empty rows to mimic the form -->
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Amount Details Table -->
+            <table
+                class="invoice-table"
+                style="width: 100%; margin-bottom: 20px"
+            >
+                <tbody>
+                    <tr>
+                        <td style="width: 33%; font-weight: bold; padding: 5px">
+                            GOODS VALUE :
+                        </td>
+                        <td style="width: 33%; font-weight: bold; padding: 5px">
+                            CGST (2.5%) :
+                        </td>
+                        <td
+                            style="
+                                width: 34%;
+                                font-weight: bold;
+                                font-size: 14px;
+                                vertical-align: top;
+                                padding: 5px;
+                            "
+                        >
+                            NET AMOUNT :
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 5px">
+                            CASH DISCOUNT :
+                        </td>
+                        <td style="font-weight: bold; padding: 5px">
+                            SGST (2.5%) :
+                        </td>
+                        <td style="padding: 5px"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 5px">
+                            TAXABLE AMOUNT :
+                        </td>
+                        <td style="font-weight: bold; padding: 5px">
+                            Sub Total :
+                        </td>
+                        <td style="padding: 5px"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px"></td>
+                        <td style="font-weight: bold; padding: 5px">
+                            ROUND OFF :
+                        </td>
+                        <td style="padding: 5px"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Footer Section -->
+            <div class="footer">
+                <!-- Left Footer: Customer Sign -->
+                <div class="footer-left">
+                    <div class="customer-sign">
+                        <span class="bold">CUSTOMER</span><br />
+                        <span class="text-sm">seal with signature</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authorized Signatory Section -->
+            <div style="text-align: right">
+                <div class="text-sm" style="margin-bottom: 40px">
+                    For <span class="bold">Sree Vishnu Agency</span>
+                </div>
+                <div class="bold">AUTHORISED SIGNATORY</div>
+            </div>
         </div>
-
-        <!-- Authorized Signatory Section -->
-        <div style="text-align: right;">
-            <div class="text-sm" style="margin-bottom: 40px;">For <span class="bold">Sree Vishnu Agency</span></div>
-            <div class="bold">AUTHORISED SIGNATORY</div>
-        </div>
-
-    </div>
-
-</body>
+    </body>
 </html>

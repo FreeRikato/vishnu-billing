@@ -1,50 +1,78 @@
-# Welcome to your Expo app 👋
+# Vishnu Billing
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An [Expo](https://expo.dev) + [Expo Router](https://docs.expo.dev/router/introduction/) app for lightweight billing/customer management.
 
-## Get started
+## What's in the app
 
-1. Install dependencies
+- **Dashboard**: Placeholder screen (WIP).
+- **Products**: Placeholder screen (WIP).
+- **Contacts**: Customer list with search, pagination, add contact, view/edit details, and soft delete.
+- **Invoice**: Placeholder screen (WIP).
 
-   ```bash
-   npm install
-   ```
+## Prerequisites
 
-2. Start the app
+- Node.js and npm
+- Expo CLI (run via `npx`)
 
-   ```bash
-   npx expo start
-   ```
+## Setup
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Environment (Firebase)
 
-## Learn more
+This app uses Firebase (Firestore, and web-only Analytics). Runtime config is loaded from `expoConfig.extra` (preferred) with a fallback to `process.env` for web development.
 
-To learn more about developing your project with Expo, look at the following resources:
+Required environment variables:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `FIREBASE_API_KEY`
+- `FIREBASE_AUTH_DOMAIN`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_STORAGE_BUCKET`
+- `FIREBASE_MESSAGING_SENDER_ID`
+- `FIREBASE_APP_ID`
+- `FIREBASE_MEASUREMENT_ID`
 
-## Join the community
+Where to set them:
 
-Join our community of developers creating universal apps.
+- **Web**: export them in your shell before running `npm run web`, or use your environment tooling of choice.
+- **Native (Expo)**: provide them via Expo config `extra` (e.g. `app.config.*`). This repo currently validates variables in `config/env.ts`.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Run
+
+Start the dev server:
+
+```bash
+npm start
+```
+
+Platform shortcuts:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+## Code quality (Biome)
+
+This repo uses [Biome](https://biomejs.dev) for linting/formatting.
+
+```bash
+npm run lint
+npm run format
+npm run check
+```
+
+## Project structure
+
+- `app/`: Expo Router screens (file-based routing)
+- `config/`: runtime configuration (Firebase + env validation)
+- `hooks/`, `store/`, `utils/`, `styles/`: app logic and UI styling
+
+## Notes
+
+- `npm run reset-project` is a `create-expo-app` helper script. Running it will move/delete existing app code; use with care.

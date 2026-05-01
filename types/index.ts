@@ -21,3 +21,14 @@ export interface Contact extends BaseContact {
 
 // ContactForm is now an alias for BaseContact (data before it has an ID)
 export type ContactForm = BaseContact;
+
+export type InvoiceStatus = 'unpaid' | 'partial' | 'paid'
+
+export type Invoice = {
+  id: string
+  customerName: string
+  issuedAt: string
+  total: number
+  paid: number
+  status: InvoiceStatus
+}

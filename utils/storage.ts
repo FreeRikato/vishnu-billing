@@ -1,5 +1,5 @@
 import { db } from "@/config/firebaseConfig";
-import { BaseContact, Contact, ContactForm } from "@/types"; // Import new types
+import { BaseContact, BaseInvoice, Contact, ContactForm, Invoice, InvoiceStatus } from "@/types"; // Import new types
 import {
   addDoc,
   collection,
@@ -21,7 +21,8 @@ import {
   WithFieldValue
 } from "firebase/firestore";
 
-const COLLECTION_NAME = "customers";
+const CONTACTS_COLLECTION_NAME = "customers";
+const INVOICES_COLLECTION_NAME = "invoices";
 
 // 1. Define a Firestore converter for type safety (v9 SDK best practice)
 const contactConverter = {
@@ -52,7 +53,32 @@ const contactConverter = {
 // 2. Helper to get the typed collection reference
 // We use the converter here to make all storage functions type-safe
 const getContactsCollection = () =>
-  collection(db, COLLECTION_NAME).withConverter(contactConverter);
+  collection(db, CONTACTS_COLLECTION_NAME).withConverter(contactConverter);
+
+const invoiceConverter = {
+  toFirestore: (invoice: WithFieldValue<BaseInvoice>): DocumentData => {
+    const { created_at, updated_at, deleted_at, ...baseFields } = invoice;
+    return {
+      ...baseFields,
+      ...(created_at && { created_at }),
+      ...(updated_at && { updated_at }),
+      ...(deleted_at && { deleted_at }),
+    };
+  },
+  fromFirestore: (
+    snapshot: DocumentSnapshot,
+    options: SnapshotOptions
+  ): Invoice => {
+    const data = snapshot.data(options)! as BaseInvoice;
+    return {
+      id: snapshot.id,
+      ...data,
+    } as Invoice;
+  },
+};
+
+const getInvoicesCollection = () =>
+  collection(db, INVOICES_COLLECTION_NAME).withConverter(invoiceConverter);
 
 export const storage = {
   // Get customers with pagination support and optional search
@@ -232,7 +258,7 @@ export const storage = {
             nextId += 1;
             const newCustomerId = `CUST${nextId.toString().padStart(5, '0')}`;
             
-            const customerRef = doc(db, COLLECTION_NAME, customer.id);
+            const customerRef = doc(db, CONTACTS_COLLECTION_NAME, customer.id);
             transaction.update(customerRef, { customer_id: newCustomerId });
           }
           
@@ -260,7 +286,7 @@ export const storage = {
   ): Promise<boolean> => {
     try {
       // For updateDoc, we use the base doc reference
-      const customerRef = doc(db, COLLECTION_NAME, customerId);
+      const customerRef = doc(db, CONTACTS_COLLECTION_NAME, customerId);
       // Add updated_at timestamp
       const customerWithTimestamp = {
         ...updatedCustomer,
@@ -277,7 +303,7 @@ export const storage = {
   // Delete a customer
   deleteCustomer: async (customerId: string): Promise<boolean> => {
     try {
-      const customerRef = doc(db, COLLECTION_NAME, customerId);
+      const customerRef = doc(db, CONTACTS_COLLECTION_NAME, customerId);
       await deleteDoc(customerRef);
       return true;
     } catch (error) {
@@ -289,7 +315,7 @@ export const storage = {
   // Soft delete a customer (sets deleted_at timestamp)
   deleteCustomerSoft: async (customerId: string): Promise<boolean> => {
     try {
-      const customerRef = doc(db, COLLECTION_NAME, customerId);
+      const customerRef = doc(db, CONTACTS_COLLECTION_NAME, customerId);
       await updateDoc(customerRef, {
         deleted_at: new Date().toISOString()
       });
@@ -303,7 +329,7 @@ export const storage = {
   // Get a single customer by ID
   getCustomer: async (id: string): Promise<Contact | null> => {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id).withConverter(contactConverter);
+      const docRef = doc(db, CONTACTS_COLLECTION_NAME, id).withConverter(contactConverter);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -322,7 +348,7 @@ export const storage = {
   // Clear all customers (for testing)
   clearCustomers: async (): Promise<boolean> => {
     try {
-      const customersQuery = query(collection(db, COLLECTION_NAME));
+      const customersQuery = query(collection(db, CONTACTS_COLLECTION_NAME));
       const querySnapshot = await getDocs(customersQuery);
 
       const deletePromises = querySnapshot.docs.map((doc) =>
@@ -334,6 +360,65 @@ export const storage = {
     } catch (error) {
       console.error("Error clearing customers:", error);
       return false;
+    }
+  },
+
+  getInvoices: async (
+    lastDoc: DocumentSnapshot | null = null,
+    limitCount = 20,
+    searchQuery: string = "",
+    status: InvoiceStatus | undefined = undefined,
+    includeDeleted: boolean = false
+  ): Promise<{ data: Invoice[]; lastVisible: DocumentSnapshot | null }> => {
+    try {
+      const invoicesRef = getInvoicesCollection();
+      let q;
+
+      // NOTE: To keep index requirements minimal, we filter deleted/status client-side.
+      // For basic search, we use a prefix query on `invoice_number`.
+      if (searchQuery) {
+        q = query(
+          invoicesRef,
+          orderBy("invoice_number"),
+          startAt(searchQuery),
+          endAt(`${searchQuery}\uf8ff`),
+          limit(limitCount * 2)
+        );
+      } else {
+        q = query(
+          invoicesRef,
+          orderBy("issued_at", "desc"),
+          limit(limitCount * 2)
+        );
+      }
+
+      if (lastDoc) {
+        q = query(q, startAfter(lastDoc));
+      }
+
+      const querySnapshot = await getDocs(q);
+      let invoices = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+        } as Invoice;
+      });
+
+      if (!includeDeleted) {
+        invoices = invoices.filter((inv) => !inv.deleted_at);
+      }
+      if (status) {
+        invoices = invoices.filter((inv) => inv.status === status);
+      }
+
+      invoices = invoices.slice(0, limitCount);
+
+      const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+      return { data: invoices, lastVisible };
+    } catch (error) {
+      console.error("Error getting invoices:", error);
+      return { data: [], lastVisible: null };
     }
   },
 };

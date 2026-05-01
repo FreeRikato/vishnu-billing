@@ -1,5 +1,5 @@
 import { db } from "@/config/firebaseConfig";
-import { BaseContact, Contact, ContactForm } from "@/types"; // Import new types
+import { BaseContact, BaseInvoice, Contact, ContactForm, Invoice, InvoiceStatus } from "@/types"; // Import new types
 import {
   addDoc,
   collection,
@@ -17,11 +17,13 @@ import {
   SnapshotOptions,
   startAfter,
   startAt,
+  where,
   updateDoc,
   WithFieldValue
 } from "firebase/firestore";
 
 const COLLECTION_NAME = "customers";
+const INVOICES_COLLECTION_NAME = "invoices";
 
 // 1. Define a Firestore converter for type safety (v9 SDK best practice)
 const contactConverter = {
@@ -53,6 +55,32 @@ const contactConverter = {
 // We use the converter here to make all storage functions type-safe
 const getContactsCollection = () =>
   collection(db, COLLECTION_NAME).withConverter(contactConverter);
+
+// --- INVOICES ---
+const invoiceConverter = {
+  toFirestore: (invoice: WithFieldValue<BaseInvoice>): DocumentData => {
+    const { created_at, updated_at, deleted_at, ...baseFields } = invoice;
+    return {
+      ...baseFields,
+      ...(created_at && { created_at }),
+      ...(updated_at && { updated_at }),
+      ...(deleted_at && { deleted_at }),
+    };
+  },
+  fromFirestore: (
+    snapshot: DocumentSnapshot,
+    options: SnapshotOptions
+  ): Invoice => {
+    const data = snapshot.data(options)! as BaseInvoice;
+    return {
+      id: snapshot.id,
+      ...data,
+    } as Invoice;
+  },
+};
+
+const getInvoicesCollection = () =>
+  collection(db, INVOICES_COLLECTION_NAME).withConverter(invoiceConverter);
 
 export const storage = {
   // Get customers with pagination support and optional search
@@ -334,6 +362,93 @@ export const storage = {
     } catch (error) {
       console.error("Error clearing customers:", error);
       return false;
+    }
+  },
+
+  /**
+   * Get invoices with pagination and optional search + status filter.
+   * Note: Firestore search is case-sensitive and uses prefix matching.
+   */
+  getInvoices: async (
+    lastDoc: DocumentSnapshot | null = null,
+    limitCount = 20,
+    searchQuery: string = "",
+    status: InvoiceStatus | undefined = undefined,
+    includeDeleted: boolean = false
+  ): Promise<{ data: Invoice[]; lastVisible: DocumentSnapshot | null }> => {
+    try {
+      const invoicesRef = getInvoicesCollection();
+      let q;
+
+      // If a status filter is applied, we can use a proper Firestore filter.
+      // For non-deleted filtering we still do client-side filtering to avoid composite indexes,
+      // consistent with the customer strategy used elsewhere in this repo.
+      const maybeStatusWhere = status ? [where("status", "==", status)] : [];
+
+      if (searchQuery) {
+        // Search by invoice_no prefix (most stable key for prefix search).
+        // You can extend this later to include customer_name with additional indexes.
+        if (includeDeleted) {
+          q = query(
+            invoicesRef,
+            ...maybeStatusWhere,
+            orderBy("invoice_no"),
+            startAt(searchQuery),
+            endAt(searchQuery + "\uf8ff"),
+            limit(limitCount)
+          );
+        } else {
+          q = query(
+            invoicesRef,
+            ...maybeStatusWhere,
+            orderBy("invoice_no"),
+            startAt(searchQuery),
+            endAt(searchQuery + "\uf8ff"),
+            limit(limitCount * 2)
+          );
+        }
+      } else {
+        // Standard list - newest first by issued_at (fallback to created_at via client sort if needed).
+        if (includeDeleted) {
+          q = query(
+            invoicesRef,
+            ...maybeStatusWhere,
+            orderBy("issued_at", "desc"),
+            limit(limitCount)
+          );
+        } else {
+          q = query(
+            invoicesRef,
+            ...maybeStatusWhere,
+            orderBy("issued_at", "desc"),
+            limit(limitCount * 2)
+          );
+        }
+      }
+
+      if (lastDoc) {
+        q = query(q, startAfter(lastDoc));
+      }
+
+      const querySnapshot = await getDocs(q);
+      let invoices = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+        } as Invoice;
+      });
+
+      if (!includeDeleted) {
+        invoices = invoices.filter((inv) => !inv.deleted_at);
+        invoices = invoices.slice(0, limitCount);
+      }
+
+      const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+      return { data: invoices, lastVisible };
+    } catch (error) {
+      console.error("Error getting invoices:", error);
+      return { data: [], lastVisible: null };
     }
   },
 };
